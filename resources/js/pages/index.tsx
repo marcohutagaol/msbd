@@ -1,3 +1,7 @@
 export default function Index() {
-  return <h1>msbd bujang</h1>
+  return (
+    <div>
+      <h1>Halaman Home</h1>
+    </div>
+  );
 }

@@ -16,4 +16,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
+//admin route
+Route::get('/admin/{any}', function () {
+    return view('admin');
+})->where('any', '.*');
+
+
+
+
+
+
 require __DIR__.'/settings.php';
