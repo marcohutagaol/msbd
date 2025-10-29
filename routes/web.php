@@ -16,10 +16,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
-//admin route
-Route::get('/admin/{any}', function () {
-    return view('admin');
-})->where('any', '.*');
+Route::get('/admin/dashboard', function () {
+    return Inertia::render('admin/Dashboard');
+})->name('admin.dashboard');
 
 
 
