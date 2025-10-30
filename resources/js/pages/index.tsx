@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { router } from "@inertiajs/react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
   Home,
@@ -36,6 +37,12 @@ export default function HomePage() {
     return () => clearInterval(timer)
   }, [])
 
+  // Fungsi untuk handle clock in
+// Fungsi untuk handle clock in
+// Di HomePage component
+const handleClockIn = () => {
+  router.visit(`/detail-absen?time=${encodeURIComponent(currentTime)}`)
+}
   // Menu Grid Atas
   const menuItems = [
     { icon: <User className="w-6 h-6 text-orange-500" />, label: "Absensi" },
@@ -229,10 +236,13 @@ export default function HomePage() {
 
                 {/* Buttons */}
                 <div className="grid grid-cols-2 gap-6">
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-8 flex items-center justify-center gap-3 font-semibold text-lg transition-colors shadow-md hover:shadow-lg">
-                    <span className="text-2xl">→</span>
-                    <span>Clock In</span>
-                  </button>
+                    <button 
+        onClick={handleClockIn}
+        className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-8 flex items-center justify-center gap-3 font-semibold text-lg transition-colors shadow-md hover:shadow-lg"
+      >
+        <span className="text-2xl">→</span>
+        <span>Clock In</span>
+      </button>
                   <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-8 flex items-center justify-center gap-3 font-semibold text-lg transition-colors shadow-md hover:shadow-lg">
                     <span className="text-2xl">←</span>
                     <span>Clock Out</span>
