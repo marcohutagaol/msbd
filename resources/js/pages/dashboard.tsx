@@ -5,18 +5,20 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+
+
 import {
-  User,
-  ClipboardList,
-  Heart,
-  FileText,
-  Square,
-  Clock,
-  Gift,
-  Car,
-  Package,
-  Zap,
+    User,
+    ClipboardList,
+    Heart,
+    FileText,
+    Square,
+    Clock,
+    Gift,
+    Car,
+    Package,
+    Zap,
 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -29,6 +31,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Dashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [currentTime, setCurrentTime] = useState('00:00:00');
+    const { props }: any = usePage();
+    const user = props.auth.user; // user yang login
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -170,9 +174,13 @@ export default function Dashboard() {
 
                                     {/* Buttons */}
                                     <div className="grid grid-cols-2 gap-6">
-                                        <button onClick={() => router.visit('/absensi')} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-8 flex items-center justify-center gap-3 font-semibold text-lg transition-colors shadow-md hover:shadow-lg">
+                                        <button
+                                            onClick={() => router.visit(`/absensi/${user.id}`)}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-8 flex items-center justify-center gap-3 font-semibold text-lg transition-colors shadow-md hover:shadow-lg"
+                                        >
                                             <span>Clock In</span>
                                         </button>
+
                                         <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-8 flex items-center justify-center gap-3 font-semibold text-lg transition-colors shadow-md hover:shadow-lg">
                                             <span>Clock Out</span>
                                         </button>
