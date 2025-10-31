@@ -5,88 +5,91 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Absensi;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Cloudinary\Cloudinary;
 
 class AbsensiController extends Controller
 {
-    public function store(Request $request)
-    {
-        try {
-            // Validasi data
-            $validated = $request->validate([
-                'tipe_absen' => 'required|in:masuk,pulang',
-                'waktu_absen' => 'required|string',
-                'lokasi' => 'required|string',
-                'link_gambar' => 'required|string',
-                'device_info' => 'required|string',
-                'ip_address' => 'required|ip'
-            ]);
+  public function store(Request $request)
+  {
+    try {
+      // Validasi data
+      $validated = $request->validate([
+        'foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        'tipe_absen' => 'required|in:masuk,pulang',
+        'waktu_absen' => 'required|string',
+        'lokasi' => 'required|string',
+        'device_info' => 'required|string',
+        'ip_address' => 'required|string'
+      ]);
 
-            // Konversi tipe_absen
-            $tipeAbsen = strtoupper($validated['tipe_absen']) === 'MASUK' ? 'DATANG' : 'BALIK';
-
-            // Konversi waktu
-            $waktuAbsen = date('Y-m-d H:i:s', strtotime($validated['waktu_absen']));
-
-            // Simpan gambar
-            $imagePath = $this->saveBase64Image($validated['link_gambar']);
-
-            // Insert langsung ke detail_absen
-            $absensi = Absensi::create([
-                'id_absensi' => Auth::id(),
-                'tipe_absen' => $tipeAbsen,
-                'waktu_absen' => $waktuAbsen,
-                'lokasi' => $validated['lokasi'],
-                'link_gambar' => $imagePath,
-                'device_info' => $validated['device_info'],
-                'ip_address' => $validated['ip_address']
-            ]);
-
-               return redirect()->back()->with('success', 'Absensi berhasil dicatat!');
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menyimpan absensi: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    private function saveBase64Image($base64Image)
-    {
-        if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
-            $image = substr($base64Image, strpos($base64Image, ',') + 1);
-            $type = strtolower($type[1]);
-
-            if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
-                throw new \Exception('Format gambar tidak didukung');
-            }
-
-            $image = base64_decode($image);
-            if ($image === false) {
-                throw new \Exception('Base64 decode failed');
-            }
-        } else {
-            throw new \Exception('Format base64 tidak valid');
-        }
-
-        $fileName = 'absensi_' . Auth::id() . '_' . time() . '.' . $type;
-        $filePath = 'absensi/' . $fileName;
-
-        Storage::disk('public')->put($filePath, $image);
-
-        return $filePath;
-    }
-
-    public function getRiwayat()
-    {
-        $absensi = Absensi::where('id_absensi', Auth::id())
-            ->orderBy('waktu_absen', 'desc')
-            ->get();
-
+      if (!$request->hasFile('foto')) {
         return response()->json([
-            'success' => true,
-            'data' => $absensi
+          'success' => false,
+          'message' => 'Tidak ada file foto dikirim ke server.'
+        ], 400);
+      }
+
+      try {
+        $cloudinary = new Cloudinary([
+          'cloud' => [
+            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+            'api_key' => env('CLOUDINARY_KEY'),
+            'api_secret' => env('CLOUDINARY_SECRET'),
+          ],
+          'url' => [
+            'secure' => true
+          ]
         ]);
+
+        // Upload file ke Cloudinary
+        $uploadResult = $cloudinary->uploadApi()->upload(
+          $request->file('foto')->getRealPath(),
+          ['folder' => 'absensi_kawaland']
+        );
+
+        // Ambil URL hasil upload
+        $imageUrl = $uploadResult['secure_url'];
+
+        // lanjut simpan database ...
+      } catch (\Exception $e) {
+        \Log::error('Cloudinary upload gagal:', [$e->getMessage()]);
+        return response()->json([
+          'success' => false,
+          'message' => 'Upload ke Cloudinary gagal: ' . $e->getMessage(),
+        ], 500);
+      }
+
+      Absensi::create([
+        'id_absensi' => Auth::id(),
+        'tipe_absen' => strtoupper($validated['tipe_absen']) === 'MASUK' ? 'DATANG' : 'BALIK',
+        'waktu_absen' => date('Y-m-d H:i:s', strtotime($validated['waktu_absen'])),
+        'lokasi' => $validated['lokasi'],
+        'link_gambar' => $imageUrl,
+        'device_info' => $validated['device_info'],
+        'ip_address' => $validated['ip_address']
+      ]);
+
+      return response()->json([
+        'success' => true,
+        'url' => $imageUrl
+      ]);
+    } catch (\Exception $e) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Gagal menyimpan absensi: ' . $e->getMessage()
+      ], 500);
     }
+  }
+
+  public function getRiwayat()
+  {
+    $absensi = Absensi::where('id_absensi', Auth::id())
+      ->orderBy('waktu_absen', 'desc')
+      ->get();
+
+    return response()->json([
+      'success' => true,
+      'data' => $absensi
+    ]);
+  }
 }
