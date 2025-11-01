@@ -13,7 +13,10 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 })
 
-const breadcrumbs = [{ title: "Absensi", href: "/absensi" }]
+const breadcrumbs = [
+  { title: "Dashboard", href: "/dashboard" },
+  { title: "Absensi", href: "/absensi" },
+];
 
 export default function CatatKehadiran() {
   const [currentTime, setCurrentTime] = useState(new Date())
