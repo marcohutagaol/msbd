@@ -10,7 +10,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { absensi, dashboard } from '@/routes';
+import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
@@ -24,19 +24,24 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Absensi',
-        href: '/absensi/{id}',
+        href: '/absensi/1',
         icon: LayoutGrid,
     },
-    // {
-    //     title: 'Dashboard',
-    //     href: dashboard(),
-    //     icon: LayoutGrid,
-    // },
-    // {
-    //     title: 'Dashboard',
-    //     href: dashboard(),
-    //     icon: LayoutGrid,
-    // },
+    {
+        title: 'Request Item',
+        href: '/request',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Purchasing Detail',
+        href: '/purchasing',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Dashboard Purchasing',
+        href: '/dashboard-purchasing',
+        icon: LayoutGrid,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
