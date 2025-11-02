@@ -40,3 +40,15 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__ . '/settings.php';
+
+Route::get('/purchasing', function () {
+    return Inertia::render('table/purchasing');
+});
+
+Route::get('/request', function () {
+    return Inertia::render('table/request');
+});
+
+Route::get('/dashboard-purchasing', function () {
+    return Inertia::render('table/dashboard-purchasing');
+});
