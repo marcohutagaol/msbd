@@ -52,3 +52,11 @@ Route::get('/request', function () {
 Route::get('/dashboard-purchasing', function () {
     return Inertia::render('table/dashboard-purchasing');
 });
+
+Route::get('/monitoring-item', function () {
+    return Inertia::render('table/monitoring-item');
+});
+
+Route::get('/input-price', function () {
+    return Inertia::render('table/input-price');
+});
