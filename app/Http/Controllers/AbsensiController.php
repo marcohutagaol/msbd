@@ -41,16 +41,13 @@ class AbsensiController extends Controller
           ]
         ]);
 
-        // Upload file ke Cloudinary
         $uploadResult = $cloudinary->uploadApi()->upload(
           $request->file('foto')->getRealPath(),
           ['folder' => 'absensi_kawaland']
         );
 
-        // Ambil URL hasil upload
         $imageUrl = $uploadResult['secure_url'];
 
-        // lanjut simpan database ...
       } catch (\Exception $e) {
         \Log::error('Cloudinary upload gagal:', [$e->getMessage()]);
         return response()->json([

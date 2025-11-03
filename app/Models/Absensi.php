@@ -27,8 +27,8 @@ class Absensi extends Model
     const UPDATED_AT = null;
 
     // Relasi ke user
-    public function user()
+    public function karyawan()
     {
-        return $this->belongsTo(User::class, 'id_absensi', 'id');
+        return $this->belongsTo(Karyawan::class, 'id_absensi', 'id_karyawan');
     }
 }
