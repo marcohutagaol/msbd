@@ -18,7 +18,6 @@ function Home() {
       <Head title="Permission Dashboard" />
       <main className="min-h-screen bg-white p-6 font-[Poppins]">
         <div className="mx-auto max-w-6xl">
-          {/* Komponen utama */}
           <PermissionDashboard />
         </div>
       </main>
