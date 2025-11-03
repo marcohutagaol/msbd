@@ -4,40 +4,31 @@ import React, { useState } from "react";
 import { OrdersList } from "@/components/ui/orders-list";
 import AppLayout from "@/layouts/app-layout";
 import { type BreadcrumbItem } from "@/types";
-import { Head, router } from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
 import { CheckCircle2 } from "lucide-react";
-import AddOrderModal from "@/components/ui/add-order-modal";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: "Request Items",
+    href: "/request",
+  },
+  {
+    title: "Monitoring Items",
     href: "#",
   },
 ];
 
 function OrdersPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState(false); // ✅ notifikasi sukses
 
-  const handleAddItems = (items: any[]) => {
-    console.log("Items added:", items);
-    setIsModalOpen(false);
-  };
-
-  // ✅ Saat klik tombol Sending Request
-  const handleSendRequest = () => {
-    setSuccess(true); // tampilkan notifikasi
-
-    // Setelah 2.5 detik hilang & redirect ke monitoring
-    setTimeout(() => {
-      setSuccess(false);
-      router.visit("/monitoring-item");
-    }, 2500);
+  const handleStoreTransfer = () => {
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 2500); // notifikasi hilang otomatis
   };
 
   return (
     <>
-      <Head title="Request Item" />
+      <Head title="Monitoring Item" />
       <main className="min-h-screen bg-white p-6 font-[Poppins]">
         <div className="mx-auto max-w-6xl space-y-6">
           {/* 🧩 Container utama */}
@@ -48,53 +39,36 @@ function OrdersPage() {
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full bg-blue-600 shadow-md shadow-blue-400/50"></div>
                   <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-                    Request Item
+                    Monitoring Item
                   </h2>
                 </div>
-                <p className="text-sm text-slate-600 ml-5 mt-1">
-                  Departemen
-                </p>
+                <p className="text-sm text-slate-600 ml-5 mt-1">Departemen</p>
               </div>
-
-              {/* Add Order Button */}
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="mt-3 sm:mt-0 rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white transition-all duration-300 hover:bg-blue-700 hover:shadow-md hover:shadow-blue-400/30"
-              >
-                Add Order
-              </button>
             </div>
 
             {/* List Orders */}
-            <OrdersList />
+            <OrdersList mode="monitoring" />
           </div>
 
-          {/* 🟦 Tombol Sending Request */}
+          {/* 🟦 Tombol Storing Store */}
           <div className="flex justify-end">
             <button
-              onClick={handleSendRequest}
+              onClick={handleStoreTransfer}
               className="rounded-lg bg-blue-600 px-8 py-3 font-semibold text-white shadow-md shadow-blue-500/30 transition-all duration-300 hover:bg-blue-700 hover:shadow-blue-600/40"
             >
-              Sending Request
+              Storing Store
             </button>
           </div>
         </div>
       </main>
 
-      {/* Modal Add Order */}
-      <AddOrderModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAdd={handleAddItems}
-      />
-
-      {/* ✅ Notifikasi sukses (popup kecil kanan bawah) */}
+      {/* ✅ Notifikasi sukses (popup card) */}
       {success && (
         <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-3 shadow-md shadow-green-100/60">
             <CheckCircle2 className="w-5 h-5 text-green-600" />
             <p className="text-sm font-medium text-green-800">
-              Barang berhasil dikirim ke Purchase!
+              Item berhasil ditransfer ke gudang!
             </p>
           </div>
         </div>

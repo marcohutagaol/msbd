@@ -31,16 +31,30 @@ const mainNavItems: NavItem[] = [
         title: 'Request Item',
         href: '/request',
         icon: LayoutGrid,
-    },
-    {
-        title: 'Purchasing Detail',
-        href: '/purchasing',
-        icon: LayoutGrid,
+        items: [
+            {
+                title: 'Monitoring Item',
+                href: '/monitoring-item',
+                icon: LayoutGrid,
+            },
+        ],
     },
     {
         title: 'Dashboard Purchasing',
         href: '/dashboard-purchasing',
         icon: LayoutGrid,
+        items: [
+            {
+                title: 'Purchasing Detail',
+                href: '/purchasing',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Input Price',
+                href: '/input-price',
+                icon: LayoutGrid,
+            },
+        ],
     },
 ];
 
