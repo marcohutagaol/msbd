@@ -27,6 +27,11 @@ const mainNavItems: NavItem[] = [
         href: '/absensi/1',
         icon: LayoutGrid,
     },
+        {
+        title: 'Permission',
+        href: '/permission',
+        icon: LayoutGrid,
+    },
     {
         title: 'Request Item',
         href: '/request',

@@ -60,3 +60,7 @@ Route::get('/monitoring-item', function () {
 Route::get('/input-price', function () {
     return Inertia::render('table/input-price');
 });
+
+Route::get('/permission', function () {
+    return Inertia::render('permission/page');
+});
