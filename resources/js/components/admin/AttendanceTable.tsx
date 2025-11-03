@@ -1,11 +1,20 @@
-export default function EmployeeStatus() {
-  const employees = [
-    { no: 1, name: "Andi Pratama", dept: "Finance", time: "08:05", status: "Masih Bekerja", color: "#16a34a" },
-    { no: 2, name: "Budi Santoso", dept: "IT Support", time: "08:20", status: "Terlambat", color: "#facc15" },
-    { no: 3, name: "Citra Lestari", dept: "HRD", time: "07:58", status: "Masih Bekerja", color: "#16a34a" },
-    { no: 4, name: "Dewi Anggraini", dept: "Marketing", time: "-", status: "Tidak Hadir", color: "#ef4444" },
-  ];
+import { usePage } from '@inertiajs/react';
 
+interface Employee {
+  id: string;
+  name: string;
+  department: string;
+  time: string;
+  status: string;
+}
+
+interface PageProps {
+  employees: Employee[];
+
+}
+
+export default function EmployeeStatus() {
+  const { employees} = usePage().props as unknown as PageProps;
   return (
     <div
       style={{
@@ -53,7 +62,7 @@ export default function EmployeeStatus() {
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ backgroundColor: "#f8fafc", textAlign: "left" }}>
-              {["No", "Nama Karyawan", "Departemen", "Jam Masuk", "Status"].map((header, i) => (
+              {["ID", "Nama Karyawan", "Departemen", "Jam Masuk", "Status"].map((header, i) => (
                 <th
                   key={i}
                   style={{
@@ -72,12 +81,12 @@ export default function EmployeeStatus() {
           </thead>
           <tbody>
             {employees.map((emp) => (
-              <tr key={emp.no} style={{ borderTop: "1px solid #e2e8f0" }}>
-                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.no}</td>
+              <tr key={emp.id} style={{ borderTop: "1px solid #e2e8f0" }}>
+                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.id}</td>
                 <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.name}</td>
-                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.dept}</td>
+                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.department}</td>
                 <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.time}</td>
-                <td style={{ padding: "14px 20px", fontSize: "14px", color: emp.color, fontWeight: "600" }}>
+                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155", fontWeight: "600" }}>
                   {emp.status}
                 </td>
               </tr>

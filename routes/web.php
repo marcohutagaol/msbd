@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -24,10 +25,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('user.absensi');
 });
 
-Route::get('/admin/dashboard', function () {
-    return Inertia::render('admin/Dashboard');
-})->name('admin.dashboard');
-
 Route::middleware(['auth'])->group(function () {
     Route::post('/absensi/store', [AbsensiController::class, 'store'])->name('absensi.store');
 });
@@ -41,5 +38,7 @@ Route::middleware(['auth'])->group(function () {
     return Inertia::render('CatatKehadiran'); 
   })->name('absensi');
 });
+
+Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
 require __DIR__.'/settings.php';
