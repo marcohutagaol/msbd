@@ -55,7 +55,10 @@ Route::get('/input-price', function () {
     return Inertia::render('table/input-price');
 });
 
-Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+// Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+Route::get('/admin/dashboard', function () {
+    return Inertia::render('admin/Dashboard');
+})->name('admin.dashboard');
 
 Route::get('/admin/absensi', function () {
     return Inertia::render('admin/Absensi');
