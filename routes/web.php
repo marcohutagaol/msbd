@@ -57,5 +57,14 @@ Route::get('/input-price', function () {
 
 Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
+Route::get('/admin/absensi', function () {
+    return Inertia::render('admin/Absensi');
+})->name('admin.absensi');
+
+    Route::get('/admin/dashboard/detail/{status}', function ($status) {
+        return Inertia::render('admin/StatusDetail', [
+            'status' => $status,
+        ]);
+    })->name('admin.dashboard.detail');
 require __DIR__.'/settings.php';
 

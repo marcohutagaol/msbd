@@ -3,13 +3,17 @@
 import { useState } from "react";
 import Sidebar from "../../components/admin/dashboard/Sidebar";
 import Header from "../../components/admin/dashboard/Header";
-import StatsToday from "../../components/admin/dashboard/Stats";
-import EmployeeStatus from "../../components/admin/dashboard/AttendanceTable";
-import UserDetail from "../../components/admin/dashboard/UserDetail";
+import AttendanceHeader from "@/components/admin/absensi/AttendanceHeader";
+import WeeklyAttendance from "@/components/admin/absensi/WeeklyAttendance";
+import AttendanceDetail from "@/components/admin/absensi/AttendanceDetail";
 
-export default function Dashboard() {
+export default function Absensi() {
+  // === STATE UNTUK TOGGLE SIDEBAR ===
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
 
   return (
     <div className="flex min-h-screen font-[Poppins,Segoe_UI,system-ui,sans-serif] bg-[#f5f7fa] transition-all duration-300">
@@ -40,14 +44,14 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* === ISI HALAMAN === */}
+        {/* === KONTEN UTAMA === */}
         <div className="flex flex-col flex-1 gap-[30px] px-[40px] pb-[40px] pt-[120px] transition-all duration-300">
-          <UserDetail />
-          <StatsToday />
-          <EmployeeStatus />
-         
+          <AttendanceHeader />
+          <AttendanceDetail />
+          <WeeklyAttendance />
         </div>
       </div>
     </div>
   );
 }
+  
