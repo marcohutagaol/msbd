@@ -1,10 +1,11 @@
 <?php
 
-use App\Http\Controllers\AdminController;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\PermissionController;
 
 
 Route::get('/', function () {
@@ -21,10 +22,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('user.absensi');
 });
 
-require __DIR__.'/settings.php';
-Route::get('/admin/dashboard', function () {
-    return Inertia::render('admin/Dashboard');
-})->name('admin.dashboard');
 Route::middleware(['auth'])->group(function () {
     Route::post('/absensi/store', [AbsensiController::class, 'store'])->name('absensi.store');
 });
@@ -59,10 +56,15 @@ Route::get('/input-price', function () {
     return Inertia::render('table/input-price');
 });
 
-Route::get('/permission', function () {
-    return Inertia::render('permission/page');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/permission', function () {
+        return Inertia::render('permission/page');
+    })->name('permission');
+    
+    Route::get('/api/permissions', [App\Http\Controllers\PermissionController::class, 'index'])->name('permissions.index');
+    Route::post('/api/permissions', [App\Http\Controllers\PermissionController::class, 'store'])->name('permissions.store');
+    Route::delete('/api/permissions/{id}', [App\Http\Controllers\PermissionController::class, 'destroy'])->name('permissions.destroy');
 });
-
 Route::get('/inventory', function () {
     return Inertia::render('inventory/page');
 });
@@ -72,7 +74,4 @@ Route::get('/table-inventory', function () {
 });
 Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
-
-Route::get('/absensi', function () {
-        return Inertia::render('user/absensi');
-    })->name('user.absensi');
+require __DIR__.'/settings.php';
