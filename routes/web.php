@@ -64,3 +64,11 @@ Route::get('/input-price', function () {
 Route::get('/permission', function () {
     return Inertia::render('permission/page');
 });
+
+Route::get('/inventory', function () {
+    return Inertia::render('inventory/page');
+});
+
+Route::get('/table-inventory', function () {
+    return Inertia::render('inventory/table-inventory');
+});
