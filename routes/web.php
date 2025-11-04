@@ -55,6 +55,17 @@ Route::get('/input-price', function () {
     return Inertia::render('table/input-price');
 });
 
+Route::get('/permission', function () {
+    return Inertia::render('permission/page');
+});
+
+Route::get('/inventory', function () {
+    return Inertia::render('inventory/page');
+});
+
+Route::get('/table-inventory', function () {
+    return Inertia::render('inventory/table-inventory');
+});
 Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
 require __DIR__.'/settings.php';

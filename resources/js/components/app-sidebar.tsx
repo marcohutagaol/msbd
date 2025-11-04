@@ -60,6 +60,11 @@ const mainNavItems: NavItem[] = [
                 icon: LayoutGrid,
             },
         ],
+        },
+        {
+        title: 'Inventory',
+        href: '/inventory',
+        icon: LayoutGrid,
     },
 ];
 
