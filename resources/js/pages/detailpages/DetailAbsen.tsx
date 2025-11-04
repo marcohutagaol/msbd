@@ -1,33 +1,29 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import {
   Home,
   BarChart2,
   CheckSquare,
   BookOpen,
   Settings,
+  User,
+  ClipboardList,
+  Heart,
+  FileText,
+  Square,
+  Clock,
+  Gift,
+  Car,
+  Package,
+  Zap,
 } from "lucide-react"
-import dynamic from 'next/dynamic'
-
-// Dynamically import Leaflet to avoid SSR issues
-const MapComponent = dynamic(() => import('./MapCompoent'), {
-  ssr: false,
-  loading: () => (
-    <div className="bg-gray-100 rounded-lg aspect-[4/3] flex items-center justify-center">
-      <p className="text-gray-600">Memuat peta...</p>
-    </div>
-  )
-})
 
 export default function DetailAbsen() {
   const [currentTime, setCurrentTime] = useState("07:58:55")
   const [activeTab, setActiveTab] = useState("beranda")
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [cameraActive, setCameraActive] = useState(false)
-  const [capturedImage, setCapturedImage] = useState<string | null>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const streamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -40,72 +36,6 @@ export default function DetailAbsen() {
     return () => clearInterval(timer)
   }, [])
 
-  // Initialize camera
-  const initializeCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: "user",
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        } 
-      })
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        streamRef.current = stream
-      }
-      setCameraActive(true)
-    } catch (error) {
-      console.error("Error accessing camera:", error)
-      alert("Tidak dapat mengakses kamera. Pastikan Anda memberikan izin akses kamera.")
-    }
-  }
-
-  // Stop camera
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop())
-      streamRef.current = null
-    }
-    setCameraActive(false)
-    setCapturedImage(null)
-  }
-
-  // Capture photo
-  const capturePhoto = () => {
-    if (videoRef.current) {
-      const canvas = document.createElement('canvas')
-      const context = canvas.getContext('2d')
-      if (context) {
-        canvas.width = videoRef.current.videoWidth
-        canvas.height = videoRef.current.videoHeight
-        context.drawImage(videoRef.current, 0, 0)
-        
-        const imageDataUrl = canvas.toDataURL('image/jpeg')
-        setCapturedImage(imageDataUrl)
-      }
-    }
-  }
-
-  // Toggle camera
-  const toggleCamera = () => {
-    if (cameraActive) {
-      stopCamera()
-    } else {
-      initializeCamera()
-    }
-  }
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop())
-      }
-    }
-  }, [])
-
   const sidebarItems = [
     { icon: <Home className="w-5 h-5" />, label: "Beranda", id: "beranda" },
     { icon: <BarChart2 className="w-5 h-5" />, label: "Aktivitas", id: "aktivitas" },
@@ -113,7 +43,6 @@ export default function DetailAbsen() {
     { icon: <BookOpen className="w-5 h-5" />, label: "Pelatihan", id: "pelatihan" },
     { icon: <Settings className="w-5 h-5" />, label: "Pengaturan", id: "pengaturan" },
   ]
-
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar - Same as HomePage */}
@@ -309,33 +238,14 @@ export default function DetailAbsen() {
                   {/* Camera Preview */}
                   <div className="bg-gray-900 rounded-lg aspect-[4/3] flex items-center justify-center mb-4 relative overflow-hidden">
                     {cameraActive ? (
-                      <div className="absolute inset-0">
-                        <video
-                          ref={videoRef}
-                          autoPlay
-                          playsInline
-                          muted
-                          className="w-full h-full object-cover"
-                        />
-                        {capturedImage && (
-                          <img
-                            src={capturedImage}
-                            alt="Captured"
-                            className="absolute inset-0 w-full h-full object-cover"
-                          />
-                        )}
+                      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-48 h-48 border-4 border-white/30 rounded-full"></div>
+                        </div>
                         <div className="absolute top-4 left-4 bg-red-600 px-3 py-1 rounded-full flex items-center gap-2">
                           <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                          <span className="text-white text-sm font-medium">LIVE</span>
+                          <span className="text-white text-sm font-medium">REC</span>
                         </div>
-                      </div>
-                    ) : capturedImage ? (
-                      <div className="absolute inset-0">
-                        <img
-                          src={capturedImage}
-                          alt="Captured"
-                          className="w-full h-full object-cover"
-                        />
                       </div>
                     ) : (
                       <div className="text-center">
@@ -351,7 +261,7 @@ export default function DetailAbsen() {
                   {/* Camera Controls */}
                   <div className="flex gap-3">
                     <button
-                      onClick={toggleCamera}
+                      onClick={() => setCameraActive(!cameraActive)}
                       className={`flex-1 py-3 rounded-lg font-semibold transition-colors ${
                         cameraActive
                           ? "bg-red-600 hover:bg-red-700 text-white"
@@ -361,10 +271,7 @@ export default function DetailAbsen() {
                       {cameraActive ? "Matikan Kamera" : "Aktifkan Kamera"}
                     </button>
                     {cameraActive && (
-                      <button 
-                        onClick={capturePhoto}
-                        className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
-                      >
+                      <button className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors">
                         Ambil Foto
                       </button>
                     )}
@@ -384,9 +291,28 @@ export default function DetailAbsen() {
                   </div>
                 </div>
                 <div className="p-6">
-                  {/* Map Container */}
+                  {/* Map Preview */}
                   <div className="bg-gray-100 rounded-lg aspect-[4/3] mb-4 relative overflow-hidden">
-                    <MapComponent />
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-100 to-blue-100">
+                      {/* Simulated Map UI */}
+                      <div className="absolute inset-0 opacity-20">
+                        <div className="absolute top-1/4 left-1/4 w-32 h-1 bg-gray-400 transform rotate-45"></div>
+                        <div className="absolute top-1/3 right-1/3 w-24 h-1 bg-gray-400 transform -rotate-12"></div>
+                        <div className="absolute bottom-1/3 left-1/2 w-20 h-1 bg-gray-400 transform rotate-90"></div>
+                      </div>
+                      
+                      {/* Location Pin */}
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-full">
+                        <svg className="w-12 h-12 text-red-600 drop-shadow-lg animate-bounce" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                      </div>
+                      
+                      {/* Location Circle */}
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        <div className="w-24 h-24 bg-blue-500/20 rounded-full animate-pulse"></div>
+                      </div>
+                    </div>
                   </div>
                   
                   {/* Location Info */}
@@ -403,6 +329,9 @@ export default function DetailAbsen() {
                         </p>
                       </div>
                     </div>
+                    <button className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors">
+                      Dapatkan Lokasi Saat Ini
+                    </button>
                   </div>
                 </div>
               </div>
