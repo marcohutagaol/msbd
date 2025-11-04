@@ -30,7 +30,7 @@ function OrdersPage() {
   const [open, setOpen] = useState(false);
   const [success, setSuccess] = useState(false);
   const [finalized, setFinalized] = useState(false);
-  const [arrived, setArrived] = useState(false); // ✅ untuk tombol "Item Has Arrived"
+  const [arrived, setArrived] = useState(false);
 
   const handleConfirm = () => {
     setOpen(false);
@@ -44,7 +44,6 @@ function OrdersPage() {
     setTimeout(() => setArrived(false), 2500);
   };
 
-  // Dummy ringkasan
   const summary = {
     totalBarang: 10,
     totalHarga: 12300000,
@@ -56,7 +55,6 @@ function OrdersPage() {
       <Head title="Input Price" />
       <main className="min-h-screen bg-white p-6 font-[Poppins]">
         <div className="mx-auto max-w-6xl space-y-6">
-          {/* 🧩 Container utama */}
           <div
             className={`rounded-xl border-2 ${
               finalized ? "border-green-400" : "border-blue-400"
@@ -64,7 +62,7 @@ function OrdersPage() {
               finalized ? "hover:border-green-500" : "hover:border-blue-500"
             }`}
           >
-            {/* Header */}
+
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
@@ -86,11 +84,9 @@ function OrdersPage() {
               )}
             </div>
 
-            {/* List Orders */}
             <OrdersList mode="price" disabled={finalized} />
           </div>
 
-          {/* 🟢 Tombol Make Preorder */}
           {!finalized && (
             <div className="flex justify-end">
               <AlertDialog open={open} onOpenChange={setOpen}>
@@ -127,7 +123,6 @@ function OrdersPage() {
             </div>
           )}
 
-          {/* 📊 Ringkasan setelah preorder */}
           {finalized && (
             <div className="mt-6 rounded-xl border border-green-200 bg-green-50/60 p-6 shadow-sm animate-in fade-in duration-500">
               <h3 className="text-lg font-semibold text-green-800 mb-3">
@@ -154,7 +149,6 @@ function OrdersPage() {
                 </div>
               </div>
 
-              {/* Tombol aksi */}
               <div className="flex flex-col sm:flex-row sm:justify-end gap-3 mt-6">
                 <Button
                   variant="outline"
@@ -178,7 +172,6 @@ function OrdersPage() {
         </div>
       </main>
 
-      {/* ✅ Notifikasi preorder sukses */}
       {success && (
         <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-3 shadow-md shadow-green-100/60">
@@ -190,7 +183,6 @@ function OrdersPage() {
         </div>
       )}
 
-      {/* ✅ Notifikasi item tiba */}
       {arrived && (
         <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3 shadow-md shadow-emerald-100/60">

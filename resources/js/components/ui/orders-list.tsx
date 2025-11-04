@@ -30,7 +30,7 @@ const ordersData: OrderItem[] = [
     subtitle: "(10)",
     quantity: 5,
     satuan: "Unit",
-    harga : 2000,
+    harga: 2000,
     catatan: "Untuk divisi IT",
   },
   {
@@ -39,8 +39,7 @@ const ordersData: OrderItem[] = [
     subtitle: "(10)",
     quantity: 4,
     satuan: "Pcs",
-    harga : 2000,
-
+    harga: 2000,
     catatan: "Kebutuhan kantor pusat",
     status: "diterima",
   },
@@ -50,7 +49,7 @@ const ordersData: OrderItem[] = [
     subtitle: "",
     quantity: 1,
     satuan: "Unit",
-    harga : 2000,
+    harga: 2000,
     catatan: "Demo produk",
     status: "ditolak",
   },
@@ -73,11 +72,15 @@ export function OrdersList({
     }))
   )
 
-  // Modal states
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null)
-  const [editValues, setEditValues] = useState({ quantity: 0, catatan: "" })
+
+  const [editValues, setEditValues] = useState({
+    quantity: 0,
+    catatan: "",
+    harga: 0,
+  })
 
   useEffect(() => {
     const checkScreen = () => setIsMobile(window.innerWidth < 768)
@@ -100,7 +103,11 @@ export function OrdersList({
 
   const handleEditClick = (order: OrderItem) => {
     setSelectedOrder(order)
-    setEditValues({ quantity: order.quantity, catatan: order.catatan })
+    setEditValues({
+      quantity: order.quantity,
+      catatan: order.catatan,
+      harga: order.harga,
+    })
     setIsEditOpen(true)
   }
 
@@ -114,7 +121,12 @@ export function OrdersList({
     setOrders((prev) =>
       prev.map((o) =>
         o.id === selectedOrder.id
-          ? { ...o, quantity: editValues.quantity, catatan: editValues.catatan }
+          ? {
+              ...o,
+              quantity: editValues.quantity,
+              catatan: editValues.catatan,
+              harga: editValues.harga,
+            }
           : o
       )
     )
@@ -129,7 +141,6 @@ export function OrdersList({
 
   const ActionButtons = ({ order }: { order: OrderItem }) => (
     <div className="flex items-center justify-center gap-3 mt-5 sm:mt-0 pl-3">
-
       <Button
         variant="ghost"
         size="icon"
@@ -151,7 +162,7 @@ export function OrdersList({
     </div>
   )
 
-  // 📱 MOBILE VIEW
+  // MOBILE VIEW
   if (isMobile) {
     return (
       <div className="space-y-4 font-[Poppins]">
@@ -180,6 +191,9 @@ export function OrdersList({
                 {order.satuan}
               </p>
               <p>
+                <span className="font-medium">Harga:</span> Rp {order.harga}
+              </p>
+              <p>
                 <span className="font-medium">Catatan:</span> {order.catatan || "-"}
               </p>
             </div>
@@ -191,7 +205,7 @@ export function OrdersList({
     )
   }
 
-  // 💻 DESKTOP TABLE VIEW
+  // DESKTOP TABLE VIEW
   return (
     <>
       <div className="font-[Poppins] overflow-x-auto rounded-lg border border-blue-100">
@@ -210,7 +224,7 @@ export function OrdersList({
               <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">
                 Catatan
               </th>
-               <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">
+              <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">
                 Harga
               </th>
               <th className="text-center py-4 px-4 text-sm font-semibold text-slate-700">
@@ -239,7 +253,7 @@ export function OrdersList({
                   {order.satuan}
                 </td>
                 <td className="py-4 px-4 text-slate-700">{order.catatan}</td>
-                <td className="py-4 px-4 text-slate-700">{order.harga}</td>
+                <td className="py-4 px-4 text-slate-700">Rp {order.harga}</td>
 
                 <td className="py-4 px-4 text-center">
                   {mode === "monitoring" ? (
@@ -254,7 +268,6 @@ export function OrdersList({
         </table>
       </div>
 
-      {/* 🟦 Popup Edit */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-md rounded-xl border border-blue-100 shadow-lg">
           <DialogHeader>
@@ -262,6 +275,7 @@ export function OrdersList({
               Edit Item
             </DialogTitle>
           </DialogHeader>
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-slate-600 mb-1">Quantity</label>
@@ -274,6 +288,20 @@ export function OrdersList({
                 className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400"
               />
             </div>
+
+            <div>
+              <label className="block text-sm text-slate-600 mb-1">Harga (Rp)</label>
+              <input
+                type="number"
+                value={editValues.harga}
+                onChange={(e) =>
+                  setEditValues({ ...editValues, harga: Number(e.target.value) })
+                }
+                placeholder="Masukkan harga barang"
+                className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400"
+              />
+            </div>
+
             <div>
               <label className="block text-sm text-slate-600 mb-1">Catatan</label>
               <textarea
@@ -286,6 +314,7 @@ export function OrdersList({
               />
             </div>
           </div>
+
           <DialogFooter className="flex justify-end gap-3 mt-4">
             <Button
               variant="outline"
@@ -304,7 +333,6 @@ export function OrdersList({
         </DialogContent>
       </Dialog>
 
-      {/* 🟥 Popup Delete */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogContent className="max-w-sm rounded-xl border border-red-100 shadow-lg">
           <DialogHeader>

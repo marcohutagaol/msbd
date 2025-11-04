@@ -24,11 +24,9 @@ function OrdersPage() {
     setIsModalOpen(false);
   };
 
-  // ✅ Saat klik tombol Sending Request
   const handleSendRequest = () => {
-    setSuccess(true); // tampilkan notifikasi
+    setSuccess(true);
 
-    // Setelah 2.5 detik hilang & redirect ke monitoring
     setTimeout(() => {
       setSuccess(false);
       router.visit("/monitoring-item");
@@ -40,9 +38,7 @@ function OrdersPage() {
       <Head title="Request Item" />
       <main className="min-h-screen bg-white p-6 font-[Poppins]">
         <div className="mx-auto max-w-6xl space-y-6">
-          {/* 🧩 Container utama */}
           <div className="rounded-xl border-2 border-blue-400 p-6 shadow-sm bg-white transition-all duration-300 hover:shadow-lg hover:border-blue-500">
-            {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
@@ -56,7 +52,6 @@ function OrdersPage() {
                 </p>
               </div>
 
-              {/* Add Order Button */}
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="mt-3 sm:mt-0 rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white transition-all duration-300 hover:bg-blue-700 hover:shadow-md hover:shadow-blue-400/30"
@@ -65,11 +60,9 @@ function OrdersPage() {
               </button>
             </div>
 
-            {/* List Orders */}
             <OrdersList />
           </div>
 
-          {/* 🟦 Tombol Sending Request */}
           <div className="flex justify-end">
             <button
               onClick={handleSendRequest}
@@ -81,14 +74,12 @@ function OrdersPage() {
         </div>
       </main>
 
-      {/* Modal Add Order */}
       <AddOrderModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAdd={handleAddItems}
       />
 
-      {/* ✅ Notifikasi sukses (popup kecil kanan bawah) */}
       {success && (
         <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-3 shadow-md shadow-green-100/60">

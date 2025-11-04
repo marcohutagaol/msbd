@@ -27,16 +27,21 @@ const mainNavItems: NavItem[] = [
         href: '/absensi/1',
         icon: LayoutGrid,
     },
-        {
+    {
         title: 'Permission',
         href: '/permission',
         icon: LayoutGrid,
     },
     {
-        title: 'Request Item',
-        href: '/request',
+        title: 'Item',
+        href: '#',
         icon: LayoutGrid,
         items: [
+            {
+                title: 'Request Item',
+                href: '/request',
+                icon: LayoutGrid,
+            },
             {
                 title: 'Monitoring Item',
                 href: '/monitoring-item',
@@ -45,10 +50,15 @@ const mainNavItems: NavItem[] = [
         ],
     },
     {
-        title: 'Dashboard Purchasing',
-        href: '/dashboard-purchasing',
+        title: 'Purchasing',
+        href: '#',
         icon: LayoutGrid,
         items: [
+            {
+                title: 'Dashboard Purchasing',
+                href: '/dashboard-purchasing',
+                icon: LayoutGrid,
+            },
             {
                 title: 'Purchasing Detail',
                 href: '/purchasing',
@@ -60,8 +70,9 @@ const mainNavItems: NavItem[] = [
                 icon: LayoutGrid,
             },
         ],
-        },
-        {
+    },
+
+    {
         title: 'Inventory',
         href: '/inventory',
         icon: LayoutGrid,

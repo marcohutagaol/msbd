@@ -112,13 +112,13 @@ export default function OrdersTable({
             </h1>
           </div>
 
-          <Button
+          {/* <Button
             onClick={() => setIsModalOpen(true)}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md shadow-blue-600/30 transition-all duration-300"
           >
             <Plus className="h-4 w-4" />
             Add Order
-          </Button>
+          </Button> */}
         </div>
 
         {/* Table / Card Section */}
