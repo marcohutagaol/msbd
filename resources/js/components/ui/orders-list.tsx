@@ -19,7 +19,7 @@ interface OrderItem {
   satuan: string
   catatan: string
   status?: "diterima" | "ditolak" | "ditunda"
-  harga?: number
+  harga: number
   tipeHarga?: "Per Unit" | "Per Paket"
 }
 
@@ -30,6 +30,7 @@ const ordersData: OrderItem[] = [
     subtitle: "(10)",
     quantity: 5,
     satuan: "Unit",
+    harga : 2000,
     catatan: "Untuk divisi IT",
   },
   {
@@ -38,6 +39,8 @@ const ordersData: OrderItem[] = [
     subtitle: "(10)",
     quantity: 4,
     satuan: "Pcs",
+    harga : 2000,
+
     catatan: "Kebutuhan kantor pusat",
     status: "diterima",
   },
@@ -47,6 +50,7 @@ const ordersData: OrderItem[] = [
     subtitle: "",
     quantity: 1,
     satuan: "Unit",
+    harga : 2000,
     catatan: "Demo produk",
     status: "ditolak",
   },
@@ -124,7 +128,8 @@ export function OrdersList({
   }
 
   const ActionButtons = ({ order }: { order: OrderItem }) => (
-    <div className="flex items-center justify-end gap-3 mt-3 sm:mt-0">
+    <div className="flex items-center justify-center gap-3 mt-5 sm:mt-0 pl-3">
+
       <Button
         variant="ghost"
         size="icon"
@@ -205,6 +210,9 @@ export function OrdersList({
               <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">
                 Catatan
               </th>
+               <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">
+                Harga
+              </th>
               <th className="text-center py-4 px-4 text-sm font-semibold text-slate-700">
                 {mode === "monitoring" ? "Status" : "Aksi"}
               </th>
@@ -231,6 +239,8 @@ export function OrdersList({
                   {order.satuan}
                 </td>
                 <td className="py-4 px-4 text-slate-700">{order.catatan}</td>
+                <td className="py-4 px-4 text-slate-700">{order.harga}</td>
+
                 <td className="py-4 px-4 text-center">
                   {mode === "monitoring" ? (
                     <StatusBadge status={order.status ?? "ditunda"} />
