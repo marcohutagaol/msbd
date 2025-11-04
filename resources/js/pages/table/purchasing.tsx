@@ -18,10 +18,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 function Page() {
   const page = usePage();
   
-  // ✅ Default status sekarang langsung “Checking”
   const [status, setStatus] = useState("Checking");
 
-  // 🧭 Ubah status otomatis berdasarkan URL / halaman aktif
   useEffect(() => {
     const path = page.url;
 
@@ -29,10 +27,9 @@ function Page() {
     else if (path.includes("/input-price")) setStatus("Purchasing");
     else if (path.includes("/pre-order")) setStatus("Waiting");
     else if (path.includes("/item-arrive")) setStatus("Arrive");
-    else setStatus("Checking"); // 👈 default tetap Checking, bukan Pending
+    else setStatus("Checking");
   }, [page.url]);
 
-  // 🧩 Fungsi ini akan dipanggil dari tombol Approve di OrdersTable
   const handleStatusUpdate = (newStatus: string) => {
     setStatus(newStatus);
   };
@@ -41,11 +38,9 @@ function Page() {
     <>
       <Head title="Purchasing Progress" />
       <main className="min-h-screen bg-white p-4 md:p-8 lg:p-12">
-        {/* ===== Purchasing Progress Timeline ===== */}
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold mb-4">Purchasing Progress</h1>
 
-          {/* Timeline sinkron dengan status */}
           <OrderTimeline status={status} />
 
           <p className="mt-6 text-gray-700 text-lg">
@@ -56,7 +51,6 @@ function Page() {
 
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-white via-blue-50 to-white"></div>
 
-        {/* ===== Table Section ===== */}
         <div className="mx-auto max-w-7xl">
           <OrdersTable onApproveStatusChange={() => handleStatusUpdate("Approve")} />
         </div>

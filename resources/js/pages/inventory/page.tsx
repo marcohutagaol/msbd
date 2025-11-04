@@ -19,7 +19,6 @@ function InventoryPage() {
       <Head title="Inventory Management" />
 
       <main className="min-h-screen bg-white p-6 md:p-8 lg:p-12">
-        {/* Konten utama inventory */}
         <div className="mx-auto max-w-7xl">
           <h1 className="text-2xl font-bold mb-6">Inventory Management</h1>
           <InventoryLayout />
@@ -29,7 +28,6 @@ function InventoryPage() {
   );
 }
 
-// 🧩 Terapkan layout bawaan agar sidebar otomatis muncul
 InventoryPage.layout = (page: React.ReactNode) => (
   <AppLayout breadcrumbs={breadcrumbs}>{page}</AppLayout>
 );
