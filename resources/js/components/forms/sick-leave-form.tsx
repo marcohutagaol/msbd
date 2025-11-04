@@ -26,32 +26,31 @@ export default function SickLeaveForm({ onClose, onSubmit }: SickLeaveFormProps)
     return 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const days = calculateDays()
+ const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault()
+  const days = calculateDays()
 
-    if (!formData.startDate || !formData.endDate || days <= 0) {
-      alert("Silakan isi tanggal mulai dan selesai dengan benar")
-      return
-    }
-
-    const newPermission: Permission = {
-      id: Date.now().toString(),
-      type: "sick",
-      status: "pending",
-      createdBy: "Anda",
-      createdDate: new Date().toISOString().split("T")[0],
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      days,
-      sickType: formData.sickType,
-      notes: formData.notes,
-      location: "Online",
-    }
-
-    onSubmit(newPermission)
+  if (!formData.startDate || !formData.endDate || days <= 0) {
+    alert("Silakan isi tanggal mulai dan selesai dengan benar")
+    return
   }
 
+  const newPermission: Permission = {
+    id: Date.now().toString(),
+    type: "sick",
+    status: "pending",
+    createdBy: "Anda",
+    createdDate: new Date().toISOString().split("T")[0],
+    start_date: formData.startDate,    // ⬅️ SNAKE_CASE
+    end_date: formData.endDate,        // ⬅️ SNAKE_CASE
+    days,
+    sick_type: formData.sickType,      // ⬅️ SNAKE_CASE
+    notes: formData.notes,
+    location: "Online",
+  }
+
+  onSubmit(newPermission)
+}
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 backdrop-blur-sm" onClick={onClose}></div>

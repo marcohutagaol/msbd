@@ -28,13 +28,8 @@ class Permission extends Model
         'document_path',
     ];
 
-    protected $casts = [
-        'start_date' => 'datetime',
-        'end_date' => 'datetime',
-        'permission_date' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
+    // JANGAN PAKAI CASTS untuk date
+    // Biarkan sebagai string saja
 
     public function user()
     {

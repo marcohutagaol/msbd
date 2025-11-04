@@ -14,17 +14,17 @@ return new class extends Migration
             $table->enum('type', ['sick', 'permission', 'vacation']);
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             
-            // Fields untuk semua tipe
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
+            // Fields untuk semua tipe - UBAH KE STRING
+            $table->string('start_date')->nullable();
+            $table->string('end_date')->nullable();
             $table->integer('days')->nullable();
             $table->text('notes')->nullable();
             
             // Fields untuk sick leave
             $table->enum('sick_type', ['ringan', 'sedang', 'berat'])->nullable();
             
-            // Fields untuk permission
-            $table->date('permission_date')->nullable();
+            // Fields untuk permission - UBAH KE STRING
+            $table->string('permission_date')->nullable();
             $table->string('reason')->nullable();
             $table->enum('permission_type', ['Tidak hadir', 'datang terlambat', 'WFH'])->nullable();
             $table->string('time')->nullable();

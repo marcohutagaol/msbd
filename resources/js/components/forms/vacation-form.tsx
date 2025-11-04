@@ -27,31 +27,32 @@ export default function VacationForm({ onClose, onSubmit }: VacationFormProps) {
     return 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const days = calculateDays()
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault()
+  const days = calculateDays()
 
-    if (!formData.startDate || !formData.endDate || days <= 0) {
-      alert("Silakan isi tanggal mulai dan selesai dengan benar")
-      return
-    }
-
-    const newPermission: Permission = {
-      id: Date.now().toString(),
-      type: "vacation",
-      status: "pending",
-      createdBy: "Anda",
-      createdDate: new Date().toISOString().split("T")[0],
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      days,
-      vacationType: formData.vacationType,
-      reason: formData.reason,
-      location: "TBD",
-    }
-
-    onSubmit(newPermission)
+  if (!formData.startDate || !formData.endDate || days <= 0) {
+    alert("Silakan isi tanggal mulai dan selesai dengan benar")
+    return
   }
+
+  const newPermission: Permission = {
+    id: Date.now().toString(),
+    type: "vacation",
+    status: "pending",
+    createdBy: "Anda",
+    createdDate: new Date().toISOString().split("T")[0],
+    start_date: formData.startDate,          // ⬅️ SNAKE_CASE
+    end_date: formData.endDate,              // ⬅️ SNAKE_CASE
+    days,
+    vacation_type: formData.vacationType,    // ⬅️ SNAKE_CASE
+    vacation_reason: formData.reason,        // ⬅️ SNAKE_CASE
+    location: "TBD",
+    document: formData.document,
+  }
+
+  onSubmit(newPermission)
+}
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

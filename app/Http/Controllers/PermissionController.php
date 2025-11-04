@@ -20,13 +20,13 @@ class PermissionController extends Controller
                     'type' => $permission->type,
                     'status' => $permission->status,
                     'createdBy' => $permission->user->name ?? 'Unknown',
-                    'createdDate' => $permission->created_at ? $permission->created_at->format('Y-m-d') : now()->format('Y-m-d'),
-                    'startDate' => $permission->start_date ? $permission->start_date->format('Y-m-d') : null,
-                    'endDate' => $permission->end_date ? $permission->end_date->format('Y-m-d') : null,
+                    'createdDate' => $permission->created_at->format('Y-m-d'),
+                    'startDate' => $permission->start_date,
+                    'endDate' => $permission->end_date,
                     'days' => $permission->days,
                     'sickType' => $permission->sick_type,
                     'notes' => $permission->notes,
-                    'date' => $permission->permission_date ? $permission->permission_date->format('Y-m-d') : null,
+                    'date' => $permission->permission_date,
                     'reason' => $permission->reason,
                     'permissionType' => $permission->permission_type,
                     'time' => $permission->time,
@@ -40,6 +40,7 @@ class PermissionController extends Controller
 
     public function store(Request $request)
     {
+        // Validation rules
         $validated = $request->validate([
             'type' => 'required|in:sick,permission,vacation',
             'start_date' => 'nullable|date',
@@ -52,6 +53,9 @@ class PermissionController extends Controller
             'vacation_type' => 'nullable|in:Cuti Tahunan,Cuti Bersama,Cuti Sakit,Cuti Maternity',
             'vacation_reason' => 'nullable|string',
             'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'time' => 'nullable|string',
+            'location' => 'nullable|string',
+            'days' => 'nullable|integer',
         ]);
 
         // Validasi khusus untuk datang terlambat
@@ -62,8 +66,8 @@ class PermissionController extends Controller
             ], 422);
         }
 
-        // Calculate days
-        if ($request->start_date && $request->end_date) {
+        // Calculate days if not provided
+        if ($request->start_date && $request->end_date && !$request->days) {
             $start = new \DateTime($request->start_date);
             $end = new \DateTime($request->end_date);
             $validated['days'] = $end->diff($start)->days + 1;
@@ -75,15 +79,21 @@ class PermissionController extends Controller
             $validated['document_path'] = $path;
         }
 
+        // Set default values
         $validated['user_id'] = auth()->id();
         $validated['status'] = 'pending';
-        $validated['location'] = $request->type === 'vacation' ? 'TBD' : 'Online';
         
-        // Set time for permission
-        if ($request->type === 'permission') {
+        // Set location based on type if not provided
+        if (!isset($validated['location'])) {
+            $validated['location'] = $request->type === 'vacation' ? 'TBD' : 'Online';
+        }
+        
+        // Set time for permission if not provided
+        if ($request->type === 'permission' && !isset($validated['time'])) {
             $validated['time'] = now()->format('H:00') . ' - ' . now()->addHour()->format('H:00');
         }
 
+        // Create permission
         $permission = Permission::create($validated);
         $permission->load('user');
 
@@ -95,12 +105,12 @@ class PermissionController extends Controller
                 'status' => $permission->status,
                 'createdBy' => $permission->user->name ?? 'Unknown',
                 'createdDate' => $permission->created_at->format('Y-m-d'),
-                'startDate' => $permission->start_date ? $permission->start_date->format('Y-m-d') : null,
-                'endDate' => $permission->end_date ? $permission->end_date->format('Y-m-d') : null,
+                'startDate' => $permission->start_date,
+                'endDate' => $permission->end_date,
                 'days' => $permission->days,
                 'sickType' => $permission->sick_type,
                 'notes' => $permission->notes,
-                'date' => $permission->permission_date ? $permission->permission_date->format('Y-m-d') : null,
+                'date' => $permission->permission_date,
                 'reason' => $permission->reason,
                 'permissionType' => $permission->permission_type,
                 'time' => $permission->time,

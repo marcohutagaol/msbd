@@ -18,38 +18,39 @@ export default function PermissionForm({ onClose, onSubmit }: PermissionFormProp
     document: null as File | null,
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault()
 
-    if (!formData.date || !formData.reason) {
-      alert("Silakan isi tanggal dan alasan izin")
-      return
-    }
-
-    // Check if same day late arrival (datang terlambat tidak boleh di hari yang sama)
-    const selectedDate = new Date(formData.date)
-    const today = new Date()
-    if (formData.permissionType === "datang terlambat" && selectedDate.toDateString() === today.toDateString()) {
-      alert("Izin datang terlambat tidak dapat dibuat pada hari yang sama")
-      return
-    }
-
-    const newPermission: Permission = {
-      id: Date.now().toString(),
-      type: "permission",
-      status: "pending",
-      createdBy: "Anda",
-      createdDate: new Date().toISOString().split("T")[0],
-      date: formData.date,
-      reason: formData.reason,
-      permissionType: formData.permissionType,
-      notes: formData.notes,
-      time: `${new Date().getHours().toString().padStart(2, "0")}:00 - ${(new Date().getHours() + 1).toString().padStart(2, "0")}:00`,
-      location: "Online",
-    }
-
-    onSubmit(newPermission)
+  if (!formData.date || !formData.reason) {
+    alert("Silakan isi tanggal dan alasan izin")
+    return
   }
+
+  // Check if same day late arrival
+  const selectedDate = new Date(formData.date)
+  const today = new Date()
+  if (formData.permissionType === "datang terlambat" && selectedDate.toDateString() === today.toDateString()) {
+    alert("Izin datang terlambat tidak dapat dibuat pada hari yang sama")
+    return
+  }
+
+  const newPermission: Permission = {
+    id: Date.now().toString(),
+    type: "permission",
+    status: "pending",
+    createdBy: "Anda",
+    createdDate: new Date().toISOString().split("T")[0],
+    permission_date: formData.date,            // ⬅️ SNAKE_CASE
+    reason: formData.reason,
+    permission_type: formData.permissionType,  // ⬅️ SNAKE_CASE
+    notes: formData.notes,
+    time: `${new Date().getHours().toString().padStart(2, "0")}:00 - ${(new Date().getHours() + 1).toString().padStart(2, "0")}:00`,
+    location: "Online",
+    document: formData.document,
+  }
+
+  onSubmit(newPermission)
+}
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
