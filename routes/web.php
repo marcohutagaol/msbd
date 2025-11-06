@@ -74,4 +74,14 @@ Route::get('/table-inventory', function () {
 });
 Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
+Route::get('/admin/dashboard', function () {
+    return Inertia::render('admin/Dashboard');
+})->name('admin.dashboard');
+
+
+
+
+
+
+require __DIR__.'/settings.php';
 require __DIR__.'/settings.php';
