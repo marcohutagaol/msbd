@@ -2,12 +2,44 @@ import { FaRegCalendarAlt } from "react-icons/fa";
 
 export default function StatsToday() {
   const stats = [
+import { useState, useEffect } from "react";
+
+interface StatItem {
+  label: string;
+  value: number;
+  color: string;
+}
+
+export default function StatsToday() {
+  const stats: StatItem[] = [
     { label: "Hadir", value: 65, color: "#10b981" },
     { label: "Izin", value: 15, color: "#3b82f6" },
     { label: "Sakit", value: 10, color: "#f59e0b" },
     { label: "Belum Absen", value: 7, color: "#8b5cf6" },
     { label: "Tanpa Keterangan", value: 3, color: "#ef4444" },
   ];
+
+  const [currentTime, setCurrentTime] = useState<string>("");
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const days: string[] = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const months: string[] = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+      const dayName: string = days[now.getDay()];
+      const date: number = now.getDate();
+      const monthName: string = months[now.getMonth()];
+      const year: number = now.getFullYear();
+      const timeString: string = now.toLocaleTimeString('id-ID');
+
+      setCurrentTime(`${dayName}, ${date} ${monthName} ${year} | ${timeString}`);
+    };
+
+    updateTime(); // set waktu awal
+    const interval = setInterval(updateTime, 1000); // update tiap detik
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div
@@ -19,6 +51,13 @@ export default function StatsToday() {
         boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
       }}
     >
+      {/* Tanggal & Jam */}
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "12px", gap: "8px", color: "#475569", fontSize: "14px" }}>
+        <FaRegCalendarAlt />
+        <span>{currentTime}</span>
+      </div>
+
+      {/* Judul dan link */}
       <div
         style={{
           display: "flex",

@@ -22,12 +22,12 @@ export interface NavItem {
     isActive?: boolean;
 }
 
-export interface SharedData {
-    name: string;
-    quote: { message: string; author: string };
-    auth: Auth;
-    sidebarOpen: boolean;
-    [key: string]: unknown;
+export interface NavItem {
+    title: string;
+    href: NonNullable<InertiaLinkProps['href']>;
+    icon?: LucideIcon | null;
+    isActive?: boolean;
+    items?: NavItem[];
 }
 
 export interface User {

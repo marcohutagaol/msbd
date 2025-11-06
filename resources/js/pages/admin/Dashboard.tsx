@@ -3,6 +3,8 @@ import Header from "../../components/admin/Header";
 import StatsToday from "../../components/admin/Stats";
 import EmployeeStatus from "../../components/admin/AttendanceTable";
 import WeeklyAttendance from "../../components/admin/WeeklyAttendance";
+import UserDetail from "../../components/admin/UserDetail";
+
 
 export default function Dashboard() {
   return (
@@ -11,6 +13,7 @@ export default function Dashboard() {
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <Header />
         <div style={{ padding: "30px 40px", flex: 1 }}>
+          <UserDetail />
           <StatsToday />
           <EmployeeStatus />
           <WeeklyAttendance />

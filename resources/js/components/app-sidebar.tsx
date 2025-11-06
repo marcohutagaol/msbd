@@ -22,6 +22,61 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
+    {
+        title: 'Absensi',
+        href: '/absensi/1',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Permission',
+        href: '/permission',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Item',
+        href: '#',
+        icon: LayoutGrid,
+        items: [
+            {
+                title: 'Request Item',
+                href: '/request',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Monitoring Item',
+                href: '/monitoring-item',
+                icon: LayoutGrid,
+            },
+        ],
+    },
+    {
+        title: 'Purchasing',
+        href: '#',
+        icon: LayoutGrid,
+        items: [
+            {
+                title: 'Dashboard Purchasing',
+                href: '/dashboard-purchasing',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Purchasing Detail',
+                href: '/purchasing',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Input Price',
+                href: '/input-price',
+                icon: LayoutGrid,
+            },
+        ],
+    },
+
+    {
+        title: 'Inventory',
+        href: '/inventory',
+        icon: LayoutGrid,
+    },
 ];
 
 const footerNavItems: NavItem[] = [

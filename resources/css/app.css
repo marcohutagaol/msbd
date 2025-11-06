@@ -1,108 +1,121 @@
 
+@import "tailwindcss";
+@import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+body {
+  font-family: "Poppins", sans-serif;
+}
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
   /* 🎨 Color Palette */
-  --color-blue-light: #1A5187; /* Navbar */
-  --color-blue-dark: #0F2D43; /* Sidebar */
-  --color-red: #770707;
+  --color-blue-light: #1A5187; /* Aksen utama */
+  --color-blue-accent: #2563EB; /* Hover, ring, link */
   --color-white: #FFFFFF;
+  --color-gray-bg: #F9FAFB;
+  --color-gray-border: #E5E7EB;
+  --color-gray-text: #1F2937;
+  --color-red: #C53030;
 
-  /* 🧱 Base Theme */
+  /* 🌞 Light Theme */
   --background: var(--color-white);
-  --foreground: var(--color-blue-dark);
+  --foreground: var(--color-gray-text);
 
   --card: var(--color-white);
-  --card-foreground: var(--color-blue-dark);
+  --card-foreground: var(--color-gray-text);
 
   --popover: var(--color-white);
-  --popover-foreground: var(--color-blue-dark);
+  --popover-foreground: var(--color-gray-text);
 
   --primary: var(--color-blue-light);
   --primary-foreground: var(--color-white);
 
-  --secondary: var(--color-blue-dark);
-  --secondary-foreground: var(--color-white);
+  --secondary: var(--color-gray-bg);
+  --secondary-foreground: var(--color-gray-text);
 
-  --accent: var(--color-red);
+  --accent: var(--color-blue-accent);
   --accent-foreground: var(--color-white);
 
-  --muted: #f3f4f6;
-  --muted-foreground: #4b5563;
+  --muted: var(--color-gray-bg);
+  --muted-foreground: #6B7280;
 
   --destructive: var(--color-red);
   --destructive-foreground: var(--color-white);
 
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: var(--color-blue-light);
+  --border: var(--color-gray-border);
+  --input: var(--color-gray-border);
+  --ring: var(--color-blue-accent);
 
   --radius: 0.625rem;
 
   /* 🧭 Layout Colors */
-  --navbar: var(--color-blue-light);
-  --navbar-foreground: var(--color-white);
+  --navbar: var(--color-white);
+  --navbar-foreground: var(--color-blue-light);
 
-  --sidebar: var(--color-blue-dark);
-  --sidebar-foreground: var(--color-white);
+  --sidebar: var(--color-gray-bg);
+  --sidebar-foreground: var(--color-blue-light);
   --sidebar-primary: var(--color-blue-light);
   --sidebar-primary-foreground: var(--color-white);
-  --sidebar-accent: var(--color-red);
+  --sidebar-accent: var(--color-blue-accent);
   --sidebar-accent-foreground: var(--color-white);
-  --sidebar-border: #0f2d43;
-  --sidebar-ring: var(--color-blue-light);
+  --sidebar-border: var(--color-gray-border);
+  --sidebar-ring: var(--color-blue-accent);
 }
 
+/* 🌙 DARK THEME */
 .dark {
-  --background: var(--color-blue-dark);
-  --foreground: var(--color-white);
+  --background: #0F172A;
+  --foreground: #F3F4F6;
 
-  --card: var(--color-blue-dark);
-  --card-foreground: var(--color-white);
+  --card: #1E293B;
+  --card-foreground: #F3F4F6;
 
-  --popover: var(--color-blue-dark);
-  --popover-foreground: var(--color-white);
+  --popover: #1E293B;
+  --popover-foreground: #F3F4F6;
 
-  --primary: var(--color-blue-light);
+  --primary: var(--color-blue-accent);
   --primary-foreground: var(--color-white);
 
-  --secondary: var(--color-red);
-  --secondary-foreground: var(--color-white);
+  --secondary: #1E293B;
+  --secondary-foreground: #CBD5E1;
 
-  --accent: var(--color-blue-light);
+  --accent: var(--color-blue-accent);
   --accent-foreground: var(--color-white);
 
-  --muted: #1f2937;
-  --muted-foreground: #9ca3af;
+  --muted: #1F2937;
+  --muted-foreground: #9CA3AF;
 
   --destructive: var(--color-red);
   --destructive-foreground: var(--color-white);
 
-  --border: #1f2937;
-  --input: #1f2937;
-  --ring: var(--color-blue-light);
+  --border: #334155;
+  --input: #334155;
+  --ring: var(--color-blue-accent);
 
-  /* 🌙 Dark Mode Layout */
-  --navbar: var(--color-blue-light);
+  /* 🧭 Dark Layout */
+  --navbar: #1E293B;
   --navbar-foreground: var(--color-white);
 
-  --sidebar: var(--color-blue-dark);
+  --sidebar: #1E293B;
   --sidebar-foreground: var(--color-white);
-  --sidebar-primary: var(--color-blue-light);
+  --sidebar-primary: var(--color-blue-accent);
   --sidebar-primary-foreground: var(--color-white);
-  --sidebar-accent: var(--color-red);
+  --sidebar-accent: var(--color-blue-accent);
   --sidebar-accent-foreground: var(--color-white);
-  --sidebar-border: var(--color-blue-dark);
-  --sidebar-ring: var(--color-blue-light);
+  --sidebar-border: #334155;
+  --sidebar-ring: var(--color-blue-accent);
 }
 
 @theme inline {
   /* 🔤 Font */
-  --font-sans: "Poppins", sans-serif;
+  --font-sans: "Inter", "Poppins", sans-serif;
+  --font-heading: "Poppins", "Inter", sans-serif;
   --font-mono: "Poppins", monospace;
-
-  /* 🎨 Colors */
+  
+  /* 🎨 Theme Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -143,33 +156,45 @@
 }
 
 @layer base {
-  /* Warna dasar */
-  :root {
-    --color-blue: #1E40AF; /* Biru tua (sesuai tombol di UI kamu) */
-    --color-blue-light: #2563EB; /* Biru terang */
-    --color-text-light: #FFFFFF;
-  }
-
-  /* Atur font */
+  /* Base styling */
   body {
-    @apply font-[Poppins] bg-gray-50 text-gray-800;
+    @apply font-[Poppins] bg-[var(--color-background)] text-[var(--color-foreground)];
   }
 
-  /* NAVBAR */
+  /* Navbar */
   .navbar {
-    background-color: var(--color-blue);
-    color: var(--color-text-light);
+    background-color: var(--color-navbar);
+    color: var(--color-navbar-foreground);
+    border-bottom: 1px solid var(--color-border);
   }
 
   /* Sidebar */
   .sidebar {
-    background-color: var(--color-blue-light);
-    color: var(--color-text-light);
+    background-color: var(--color-sidebar);
+    color: var(--color-sidebar-foreground);
+    border-right: 1px solid var(--color-sidebar-border);
   }
 
-  /* Warna hover di sidebar */
+  /* Hover di sidebar */
   .sidebar a:hover {
-    background-color: var(--color-blue);
-    color: var(--color-text-light);
+    background-color: var(--color-sidebar-primary);
+    color: var(--color-sidebar-primary-foreground);
+  }
+
+  /* Card dan komponen umum */
+  .card {
+    background-color: var(--color-card);
+    color: var(--color-card-foreground);
+    border: 1px solid var(--color-border);
+  }
+
+  /* Border umum */
+  .border {
+    border-color: var(--color-border);
+  }
+
+  /* Focus ring */
+  :focus-visible {
+    outline-color: var(--color-ring);
   }
 }
