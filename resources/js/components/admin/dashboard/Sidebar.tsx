@@ -12,9 +12,9 @@ export default function Sidebar() {
   const menuItems = [
     { icon: <MdDashboard size={18} />, label: "Dashboard", href: "/admin/dashboard" },
     { icon: <FaUserCheck size={18} />, label: "Absensi", href: "/admin/absensi" },
-    { icon: <FaUsers size={18} />, label: "Karyawan", href: "/admin/karyawan" },
-    { icon: <IoDocumentTextSharp size={18} />, label: "Laporan", href: "/admin/laporan" },
-    { icon: <MdSettings size={18} />, label: "Pengaturan", href: "/admin/pengaturan" },
+    { icon: <FaUsers size={18} />, label: "Inventory", href: "/admin/inventory" },
+    { icon: <IoDocumentTextSharp size={18} />, label: "Request Item", href: "/admin/requestitem" },
+    
   ]
 
   return (

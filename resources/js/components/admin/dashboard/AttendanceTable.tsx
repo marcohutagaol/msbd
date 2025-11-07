@@ -1,3 +1,5 @@
+import React from "react";
+
 export default function EmployeeStatus() {
   const employees = [
     { no: 1, name: "Andi Pratama", dept: "Finance", time: "08:05", status: "Masih Bekerja", color: "#16a34a" },
@@ -9,95 +11,38 @@ export default function EmployeeStatus() {
   const getBackgroundColor = (status: string) => {
     switch (status) {
       case "Masih Bekerja":
-        return "rgba(22, 163, 74, 0.12)";
+        return "bg-[rgba(22,163,74,0.12)] border-[#86efac] text-[#16a34a]";
       case "Terlambat":
-        return "rgba(234, 179, 8, 0.12)";
+        return "bg-[rgba(234,179,8,0.12)] border-[#fde047] text-[#eab308]";
       case "Tidak Hadir":
-        return "rgba(239, 68, 68, 0.12)";
+        return "bg-[rgba(239,68,68,0.12)] border-[#fca5a5] text-[#ef4444]";
       default:
-        return "rgba(148, 163, 184, 0.1)";
-    }
-  };
-
-  const getBorderColor = (status: string) => {
-    switch (status) {
-      case "Masih Bekerja":
-        return "#86efac";
-      case "Terlambat":
-        return "#fde047";
-      case "Tidak Hadir":
-        return "#fca5a5";
-      default:
-        return "#cbd5e1";
+        return "bg-[rgba(148,163,184,0.1)] border-[#cbd5e1] text-slate-500";
     }
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: "white",
-        borderRadius: "16px",
-        padding: "30px",
-        marginBottom: "24px",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-      }}
-    >
-      {/* Header tabel */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}
-      >
-        <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#1a202c" }}>
-          Status Karyawan Hari Ini
-        </h3>
+    <div className="bg-white rounded-2xl p-[30px] mb-6 shadow-sm">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-5">
+        <h3 className="m-0 text-[18px] font-bold text-[#1a202c]">Status Karyawan Hari Ini</h3>
         <a
           href="#"
-          style={{
-            fontSize: "13px",
-            color: "#2d5f7e",
-            textDecoration: "none",
-            fontWeight: "600",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
+          className="text-[13px] font-semibold text-[#2d5f7e] flex items-center gap-[6px] hover:underline"
         >
           Lihat Detail →
         </a>
       </div>
 
       {/* Tabel */}
-      <div
-        style={{
-          border: "1px solid #e2e8f0",
-          borderRadius: "12px",
-          overflow: "hidden",
-        }}
-      >
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            textAlign: "center",
-          }}
-        >
+      <div className="border border-slate-200 rounded-xl overflow-hidden">
+        <table className="w-full border-collapse text-center">
           <thead>
-            <tr style={{ backgroundColor: "#f8fafc" }}>
+            <tr className="bg-[#f8fafc]">
               {["No", "Nama Karyawan", "Departemen", "Jam Masuk", "Status"].map((header, i) => (
                 <th
                   key={i}
-                  style={{
-                    padding: "16px 20px",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    color: "#475569",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                  }}
+                  className="px-5 py-4 text-[13px] font-semibold text-slate-600 uppercase tracking-[0.5px]"
                 >
                   {header}
                 </th>
@@ -106,28 +51,16 @@ export default function EmployeeStatus() {
           </thead>
           <tbody>
             {employees.map((emp) => (
-              <tr key={emp.no} style={{ borderTop: "1px solid #e2e8f0" }}>
-                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.no}</td>
-                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.name}</td>
-                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.dept}</td>
-                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.time}</td>
-
-                {/* Badge status */}
-                <td style={{ padding: "14px 20px" }}>
+              <tr key={emp.no} className="border-t border-slate-200">
+                <td className="px-5 py-[14px] text-[14px] text-slate-700">{emp.no}</td>
+                <td className="px-5 py-[14px] text-[14px] text-slate-700">{emp.name}</td>
+                <td className="px-5 py-[14px] text-[14px] text-slate-700">{emp.dept}</td>
+                <td className="px-5 py-[14px] text-[14px] text-slate-700">{emp.time}</td>
+                <td className="px-5 py-[14px]">
                   <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      minWidth: "130px",
-                      height: "32px",
-                      borderRadius: "20px",
-                      fontSize: "13px",
-                      fontWeight: "600",
-                      color: emp.color,
-                      backgroundColor: getBackgroundColor(emp.status),
-                      border: `1px solid ${getBorderColor(emp.status)}`,
-                    }}
+                    className={`inline-flex items-center justify-center min-w-[130px] h-8 rounded-full text-[13px] font-semibold border ${getBackgroundColor(
+                      emp.status
+                    )}`}
                   >
                     {emp.status}
                   </span>

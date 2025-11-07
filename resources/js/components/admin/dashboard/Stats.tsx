@@ -112,7 +112,7 @@ export default function StatsToday() {
           ></div>
           <div className="absolute w-[135px] h-[135px] bg-white rounded-full shadow-md flex flex-col items-center justify-center">
             <div className="text-3xl font-bold text-slate-900">65</div>
-            <div className="text-xs text-slate-500 mt-[2px]">dari 100</div>
+            <div className="text-xs text-slate-500 mt[2px]">dari 100</div>
           </div>
         </div>
 

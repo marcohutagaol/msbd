@@ -37,7 +37,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
 
         {/* === USER PROFILE === */}
         <div className="flex items-center gap-2.5 h-10 bg-[#4789A8] text-white px-3 rounded-xl cursor-pointer shadow-[0_2px_6px_rgba(0,0,0,0.15)] text-[14px]">
-          <div className="w-8 h-8 rounded-full bg-[#2f6d8a] flex items-center justify-center font-semibold flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#2f6d8a] flex items-center justify-center font-semibold ">
             RN
           </div>
           <span className="font-medium whitespace-nowrap">Rio Naibaho</span>

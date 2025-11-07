@@ -63,11 +63,27 @@ Route::get('/admin/dashboard', function () {
 Route::get('/admin/absensi', function () {
     return Inertia::render('admin/Absensi');
 })->name('admin.absensi');
+Route::get('/admin/inventory', function () {
+    return Inertia::render('admin/Inventory');
+})->name('admin.inventory');
+Route::get('/admin/requestitem', function () {
+    return Inertia::render('admin/RequestItem');
+})->name('admin.requestitem');
+;
+Route::get('/admin/requestdetail', function () {
+    return Inertia::render('admin/RequestDetailPage');
+})->name('admin.requestdetail');
+;
 
-    Route::get('/admin/dashboard/detail/{status}', function ($status) {
+
+Route::get('/admin/dashboard/detail/{status}', function ($status) {
         return Inertia::render('admin/StatusDetail', [
             'status' => $status,
         ]);
     })->name('admin.dashboard.detail');
+
+
+
+  
 require __DIR__.'/settings.php';
 

@@ -98,19 +98,20 @@ export default function AttendanceHeader() {
           {/* Filter Tanggal */}
 <Popover>
   <PopoverTrigger asChild>
-    <Button
-      variant="outline"
-      className="h-9 border-slate-300 bg-slate-50 hover:bg-slate-50 text-sm !text-slate-700 flex items-center gap-2 focus:ring-1 focus:ring-slate-300"
-    >
-      <CalendarDays className="w-4 h-4 !text-slate-500" />
-      {date
-        ? date.toLocaleDateString("id-ID", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })
-        : "Pilih Tanggal"}
-    </Button>
+<Button
+  variant="outline"
+  className="h-9 border-slate-300 bg-slate-50 hover:bg-slate-50 text-sm text-slate-700 flex items-center gap-2 focus:ring-1 focus:ring-slate-300"
+>
+  <CalendarDays className="w-4 h-4 text-slate-500" />
+  {date
+    ? date.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "Pilih Tanggal"}
+</Button>
+
   </PopoverTrigger>
   <PopoverContent className="w-auto p-0 bg-white shadow-md border border-slate-200 rounded-xl">
     <Calendar
