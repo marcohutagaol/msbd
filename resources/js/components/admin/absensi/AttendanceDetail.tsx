@@ -12,6 +12,8 @@ import {
   CalendarDays,
 } from "lucide-react";
 
+
+
 export default function AttendanceDetail() {
   const allData = [
     { no: 1, name: "Andi Pratama", jamKerja: "08.00 - 12.00", absenMasuk: "08.05", absenKeluar: "12.03", status: "Hadir" },
