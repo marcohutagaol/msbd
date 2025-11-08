@@ -12,4 +12,8 @@ class Department extends Model
     {
         return $this->hasMany(Karyawan::class);
     }
+
+    public function inventory() {
+      return $this->hasMany(Inventory::class);
+    }
 }

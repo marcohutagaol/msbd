@@ -88,22 +88,25 @@ Route::middleware(['auth'])->group(function () {
     })->name('table-inventory');
 });
 
-// Admin Routes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::get('/admin/absensi', function () {
-        return Inertia::render('admin/Absensi');
-    })->name('admin.absensi');
-    Route::get('/admin/inventory', function () {
-        return Inertia::render('admin/Inventory');
-    })->name('admin.inventory');
-    Route::get('/admin/requestitem', function () {
-        return Inertia::render('admin/RequestItem');
-    })->name('admin.requestitem');
-    Route::get('/admin/requestdetail', function () {
-        return Inertia::render('admin/RequestDetailPage');
-    })->name('admin.requestdetail');
-    Route::get('/admin/dashboard/detail/{status}', function ($status) {
+
+// ADMIN
+Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+Route::get('/admin/absensi', [AdminController::class, 'absensi'])->name('admin.absensi');
+Route::get('/admin/inventory', [AdminController::class, 'inventory'])->name('admin.inventory');
+
+
+Route::get('/admin/requestitem', function () {
+    return Inertia::render('admin/RequestItem');
+})->name('admin.requestitem');
+;
+Route::get('/admin/requestdetail', function () {
+    return Inertia::render('admin/RequestDetailPage');
+})->name('admin.requestdetail');
+;
+
+
+Route::get('/admin/dashboard/detail/{status}', function ($status) {
+
         return Inertia::render('admin/StatusDetail', [
             'status' => $status,
         ]);

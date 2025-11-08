@@ -1,17 +1,24 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { usePage } from "@inertiajs/react";
+
+interface WeeklyItem {
+  day: string;
+  date: string;
+  hadir: number;
+  izin: number;
+  sakit: number;
+  tanpa: number;
+}
+
+interface PageProps {
+  weeklyData: WeeklyItem[];
+}
 
 export default function WeeklyAttendance() {
-  const data = [
-    { day: "Sen", date: "14 Okt", hadir: 30, izin: 2, sakit: 1, tanpa: 0 },
-    { day: "Sel", date: "15 Okt", hadir: 28, izin: 3, sakit: 2, tanpa: 1 },
-    { day: "Rab", date: "16 Okt", hadir: 32, izin: 1, sakit: 0, tanpa: 0 },
-    { day: "Kam", date: "17 Okt", hadir: 27, izin: 4, sakit: 1, tanpa: 1 },
-    { day: "Jum", date: "18 Okt", hadir: 29, izin: 2, sakit: 2, tanpa: 0 },
-    { day: "Sab", date: "19 Okt", hadir: 31, izin: 1, sakit: 0, tanpa: 1 },
-    { day: "Min", date: "20 Okt", hadir: 25, izin: 2, sakit: 3, tanpa: 2 },
-  ];
+  const { weeklyData } = usePage().props as unknown as PageProps;
+  const data = weeklyData || [];
 
   return (
     <div className="grid grid-cols-2 gap-5">
@@ -19,8 +26,10 @@ export default function WeeklyAttendance() {
       <Card className="rounded-2xl border border-slate-200 shadow-sm bg-white p-6 px-7 flex justify-center items-center">
         <div className="flex justify-between items-end h-[300px] w-full">
           {data.map((bar, i) => {
-            const value = (bar.hadir / 35) * 100;
+            const total = bar.hadir + bar.izin + bar.sakit + bar.tanpa;
+            const value = total > 0 ? (bar.hadir / total) * 100 : 0;
             const isWednesday = bar.day === "Rab";
+
             return (
               <div
                 key={i}
@@ -73,10 +82,10 @@ export default function WeeklyAttendance() {
             <tr>
               <th className="p-2.5">No</th>
               <th className="p-2.5">Hari / Tanggal</th>
-              <th className="p-2.5">Hadir</th>
-              <th className="p-2.5">Izin</th>
-              <th className="p-2.5">Sakit</th>
-              <th className="p-2.5">Tanpa Ket.</th>
+              <th className="p-2.5 text-green-600">Hadir</th>
+              <th className="p-2.5 text-yellow-500">Izin</th>
+              <th className="p-2.5 text-blue-500">Sakit</th>
+              <th className="p-2.5 text-red-600">Tanpa Ket.</th>
             </tr>
           </thead>
           <tbody>
