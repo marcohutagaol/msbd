@@ -74,14 +74,9 @@ Route::get('/table-inventory', function () {
 });
 
 
-Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-// Route::get('/admin/dashboard', function () {
-//     return Inertia::render('admin/Dashboard');
-// })->name('admin.dashboard');
+Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+Route::get('/admin/absensi', [AdminController::class, 'absensi'])->name('admin.absensi');
 
-Route::get('/admin/absensi', function () {
-    return Inertia::render('admin/Absensi');
-})->name('admin.absensi');
 Route::get('/admin/inventory', function () {
     return Inertia::render('admin/Inventory');
 })->name('admin.inventory');
