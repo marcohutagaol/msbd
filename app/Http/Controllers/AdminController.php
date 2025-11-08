@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Absensi;
+use App\Models\Inventory;
 use App\Models\Karyawan;
 use App\Models\Permission;
 use Carbon\Carbon;
@@ -40,7 +41,7 @@ class AdminController extends Controller
       ->map(function ($karyawan) {
         // Ambil absensi HARI INI berdasarkan id_karyawan
         $absen = Absensi::where('id_absensi', $karyawan->id_karyawan)
-          ->whereDate('waktu_absen', today()) // ⬅️ ini penting
+          ->whereDate('waktu_absen', today())
           ->first();
 
         $time = $absen && $absen->waktu_absen
@@ -140,6 +141,27 @@ class AdminController extends Controller
     return Inertia::render('admin/Absensi', [
       'absensiData' => $employees,
       'weeklyData' => $weeklyData,
+    ]);
+  }
+
+  public function inventory()
+  {
+    $inventories = Inventory::with('department')
+      ->get()
+      ->map(function ($inventory) {
+
+        return [
+          'id' => $inventory->id,
+          'nama_barang' => $inventory->nama_barang,
+          'department' => $inventory->department->nama_department ?? '-',
+          'stok' => $inventory->stok,
+
+        ];
+      });
+
+
+    return Inertia::render('admin/Inventory', [
+      'inventories' => $inventories
     ]);
   }
 }

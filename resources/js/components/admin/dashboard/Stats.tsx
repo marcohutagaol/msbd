@@ -49,18 +49,18 @@ export default function StatsToday({ hadir, sakit, izin, belum_absen,tanpa_keter
             icon: <MdSick size={22} className="text-amber-500" />,
             href: '/admin/dashboard/detail/sakit',
         },
-        {
-            label: 'Belum Absen',
-            value: belum_absen,
-            color: '#8b5cf6',
-            icon: (
-                <MdOutlinePendingActions
-                    size={22}
-                    className="text-violet-500"
-                />
-            ),
-            href: '/admin/dashboard/detail/belum-absen',
-        },
+        // {
+        //     label: 'Belum Absen',
+        //     value: belum_absen,
+        //     color: '#8b5cf6',
+        //     icon: (
+        //         <MdOutlinePendingActions
+        //             size={22}
+        //             className="text-violet-500"
+        //         />
+        //     ),
+        //     href: '/admin/dashboard/detail/belum-absen',
+        // },
         {
             label: 'Tanpa Keterangan',
             value: tanpa_keterangan,
