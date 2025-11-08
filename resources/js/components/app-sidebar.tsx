@@ -18,7 +18,7 @@ import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Beranda',
         href: dashboard(),
         icon: LayoutGrid,
     },
@@ -28,45 +28,46 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Permission',
+        title: 'Izin',
         href: '/permission',
         icon: LayoutGrid,
     },
     {
-        title: 'Item',
+        title: 'Barang',
         href: '#',
         icon: LayoutGrid,
         items: [
             {
-                title: 'Request Item',
+                title: 'Permintaan',
                 href: '/request',
                 icon: LayoutGrid,
             },
             {
-                title: 'Monitoring Item',
+                title: 'Pemantauan Item',
                 href: '/monitoring-item',
                 icon: LayoutGrid,
             },
         ],
     },
     {
-        title: 'Purchasing',
+        title: 'Pembelian',
         href: '#',
         icon: LayoutGrid,
         items: [
             {
-                title: 'Dashboard Purchasing',
+                title: 'Pembelian',
                 href: '/dashboard-purchasing',
                 icon: LayoutGrid,
             },
+       
             {
-                title: 'Purchasing Detail',
-                href: '/purchasing',
+                title: 'Input Harga',
+                href: '/input-price',
                 icon: LayoutGrid,
             },
-            {
-                title: 'Input Price',
-                href: '/input-price',
+                {
+                title: 'Toko ',
+                href: '/toko',
                 icon: LayoutGrid,
             },
         ],

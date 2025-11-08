@@ -5,73 +5,118 @@ use Laravel\Fortify\Features;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\RequestController;
+use App\Http\Controllers\InputPriceController;
+use App\Http\Controllers\MonitoringController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\PurchasingDetailController;
+use App\Http\Controllers\DashboardPurchasingController;
 
-
+// Home Route
 Route::get('/', function () {
     return Inertia::render('dashboard');
 })->middleware(['auth', 'verified'])->name('home');
 
+// Dashboard Routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
-
-    Route::get('/absensi/{id}', function ($id) {
-        return Inertia::render('user/absensi', ['id' => $id]);
-    })->name('user.absensi');
 });
 
+// Absensi Routes
 Route::middleware(['auth'])->group(function () {
-    Route::post('/absensi/store', [AbsensiController::class, 'store'])->name('absensi.store');
-});
-
-
-Route::middleware(['auth'])->group(function () {
-    Route::post('/absensi/store', [AbsensiController::class, 'store'])->name('absensi.store');
-    Route::get('/absensi/riwayat', [AbsensiController::class, 'getRiwayat'])->name('absensi.riwayat');
-
     Route::get('/absensi', function () {
         return Inertia::render('CatatKehadiran');
     })->name('absensi');
+    
+    Route::get('/absensi/{id}', function ($id) {
+        return Inertia::render('user/absensi', ['id' => $id]);
+    })->name('user.absensi');
+    
+    Route::post('/absensi/store', [AbsensiController::class, 'store'])->name('absensi.store');
+    Route::get('/absensi/riwayat', [AbsensiController::class, 'getRiwayat'])->name('absensi.riwayat');
 });
 
-Route::get('/purchasing', function () {
-    return Inertia::render('table/purchasing');
+// Purchasing & Request Routes
+Route::middleware(['auth'])->group(function () {
+    // Dashboard Purchasing (UPDATED - menggunakan Controller)
+    Route::get('/dashboard-purchasing', [DashboardPurchasingController::class, 'index'])
+        ->name('dashboard-purchasing');
+    
+    // Detail per departemen (optional)
+    Route::get('/dashboard-purchasing/department/{id}', [DashboardPurchasingController::class, 'getDepartmentDetails'])
+        ->name('dashboard-purchasing.department');
+    
+     // Detail purchasing by department - TAMBAHKAN INI
+    Route::get('/purchasing/{departmentId}', [PurchasingDetailController::class, 'show'])
+        ->name('purchasing.detail');
+    
+    Route::get('/request', function () {
+        return Inertia::render('table/request');
+    })->name('request');
+    
+    // Request Item (Form untuk submit request)
+    Route::get('/request-item', [RequestController::class, 'index'])->name('request-item');
+    Route::post('/requests', [RequestController::class, 'store'])->name('requests.store');
+    Route::get('/requests/history', [RequestController::class, 'getRequestHistory'])->name('requests.history');
+    
+    // Monitoring Item
+    Route::get('/monitoring-item', [MonitoringController::class, 'index'])->name('monitoring-item');
+    Route::patch('/request-items/{id}', [MonitoringController::class, 'update'])->name('request-items.update');
+    Route::delete('/request-items/{id}', [MonitoringController::class, 'destroy'])->name('request-items.destroy');
+    
+
 });
 
-Route::get('/request', function () {
-    return Inertia::render('table/request');
-});
-
-Route::get('/dashboard-purchasing', function () {
-    return Inertia::render('table/dashboard-purchasing');
-});
-
-Route::get('/monitoring-item', function () {
-    return Inertia::render('table/monitoring-item');
-});
-
-Route::get('/input-price', function () {
-    return Inertia::render('table/input-price');
-});
-
+// Permission Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/permission', function () {
         return Inertia::render('permission/page');
     })->name('permission');
     
-    Route::get('/api/permissions', [App\Http\Controllers\PermissionController::class, 'index'])->name('permissions.index');
-    Route::post('/api/permissions', [App\Http\Controllers\PermissionController::class, 'store'])->name('permissions.store');
-    Route::delete('/api/permissions/{id}', [App\Http\Controllers\PermissionController::class, 'destroy'])->name('permissions.destroy');
-});
-Route::get('/inventory', function () {
-    return Inertia::render('inventory/page');
+    Route::get('/api/permissions', [PermissionController::class, 'index'])->name('permissions.index');
+    Route::post('/api/permissions', [PermissionController::class, 'store'])->name('permissions.store');
+    Route::delete('/api/permissions/{id}', [PermissionController::class, 'destroy'])->name('permissions.destroy');
 });
 
-Route::get('/table-inventory', function () {
-    return Inertia::render('inventory/table-inventory');
+// Inventory Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/inventory', function () {
+        return Inertia::render('inventory/page');
+    })->name('inventory');
+    
+    Route::get('/table-inventory', function () {
+        return Inertia::render('inventory/table-inventory');
+    })->name('table-inventory');
 });
-Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
+// Admin Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+});
+
+Route::get('/toko', function () {
+    return Inertia::render('table/searchtoko');
+})->name('searchtoko');
+
+Route::post('/purchasing-detail/{departmentId}/approve-all', [PurchasingDetailController::class, 'approveAll'])
+    ->name('purchasing.approve-all');
+
+// Update status individual item
+Route::post('/purchasing-detail/item/{itemId}/update-status', [PurchasingDetailController::class, 'updateStatus'])
+    ->name('purchasing.update-status');
+     // Input Price Routes - NEW CONCEPT
+Route::middleware(['auth'])->group(function () {
+    Route::get('/input-price', [InputPriceController::class, 'index'])->name('input-price');
+    Route::get('/input-price/summary/{requestId}', [InputPriceController::class, 'getSummary'])->name('input-price.summary');
+    Route::get('/input-price/items/{requestId}', [InputPriceController::class, 'getRequestItems'])->name('input-price.items');
+    Route::post('/input-price/confirm-preorder', [InputPriceController::class, 'confirmPreorder'])->name('input-price.confirm');
+    Route::post('/input-price/mark-arrived', [InputPriceController::class, 'markAsArrived'])->name('input-price.arrived');
+    
+    // Hapus route update price individual karena sudah tidak digunakan
+    // Route::patch('/input-price/{id}', [InputPriceController::class, 'updatePrice'])->name('input-price.update');
+});
+
+// Settings Routes
 require __DIR__.'/settings.php';
