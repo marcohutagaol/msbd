@@ -4,13 +4,13 @@ import { useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
-  Plus,
   Pencil,
   CheckCircle,
   XCircle,
   Clock,
   ArrowRight,
   MoreHorizontal,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,12 +19,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import AddOrderModal from "./add-order-modal";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 
 export interface Order {
   id: string;
+  request_id: string;
+  request_number: string;
   namaBarang: string;
   departemen: string;
   jumlahBarang: number;
@@ -33,71 +34,103 @@ export interface Order {
   status: "diterima" | "ditolak" | "ditunda";
 }
 
-// ✅ Data dummy awal
-const sampleOrders: Order[] = [
-  {
-    id: "ORD-001",
-    namaBarang: "Kertas A4",
-    departemen: "Administrasi",
-    jumlahBarang: 10,
-    satuan: "Rim",
-    catatan: "Untuk stok bulan ini",
-    status: "ditunda",
-  },
-  {
-    id: "ORD-002",
-    namaBarang: "Pulpen Hitam",
-    departemen: "Keuangan",
-    jumlahBarang: 50,
-    satuan: "Pcs",
-    catatan: "Kebutuhan harian",
-    status: "ditunda",
-  },
-  {
-    id: "ORD-003",
-    namaBarang: "Mouse Wireless",
-    departemen: "IT",
-    jumlahBarang: 5,
-    satuan: "Unit",
-    catatan: "Penggantian perangkat rusak",
-    status: "ditunda",
-  },
-];
-
 const ITEMS_PER_PAGE = 8;
 
 export default function OrdersTable({
   onApproveStatusChange,
 }: {
-  onApproveStatusChange?: () => void; // ✅ panggil dari parent untuk ubah timeline
+  onApproveStatusChange?: () => void;
 }) {
+  const { props } = usePage();
+  const { orders, department, departmentId, stats } = props as any;
+  
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [orders, setOrders] = useState<Order[]>(sampleOrders);
+  const [orderList, setOrderList] = useState<Order[]>(orders || []);
+  const [isApproving, setIsApproving] = useState(false);
   const isMobile = useIsMobile();
 
-  const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(orderList.length / ITEMS_PER_PAGE);
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedOrders = orders.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+  const paginatedOrders = orderList.slice(startIdx, startIdx + ITEMS_PER_PAGE);
 
-  const handleStatusChange = (id: string, newStatus: Order["status"]) => {
-    setOrders((prev) =>
+  // Map status dari bahasa Indonesia ke English untuk API
+  const mapStatusToEnglish = (status: string) => {
+    const statusMap: Record<string, string> = {
+      'diterima': 'Approved',
+      'ditolak': 'Rejected',
+      'ditunda': 'Pending'
+    };
+    return statusMap[status] || 'Pending';
+  };
+
+  // Update status individual item
+  const handleStatusChange = async (id: string, newStatus: Order["status"]) => {
+    // Update UI optimistically
+    setOrderList((prev) =>
       prev.map((order) =>
         order.id === id ? { ...order, status: newStatus } : order
       )
     );
+
+    // Send to backend
+    try {
+      await router.post(`/purchasing-detail/item/${id}/update-status`, {
+        status: mapStatusToEnglish(newStatus)
+      }, {
+        preserveScroll: true,
+        onError: (errors) => {
+          console.error('Error updating status:', errors);
+          // Revert on error
+          setOrderList(orders);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      // Revert on error
+      setOrderList(orders);
+    }
   };
 
-  const handleApproveAll = () => {
-    setOrders((prev) =>
-      prev.map((order) => ({ ...order, status: "diterima" }))
-    );
-    alert("✅ Semua pesanan di halaman ini telah disetujui.");
-    onApproveStatusChange?.(); // ✅ update timeline ke “Approve”
+  // Approve all items
+  const handleApproveAll = async () => {
+    if (isApproving) return;
+    
+    setIsApproving(true);
+    
+    try {
+      await router.post(`/purchasing-detail/${departmentId}/approve-all`, {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+          // Update local state
+          setOrderList((prev) =>
+            prev.map((order) => ({ ...order, status: "diterima" }))
+          );
+          onApproveStatusChange?.();
+          
+          // Show success message
+          alert("✅ Semua pesanan pending telah disetujui!");
+        },
+        onError: (errors) => {
+          console.error('Error approving all:', errors);
+          alert("❌ Gagal menyetujui pesanan. Silakan coba lagi.");
+        },
+        onFinish: () => {
+          setIsApproving(false);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to approve all:', error);
+      alert("❌ Terjadi kesalahan. Silakan coba lagi.");
+      setIsApproving(false);
+    }
   };
 
   const handleGoToPricePage = () => {
-    router.visit("/input-price"); // ✅ timeline otomatis akan ganti ke “Purchasing”
+    router.visit("/input-price");
+  };
+
+  const handleBack = () => {
+    router.visit("/dashboard-purchasing");
   };
 
   return (
@@ -105,20 +138,31 @@ export default function OrdersTable({
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-3 w-3 rounded-full bg-blue-600 shadow-lg shadow-blue-600/40" />
-            <h1 className="text-3xl font-bold tracking-tight text-gray-800">
-              Purchasing
-            </h1>
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={handleBack}
+              variant="ghost"
+              className="p-2 hover:bg-blue-50"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="h-3 w-3 rounded-full bg-blue-600 shadow-lg shadow-blue-600/40" />
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight text-gray-800">
+                  {department || 'Purchasing'}
+                </h1>
+                {stats && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    Total: {stats.total_items} items • 
+                    Pending: {stats.pending_count} • 
+                    Approved: {stats.approved_count} • 
+                    Rejected: {stats.rejected_count}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
-
-          {/* <Button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md shadow-blue-600/30 transition-all duration-300"
-          >
-            <Plus className="h-4 w-4" />
-            Add Order
-          </Button> */}
         </div>
 
         {/* Table / Card Section */}
@@ -130,13 +174,10 @@ export default function OrdersTable({
                 <thead className="bg-blue-50 border-b border-blue-200">
                   <tr>
                     <th className="py-3 px-4 text-left text-sm font-semibold text-slate-700">
-                      ID
+                      Request Number
                     </th>
                     <th className="py-3 px-4 text-left text-sm font-semibold text-slate-700">
                       Nama Barang
-                    </th>
-                    <th className="py-3 px-4 text-left text-sm font-semibold text-slate-700">
-                      Departemen
                     </th>
                     <th className="py-3 px-4 text-center text-sm font-semibold text-slate-700">
                       Jumlah
@@ -164,13 +205,10 @@ export default function OrdersTable({
                       } hover:bg-blue-50 transition-colors`}
                     >
                       <td className="py-3 px-4 text-gray-600 font-medium">
-                        {order.id}
+                        {order.request_number}
                       </td>
                       <td className="py-3 px-4 font-semibold text-gray-800">
                         {order.namaBarang}
-                      </td>
-                      <td className="py-3 px-4 text-gray-700">
-                        {order.departemen}
                       </td>
                       <td className="py-3 px-4 text-center font-semibold text-gray-800">
                         {order.jumlahBarang}
@@ -247,7 +285,7 @@ export default function OrdersTable({
           ) : (
             // 📱 MOBILE VIEW
             <div className="space-y-4">
-              {orders.map((order) => (
+              {paginatedOrders.map((order) => (
                 <div
                   key={order.id}
                   className="rounded-xl border border-blue-200 bg-white p-5 space-y-3 hover:shadow-md hover:border-blue-400 transition-all duration-300"
@@ -258,7 +296,7 @@ export default function OrdersTable({
                         {order.namaBarang}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {order.departemen}
+                        {order.request_number}
                       </p>
                     </div>
                     <button className="p-2 text-gray-500 hover:text-blue-600 transition">
@@ -338,10 +376,11 @@ export default function OrdersTable({
         <div className="flex justify-end gap-3 flex-wrap">
           <Button
             onClick={handleApproveAll}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-7 py-2 rounded-lg shadow-md shadow-green-600/30 transition-all duration-300"
+            disabled={isApproving}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-7 py-2 rounded-lg shadow-md shadow-green-600/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <CheckCircle className="h-4 w-4" />
-            APPROVE
+            {isApproving ? 'APPROVING...' : 'APPROVE ALL'}
           </Button>
           <Button
             onClick={handleGoToPricePage}
@@ -353,48 +392,50 @@ export default function OrdersTable({
         </div>
 
         {/* Pagination */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-          <div className="flex flex-wrap gap-2">
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i + 1}
-                onClick={() => setCurrentPage(i + 1)}
-                className={`h-10 w-10 rounded-lg font-medium border transition-all duration-300 ${
-                  currentPage === i + 1
-                    ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/40 scale-105"
-                    : "border-blue-200 bg-white text-gray-600 hover:border-blue-400 hover:bg-blue-50"
-                }`}
+        {orderList.length > 0 && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div className="flex flex-wrap gap-2">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`h-10 w-10 rounded-lg font-medium border transition-all duration-300 ${
+                    currentPage === i + 1
+                      ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/40 scale-105"
+                      : "border-blue-200 bg-white text-gray-600 hover:border-blue-400 hover:bg-blue-50"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+                className="gap-2 bg-white hover:bg-blue-50 border border-blue-300 text-gray-600 hover:text-blue-600 transition-all duration-300 disabled:opacity-50"
               >
-                {i + 1}
-              </button>
-            ))}
+                <ChevronLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Previous</span>
+              </Button>
+              <Button
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="gap-2 bg-white hover:bg-blue-50 border border-blue-300 text-gray-600 hover:text-blue-600 transition-all duration-300 disabled:opacity-50"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
+        )}
 
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
-              className="gap-2 bg-white hover:bg-blue-50 border border-blue-300 text-gray-600 hover:text-blue-600 transition-all duration-300 disabled:opacity-50"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Previous</span>
-            </Button>
-            <Button
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="gap-2 bg-white hover:bg-blue-50 border border-blue-300 text-gray-600 hover:text-blue-600 transition-all duration-300 disabled:opacity-50"
-            >
-              <span className="hidden sm:inline">Next</span>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+        {orderList.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            Tidak ada data untuk departemen ini.
           </div>
-        </div>
-
-        <AddOrderModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onAdd={() => setIsModalOpen(false)}
-        />
+        )}
       </div>
     </main>
   );
