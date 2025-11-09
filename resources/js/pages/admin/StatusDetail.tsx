@@ -263,10 +263,10 @@ export default function StatusDetail() {
                         {day.data.map((d, i) => (
                           <tr key={d.id} className="border-t border-slate-100 hover:bg-slate-50 transition">
                             <td className="p-2 text-slate-700">{i + 1}</td>
-                            <td className="p-2 text-slate-700 break-words">{d.nama}</td>
-                            <td className="p-2 text-slate-600 break-words">{d.departemen}</td>
-                            <td className="p-2 text-slate-600 break-words">{d.divisi}</td>
-                            <td className="p-2 text-slate-500 italic break-words">{d.keterangan}</td>
+                            <td className="p-2 text-slate-700 [break-words]">{d.nama}</td>
+                            <td className="p-2 text-slate-600 [break-words]">{d.departemen}</td>
+                            <td className="p-2 text-slate-600 [break-words]">{d.divisi}</td>
+                            <td className="p-2 text-slate-500 italic [break-words]">{d.keterangan}</td>
                           </tr>
                         ))}
                       </tbody>

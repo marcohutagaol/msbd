@@ -1,153 +1,103 @@
 "use client";
 
 import { useState } from "react";
-import Sidebar from "../../components/admin/dashboard/Sidebar";
-import Header from "../../components/admin/dashboard/Header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from '@inertiajs/react';
+import Sidebar from "../../components/admin/dashboard/Sidebar";
+import Header from "../../components/admin/dashboard/Header";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Search,
-  Edit3,
-  Building2,
-  PackageSearch,
-  Filter,
+  Edit2,
+  Calendar,
+  Boxes,
+  Coffee,
+  KeySquare,
+  Bath,
+  Users,
+  ChevronDown,
 } from "lucide-react";
 
-interface InventoryItem {
-  id: number;
-  namaBarang: string;
-  kategori: string;
-  department: string;
-  divisi: string;
-  stokAkhir: number;
-  minimalStok: number;
-  statusDetail: string; // digunakan, expired, habis
-}
-
-export default function InventoryPage() {
+export default function WarehouseTable() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null);
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
-  const [filterDept, setFilterDept] = useState("semua");
-  const [filterDivisi, setFilterDivisi] = useState("semua");
-  const [filterStok, setFilterStok] = useState("semua");
-  const [search, setSearch] = useState("");
-
-  const departmentOptions: Record<string, string[]> = {
-    "IT Department": ["Support", "Network", "Developer"],
-    "Administrasi Department": ["HR", "Finance"],
-    "Food & Beverage Department": ["Kitchen", "Service"],
-  };
-
-  const items: InventoryItem[] = [
+  const items = [
     {
-      id: 1,
-      namaBarang: "Laptop Asus Pro",
-      kategori: "Elektronik",
-      department: "IT Department",
-      divisi: "Developer",
-      stokAkhir: 12,
-      minimalStok: 5,
-      statusDetail: "Digunakan",
+      name: "Handuk Hotel",
+      dept: "HK",
+      stokAwal: 100,
+      stokMasuk: 50,
+      stokKeluar: 30,
+      stokAkhir: 120,
+      lokasi: "Gudang HK",
+      status: "Tersedia",
+      tanggal: "2025-11-07",
     },
     {
-      id: 2,
-      namaBarang: "Mouse Logitech",
-      kategori: "Elektronik",
-      department: "IT Department",
-      divisi: "Support",
-      stokAkhir: 4,
-      minimalStok: 10,
-      statusDetail: "Habis",
+      name: "Sabun Cair",
+      dept: "HK",
+      stokAwal: 200,
+      stokMasuk: 100,
+      stokKeluar: 250,
+      stokAkhir: 50,
+      lokasi: "Gudang Utama",
+      status: "Habis",
+      tanggal: "2025-11-05",
     },
     {
-      id: 3,
-      namaBarang: "Kertas A4",
-      kategori: "ATK",
-      department: "Administrasi Department",
-      divisi: "Finance",
-      stokAkhir: 25,
-      minimalStok: 10,
-      statusDetail: "Digunakan",
+      name: "Air Mineral 600ml",
+      dept: "FNB",
+      stokAwal: 500,
+      stokMasuk: 200,
+      stokKeluar: 300,
+      stokAkhir: 400,
+      lokasi: "Gudang FNB",
+      status: "Tersedia",
+      tanggal: "2025-11-04",
     },
     {
-      id: 4,
-      namaBarang: "Tinta Printer Canon",
-      kategori: "ATK",
-      department: "Administrasi Department",
-      divisi: "HR",
-      stokAkhir: 3,
-      minimalStok: 5,
-      statusDetail: "Expired",
+      name: "Kartu Kunci",
+      dept: "FO",
+      stokAwal: 50,
+      stokMasuk: 0,
+      stokKeluar: 10,
+      stokAkhir: 40,
+      lokasi: "Gudang FO",
+      status: "Sedang Digunakan",
+      tanggal: "2025-11-06",
+    },
+    {
+      name: "Air Freshener",
+      dept: "AA",
+      stokAwal: 100,
+      stokMasuk: 0,
+      stokKeluar: 20,
+      stokAkhir: 80,
+      lokasi: "Gudang AA",
+      status: "Expired",
+      tanggal: "2025-10-30",
     },
   ];
 
-  // --- Filter logic
-  const filteredItems = items.filter((item) => {
-    const matchesSearch = item.namaBarang
-      .toLowerCase()
-      .includes(search.toLowerCase());
-    const matchesDept = filterDept === "semua" || item.department === filterDept;
-    const matchesDiv = filterDivisi === "semua" || item.divisi === filterDivisi;
-    const needsRestock = item.stokAkhir <= item.minimalStok;
-    const matchesStok =
-      filterStok === "semua" ||
-      (filterStok === "aman" && !needsRestock) ||
-      (filterStok === "restock" && needsRestock);
-    return matchesSearch && matchesDept && matchesDiv && matchesStok;
-  });
+  // Hitung total item per departemen
+  const countByDept = (dept: string) =>
+    items.filter((item) => item.dept === dept).length;
 
-  const totalBarang = items.length;
-  const stokAman = items.filter((i) => i.stokAkhir > i.minimalStok).length;
-  const butuhRestok = items.filter((i) => i.stokAkhir <= i.minimalStok).length;
+  // Fungsi untuk toggle dropdown
+  const toggleDropdown = (index: number) => {
+    setOpenDropdownIndex(openDropdownIndex === index ? null : index);
+  };
 
-  const divisiList =
-    filterDept !== "semua"
-      ? departmentOptions[filterDept] || []
-      : Object.values(departmentOptions).flat();
-
-  // --- Helper warna status stok
-  const getStatusBadge = (item: InventoryItem) => {
-    const needsRestock = item.stokAkhir <= item.minimalStok;
-    const status = needsRestock ? "Butuh Restok" : "Stok Aman";
-
-    const bg =
-      status === "Stok Aman"
-        ? "rgba(22, 163, 74, 0.12)"
-        : "rgba(239, 68, 68, 0.12)";
-    const border = status === "Stok Aman" ? "#86efac" : "#fca5a5";
-    const color = status === "Stok Aman" ? "#16a34a" : "#dc2626";
-
-    return (
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minWidth: "120px",
-          height: "30px",
-          borderRadius: "20px",
-          fontSize: "13px",
-          fontWeight: 600,
-          color,
-          backgroundColor: bg,
-          border: `1px solid ${border}`,
-        }}
-      >
-        {status}
-      </span>
-    );
+  // Fungsi untuk handle pilihan dropdown
+  const handleDropdownAction = (action: string, itemIndex: number) => {
+    console.log(`Action: ${action} untuk item: ${items[itemIndex].name}`);
+    // Tambahkan logika sesuai kebutuhan di sini
+    setOpenDropdownIndex(null); // Tutup dropdown setelah memilih
   };
 
   return (
-    <div className="flex min-h-screen bg-[#f5f7fa] font-[Poppins,Segoe_UI,system-ui,sans-serif]">
+    <div className="flex min-h-screen font-[Poppins,Segoe_UI,system-ui,sans-serif] bg-[#f5f7fa] transition-all duration-300">
       {/* === SIDEBAR === */}
       <div
         className={`fixed top-0 left-0 h-full w-[260px] bg-white shadow-md z-[150] transition-transform duration-300 ${
@@ -157,15 +107,15 @@ export default function InventoryPage() {
         <Sidebar />
       </div>
 
-      {/* === MAIN === */}
+      {/* === MAIN CONTENT === */}
       <div
-        className={`flex flex-col flex-1 transition-all duration-300 ${
+        className={`flex flex-col flex-1 min-h-screen transition-all duration-300 ${
           isSidebarOpen ? "ml-[260px]" : "ml-0"
         }`}
       >
         {/* === HEADER === */}
         <div
-          className={`fixed top-0 right-0 bg-white shadow-sm z-[200] transition-all duration-300 ${
+          className={`fixed top-0 right-0 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)] z-[200] transition-all duration-300 ${
             isSidebarOpen ? "left-[260px]" : "left-0"
           }`}
         >
@@ -175,170 +125,213 @@ export default function InventoryPage() {
           />
         </div>
 
-        {/* === CONTENT === */}
-        <div className="flex flex-col flex-1 gap-6 px-5 sm:px-10 pt-[110px] pb-[40px]">
-          <h1 className="text-2xl font-semibold text-slate-800">
-            Inventaris Barang
-          </h1>
+        {/* === PAGE CONTENT === */}
+        <main className="flex-1 p-6 pt-[120px]">
+          <Card className="p-4 shadow-md border border-slate-200 rounded-2xl flex flex-col h-[500px] bg-white mt-4">
+            {/* Header tabel */}
+            <div className="flex justify-between items-center mb-4">
+              <h1 className="font-bold text-slate-800 flex items-center gap-2">
+                <Boxes className="w-5 h-5 text-[#4789A8]" />
+                Barang Gudang Hotel
+              </h1>
 
-          {/* === STATISTIK === */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <Card className="p-5 bg-white shadow-sm border border-slate-200 rounded-2xl">
-              <p className="text-slate-500 text-sm">Total Barang</p>
-              <p className="text-2xl font-bold text-slate-700">{totalBarang}</p>
-            </Card>
-            <Card className="p-5 bg-white shadow-sm border border-slate-200 rounded-2xl">
-              <p className="text-slate-500 text-sm">Stok Aman</p>
-              <p className="text-2xl font-bold text-green-600">{stokAman}</p>
-            </Card>
-            <Card className="p-5 bg-white shadow-sm border border-slate-200 rounded-2xl">
-              <p className="text-slate-500 text-sm">Butuh Restok</p>
-              <p className="text-2xl font-bold text-red-600">{butuhRestok}</p>
-            </Card>
-          </div>
+              <div className="flex items-center gap-2">
+                {/* Filter Departemen */}
+                <select className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#4789A8]">
+                  <option value="">Semua Dept</option>
+                  <option value="FO">FO</option>
+                  <option value="HK">HK</option>
+                  <option value="FNB">FNB</option>
+                  <option value="AA">AA</option>
+                </select>
 
-          {/* === FILTER === */}
-          <Card className="p-5 bg-white shadow-sm border border-slate-200 rounded-2xl">
-            <div className="flex flex-wrap gap-3 justify-between items-center">
-              <div className="flex flex-wrap gap-3 items-center">
-                {/* Department */}
-                <Select value={filterDept} onValueChange={setFilterDept}>
-                  <SelectTrigger className="w-[200px] h-9 text-sm bg-slate-50 border-slate-300">
-                    <Building2 className="w-4 h-4 mr-2 text-slate-500" />
-                    <SelectValue placeholder="Pilih Departemen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="semua">Semua Departemen</SelectItem>
-                    {Object.keys(departmentOptions).map((dept) => (
-                      <SelectItem key={dept} value={dept}>
-                        {dept}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Filter Status */}
+                <select className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#4789A8]">
+                  <option value="">Semua Status</option>
+                  <option value="In Stock">In Stock</option>
+                  <option value="Habis">Habis</option>
+                  <option value="Expired">Expired</option>
+                  <option value="Sedang Digunakan">Sedang Digunakan</option>
+                </select>
 
-                {/* Divisi */}
-                <Select
-                  value={filterDivisi}
-                  onValueChange={setFilterDivisi}
-                  disabled={divisiList.length === 0}
-                >
-                  <SelectTrigger className="w-[180px] h-9 text-sm bg-slate-50 border-slate-300 disabled:opacity-60">
-                    <PackageSearch className="w-4 h-4 mr-2 text-slate-500" />
-                    <SelectValue placeholder="Pilih Divisi" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="semua">Semua Divisi</SelectItem>
-                    {divisiList.map((div) => (
-                      <SelectItem key={div} value={div}>
-                        {div}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Filter Tanggal */}
+                <div className="flex items-center gap-1 border border-gray-300 rounded-lg px-2 py-1 text-sm focus-within:ring-1 focus-within:ring-[#4789A8]">
+                  <Calendar className="w-4 h-4 text-gray-500" />
+                  <input type="date" className="focus:outline-none" />
+                </div>
 
-                {/* Stok filter */}
-                <Select value={filterStok} onValueChange={setFilterStok}>
-                  <SelectTrigger className="w-[160px] h-9 text-sm bg-slate-50 border-slate-300">
-                    <Filter className="w-4 h-4 mr-2 text-slate-500" />
-                    <SelectValue placeholder="Status Stok" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="semua">Semua</SelectItem>
-                    <SelectItem value="aman">Aman</SelectItem>
-                    <SelectItem value="restock">Butuh Restok</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Search */}
-              <div className="flex items-center border border-slate-300 rounded-md px-3 py-1.5 bg-white w-full sm:w-[280px]">
-                <Search size={18} className="text-slate-400 mr-2" />
+                {/* Search */}
                 <input
                   type="text"
                   placeholder="Cari barang..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full outline-none text-sm bg-transparent"
+                  className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#4789A8]"
                 />
               </div>
             </div>
-          </Card>
 
-          {/* === TABEL === */}
-          <Card className="p-5 bg-white shadow-sm border border-slate-200 rounded-2xl">
-            <div className="overflow-x-auto">
-              <table className="w-full border border-slate-200 rounded-xl overflow-hidden text-center">
-                <thead className="bg-slate-50 text-slate-600">
+            {/* === Tabel === */}
+            <div className="overflow-y-auto flex-1 rounded-xl max-h-[360px]">
+              <table className="w-full text-sm text-center border-collapse">
+                <thead className="bg-slate-100 text-slate-700 font-semibold sticky top-0 z-10">
                   <tr>
-                    {[
-                      "No",
-                      "Nama Barang",
-                      "Kategori",
-                      "Departemen",
-                      "Divisi",
-                      "Stok Akhir",
-                      "Status",
-                      "Detail Status",
-                    ].map((head, i) => (
-                      <th
-                        key={i}
-                        className="py-3 px-4 text-[13px] font-semibold uppercase tracking-wide border-b border-slate-200"
-                      >
-                        {head}
-                      </th>
-                    ))}
+                    <th className="py-3 px-4 text-left">Nama Item</th>
+                    <th className="py-3 px-4 text-left">Dept</th>
+                    <th className="py-3 px-4 text-left">Stok Awal</th>
+                    <th className="py-3 px-4 text-left">Masuk</th>
+                    <th className="py-3 px-4 text-left">Keluar</th>
+                    <th className="py-3 px-4 text-left">Stok Akhir</th>
+                    <th className="py-3 px-4 text-left">Lokasi</th>
+                    <th className="py-3 px-4 text-left">Status</th>
+                    <th className="py-3 px-4 text-left">Tanggal</th>
+                    <th className="py-3 px-4">Aksi</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  {filteredItems.map((item, index) => (
+                  {items.map((item, i) => (
                     <tr
-                      key={item.id}
-                      className="border-b border-slate-200 hover:bg-slate-50 transition"
+                      key={i}
+                      className={`${
+                        i % 2 === 0 ? "bg-white" : "bg-slate-50"
+                      } hover:bg-slate-100 transition-colors`}
                     >
-                      <td className="py-3 px-4 text-[14px] text-slate-700 font-medium">
-                        {index + 1}
+                      <td className="py-3 px-4 text-left font-medium text-slate-700">
+                        {item.name}
                       </td>
-                      <td className="py-3 px-4 text-[14px] text-slate-700">
-                        {item.namaBarang}
-                      </td>
-                      <td className="py-3 px-4 text-[14px]">{item.kategori}</td>
-                      <td className="py-3 px-4 text-[14px]">
-                        {item.department}
-                      </td>
-                      <td className="py-3 px-4 text-[14px]">{item.divisi}</td>
-                      <td className="py-3 px-4 text-[14px] font-semibold">
+                      <td className="py-3 px-4 text-left text-slate-700">{item.dept}</td>
+                      <td className="py-3 px-4 text-left text-slate-700">{item.stokAwal}</td>
+                      <td className="py-3 px-4 text-left text-slate-700">{item.stokMasuk}</td>
+                      <td className="py-3 px-4 text-left text-slate-700">{item.stokKeluar}</td>
+                      <td className="py-3 px-4 text-left font-semibold text-slate-700">
                         {item.stokAkhir}
                       </td>
-                      <td className="py-3 px-4">{getStatusBadge(item)}</td>
-                      <td className="py-3 px-4">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-sky-600 hover:bg-sky-50"
-                        >
-                          <Edit3 size={16} className="mr-1" />
-                          {item.statusDetail}
-                        </Button>
+                      <td className="py-3 px-4 text-left text-slate-700">{item.lokasi}</td>
+                      <td
+                        className={`py-3 px-4 text-left font-semibold ${
+                          item.status === "Tersedia"
+                            ? "text-green-600"
+                            : item.status === "Habis"
+                            ? "text-red-600"
+                            : item.status === "Expired"
+                            ? "text-orange-500"
+                            : "text-blue-600"
+                        }`}
+                      >
+                        {item.status}
+                      </td>
+                      <td className="py-3 px-4 text-left text-slate-700">{item.tanggal}</td>
+                      <td className="py-3 px-4 relative">
+                        {/* Tombol Edit dengan Dropdown */}
+                        <div className="flex justify-center">
+                          <Button
+                            size="sm"
+                            className="flex items-center gap-1 bg-[#4789A8] text-white hover:bg-[#356b87]"
+                            onClick={() => toggleDropdown(i)}
+                          >
+                            <Edit2 className="w-4 h-4" /> 
+                            Edit
+                            <ChevronDown className="w-3 h-3" />
+                          </Button>
+                        </div>
+
+                        {/* Dropdown Menu */}
+                        {openDropdownIndex === i && (
+                          <div className="absolute top-full mt-1 right-0 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-50">
+                            {[
+                              "Tersedia",
+                              "Habis", 
+                              "Expired",
+                              "Sedang Digunakan"
+                            ].map((option) => (
+                              <div
+                                key={option}
+                                className="px-4 py-2 cursor-pointer hover:bg-[#4789A8] hover:text-white transition-colors first:rounded-t-lg last:rounded-b-lg"
+                                onClick={() => handleDropdownAction(option, i)}
+                              >
+                                {option}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
-
-                  {filteredItems.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={8}
-                        className="py-6 text-center text-slate-500 text-sm"
-                      >
-                        Tidak ada data barang yang sesuai filter.
-                      </td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>
+
+            <p className="text-xs text-slate-500 mt-2 italic text-left">
+              Daftar seluruh barang di gudang hotel beserta status stok terkini.
+            </p>
           </Card>
-        </div>
+
+          {/* === CARD RINGKASAN DEPARTEMEN === */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+            {/* Front Office */}
+            <Card className="flex flex-col justify-between p-4 shadow-md rounded-2xl border border-slate-200 hover:shadow-lg transition-all bg-[#e3edf3]">
+              <div className="flex items-center gap-3">
+                <KeySquare className="w-6 h-6 text-[#4789A8]" />
+                <h4 className="font-semibold text-slate-800">Front Office</h4>
+              </div>
+              <p className="text-2xl font-bold mt-2 text-[#4789A8]">
+                {countByDept("FO")} Item
+              </p>
+              <Link href="/admin/detailitemdepartment">
+                <Button className="mt-3 bg-[#7ba8be] hover:bg-[#5c8ca5] text-white w-full">
+                  Detail
+                </Button>
+              </Link>
+            </Card>
+
+            {/* Housekeeping */}
+            <Card className="flex flex-col justify-between p-4 shadow-md rounded-2xl border border-slate-200 hover:shadow-lg transition-all bg-[#e6f3e8]">
+              <div className="flex items-center gap-3">
+                <Bath className="w-6 h-6 text-[#16a34a]" />
+                <h4 className="font-semibold text-slate-800">Housekeeping</h4>
+              </div>
+              <p className="text-2xl font-bold mt-2 text-[#16a34a]">
+                {countByDept("HK")} Item
+              </p>
+              <Link href="/admin/detailitemdepartment">
+                <Button className="mt-3 bg-[#6ecf83] hover:bg-[#52b868] text-white w-full">
+                  Detail
+                </Button>
+              </Link>
+            </Card>
+
+            {/* Food & Beverage */}
+            <Card className="flex flex-col justify-between p-4 shadow-md rounded-2xl border border-slate-200 hover:shadow-lg transition-all bg-[#fff9e6]">
+              <div className="flex items-center gap-3">
+                <Coffee className="w-6 h-6 text-[#eab308]" />
+                <h4 className="font-semibold text-slate-800">Food & Beverage</h4>
+              </div>
+              <p className="text-2xl font-bold mt-2 text-[#eab308]">
+                {countByDept("FNB")} Item
+              </p>
+              <Link href="/admin/detailitemdepartment">
+                <Button className="mt-3 bg-[#f5cf60] hover:bg-[#e6b93f] text-white w-full">
+                  Detail
+                </Button>
+              </Link>
+            </Card>
+
+            {/* Admin & Accounting */}
+            <Card className="flex flex-col justify-between p-4 shadow-md rounded-2xl border border-slate-200 hover:shadow-lg transition-all bg-[#fdecec]">
+              <div className="flex items-center gap-3">
+                <Users className="w-6 h-6 text-[#ef4444]" />
+                <h4 className="font-semibold text-slate-800">Accounting & Administration</h4>
+              </div>
+              <p className="text-2xl font-bold mt-2 text-[#ef4444]">
+                {countByDept("AA")} Item
+              </p>
+              <Link href="/admin/detailitemdepartment">
+                <Button className="mt-3 bg-[#f58a8a] hover:bg-[#e46464] text-white w-full">
+                  Detail
+                </Button>
+              </Link>
+            </Card>
+          </div>
+        </main>
       </div>
     </div>
   );

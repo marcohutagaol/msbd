@@ -277,85 +277,117 @@ export default function RequestDetailPage() {
 
 
           {/* Request Table */}
-  <Card className="p-4 shadow-md border border-slate-200 rounded-2xl flex flex-col h-[400px] bg-white mt-4">
-    {/* Header */}
-    <div className="flex justify-between items-center mb-3">
-      <h3 className="font-bold text-slate-800 flex items-center gap-2">
-        <ShoppingBag className="w-5 h-5 text-[#4789A8]" />
-        Daftar Request Item
-      </h3>
-      <input
-        type="text"
-        placeholder="Cari item..."
-        className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#4789A8]"
-      />
-    </div>
+<Card className="p-4 shadow-md border border-slate-200 rounded-2xl flex flex-col h-[400px] bg-white mt-4">
+  {/* Header */}
+  <div className="flex justify-between items-center mb-3">
+    <h3 className="font-bold text-slate-800 flex items-center gap-2">
+      <ShoppingBag className="w-5 h-5 text-[#4789A8]" />
+      Daftar Request Item
+    </h3>
+    <input
+      type="text"
+      placeholder="Cari item..."
+      className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#4789A8]"
+    />
+  </div>
 
-    {/* Table */}
-    <div className="overflow-y-auto flex-1 rounded-xl max-h-[280px]">
-      <table className="w-full text-sm text-center border-collapse">
-        <thead className="bg-slate-100 text-slate-700 font-semibold sticky top-0 z-10">
-          <tr>
-            <th className="py-3 px-4">No</th>
-            <th className="py-3 px-4 text-left">Item</th>
-            <th className="py-3 px-4">Tanggal</th>
-            <th className="py-3 px-4">Jam</th>
-            <th className="py-3 px-4">Jumlah</th>
-            <th className="py-3 px-4">Satuan</th>
-            <th className="py-3 px-4">Prioritas</th>
-            <th className="py-3 px-4">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {[
-            ["1", "Laptop", "07-11-2025", "09:00", "5", "Unit", "Urgent"],
-            ["2", "Pulpen", "07-11-2025", "10:00", "100", "Pcs", "Normal"],
-            ["3", "Kertas A4", "07-11-2025", "11:00", "50", "Rim", "Low"],
-            ["4", "Printer Ink", "07-11-2025", "13:00", "10", "Botol", "Normal"],
-            ["5", "Mouse Wireless", "07-11-2025", "14:00", "15", "Unit", "Urgent"],
-            ["6", "Stapler", "07-11-2025", "15:30", "20", "Pcs", "Low"],
-          ].map(([no, item, tgl, jam, jml, sat, prioritas], i) => (
-            <tr
-              key={i}
-              className={`${
-                i % 2 === 0 ? "bg-white" : "bg-slate-50"
-              } hover:bg-slate-100 transition-colors`}
-            >
-              <td className="py-3 px-4 font-medium">{no}</td>
-              <td className="py-3 px-4 text-left font-semibold text-slate-700">{item}</td>
-              <td className="py-3 px-4 text-slate-700">{tgl}</td>
-              <td className="py-3 px-4 text-slate-700">{jam}</td>
-              <td className="py-3 px-4 text-slate-700">{jml}</td>
-              <td className="py-3 px-4 text-slate-700">{sat}</td>
-              <td
-                className={`py-3 px-4 font-semibold ${
-                  prioritas === "Urgent"
-                    ? "text-red-600"
-                    : prioritas === "Normal"
-                    ? "text-yellow-600"
-                    : "text-gray-500"
-                }`}
-              >
-                {prioritas}
-              </td>
-              <td className="py-3 px-4 flex justify-center">
-                <Button
-                  size="sm"
-                  className="flex items-center gap-1 bg-[#4789A8] text-white hover:bg-[#356b87]"
+  {/* Table */}
+  <div className="overflow-y-auto flex-1 rounded-xl ">
+    <table className="w-full text-sm text-center border-collapse">
+      <thead className="bg-slate-100 text-slate-700 font-semibold sticky top-0 z-10">
+        <tr>
+          <th className="py-3 px-4">No</th>
+          <th className="py-3 px-4 text-left">Item</th>
+          <th className="py-3 px-4">Tanggal</th>
+          <th className="py-3 px-4">Jam</th>
+          <th className="py-3 px-4">Jumlah</th>
+          <th className="py-3 px-4">Satuan</th>
+          <th className="py-3 px-4 text-left">Catatan</th>
+          <th className="py-3 px-4">Status</th>
+          <th className="py-3 px-4">Aksi</th>
+        </tr>
+      </thead>
+<tbody>
+  {[
+    ["1", "Laptop", "07-11-2025", "09:00", "5", "Unit", "Butuh segera", "Menunggu"],
+    ["2", "Pulpen", "07-11-2025", "10:00", "100", "Pcs", "Untuk kantor", "Diterima"],
+    ["3", "Kertas A4", "07-11-2025", "11:00", "50", "Rim", "Cadangan", "Ditolak"],
+  ].map(([no, item, tgl, jam, jml, sat, catatan, status], i) => {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [currentStatus, setCurrentStatus] = useState(status);
+
+    return (
+      <tr
+        key={i}
+        className={`${i % 2 === 0 ? "bg-white" : "bg-slate-50"} hover:bg-slate-100 transition-colors`}
+      >
+        <td className="py-3 px-4 font-medium">{no}</td>
+        <td className="py-3 px-4 text-left font-semibold text-slate-700">{item}</td>
+        <td className="py-3 px-4 text-slate-700">{tgl}</td>
+        <td className="py-3 px-4 text-slate-700">{jam}</td>
+        <td className="py-3 px-4 text-slate-700">{jml}</td>
+        <td className="py-3 px-4 text-slate-700">{sat}</td>
+        <td className="py-3 px-4 text-left text-slate-700">{catatan}</td>
+        <td className="py-3 px-4">
+          <span
+            className={`px-2 py-1 rounded-lg text-sm font-semibold ${
+              currentStatus === "Menunggu"
+                ? "bg-yellow-100 text-yellow-800"
+                : currentStatus === "Ditolak"
+                ? "bg-red-100 text-red-800"
+                : "bg-green-100 text-green-800"
+            }`}
+          >
+            {currentStatus}
+          </span>
+        </td>
+        <td className="py-3 px-4 flex justify-center relative">
+          {/* Tombol Edit */}
+          <Button
+            size="sm"
+            className="flex items-center gap-1 bg-[#4789A8] text-white hover:bg-[#356b87]"
+            onClick={() => setIsDropdownOpen((prev) => !prev)}
+          >
+            <Edit2 className="w-4 h-4" /> Edit
+          </Button>
+
+          {/* Dropdown Interaktif */}
+          {isDropdownOpen && (
+            <div className="absolute top-full mt-2 left-0 w-36 bg-white border border-gray-300 rounded-lg shadow-lg z-50">
+              {["Diterima", "Ditolak", "Menunggu"].map((option) => (
+                <div
+                  key={option}
+                  className={`px-4 py-2 cursor-pointer hover:bg-[#4789A8] hover:text-white rounded-md ${
+                    currentStatus === option ? "font-semibold" : ""
+                  }`}
+                  onClick={() => {
+                    setCurrentStatus(option);
+                    setIsDropdownOpen(false);
+                  }}
                 >
-                  <Edit2 className="w-4 h-4" /> Edit
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+                  {option}
+                </div>
+              ))}
+            </div>
+          )}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
 
-    <p className="text-xs text-slate-500 mt-2 italic text-left">
-      Daftar request item terbaru.
-    </p>
-  </Card>
+
+
+    </table>
+  </div>
+
+  <p className="text-xs text-slate-500 mt-2 italic text-left">
+    Daftar request item terbaru.
+  </p>
+</Card>
+
+
+
 
   {/* Riwayat Barang Masuk */}
   <Card className="p-4 shadow-md border border-slate-200 rounded-2xl flex flex-col h-[400px] bg-white mt-4">
@@ -382,7 +414,7 @@ export default function RequestDetailPage() {
             <th className="py-3 px-4 text-left">Satuan</th>
             <th className="py-3 px-4 text-left">Harga Satuan</th>
             <th className="py-3 px-4 text-left">Total Harga</th>
-            <th className="py-3 px-4">Aksi</th>
+            
           </tr>
         </thead>
         <tbody>
@@ -406,14 +438,7 @@ export default function RequestDetailPage() {
               <td className="py-3 px-4 text-left text-slate-700">{sat}</td>
               <td className="py-3 px-4 text-left text-slate-700">{harga}</td>
               <td className="py-3 px-4 text-left font-semibold text-slate-700">{total}</td>
-              <td className="py-3 px-4 flex justify-center">
-                <Button
-                  size="sm"
-                  className="flex items-center gap-1 bg-[#4789A8] text-white hover:bg-[#356b87]"
-                >
-                  <Edit2 className="w-4 h-4" /> Edit
-                </Button>
-              </td>
+              
             </tr>
           ))}
         </tbody>

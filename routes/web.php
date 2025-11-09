@@ -74,6 +74,15 @@ Route::get('/admin/requestdetail', function () {
     return Inertia::render('admin/RequestDetailPage');
 })->name('admin.requestdetail');
 ;
+Route::get('/admin/detailitemdepartment', function () {
+    return Inertia::render('admin/DetailItemDepartment');
+})->name('admin.detailitemdepartment');
+;
+Route::get('/admin/detailattendancetoday', function () {
+    return Inertia::render('admin/DetailAttendanceToday');
+})->name('admin.detailitattendancetoday');
+;
+
 
 
 Route::get('/admin/dashboard/detail/{status}', function ($status) {

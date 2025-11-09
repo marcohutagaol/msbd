@@ -22,7 +22,7 @@ export default function Dashboard() {
         <Sidebar />
       </div>
 
-      {/* === MAIN CONTENT === */}
+      
       <div
         className={`flex flex-col flex-1 min-h-screen transition-all duration-300 ${
           isSidebarOpen ? "ml-[260px]" : "ml-0"
@@ -41,11 +41,10 @@ export default function Dashboard() {
         </div>
 
         {/* === ISI HALAMAN === */}
-        <div className="flex flex-col flex-1 gap-[30px] px-[40px] pb-[40px] pt-[120px] transition-all duration-300">
+         <div className="flex flex-col flex-1 gap-[30px] px-[40px] pb-[40px] pt-[120px] transition-all duration-300">
           <UserDetail />
           <StatsToday />
           <EmployeeStatus />
-         
         </div>
       </div>
     </div>

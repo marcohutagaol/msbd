@@ -4,9 +4,7 @@ import { useState } from "react";
 import Sidebar from "../../components/admin/dashboard/Sidebar";
 import Header from "../../components/admin/dashboard/Header";
 import RequestStats from "../../components/admin/request/RequestStats";
-import RequestChart from "../../components/admin/request/RequestChart";
-import RequestTable from "../../components/admin/request/RequestTable";
-import RequestHistory from "../../components/admin/request/RequestHistory";
+
 import { Card } from "@/components/ui/card";
 
 export default function RequestItemPage() {
