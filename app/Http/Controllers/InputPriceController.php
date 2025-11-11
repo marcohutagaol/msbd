@@ -18,9 +18,9 @@ class InputPriceController extends Controller
      */
     public function index()
     {
-        // Cari request items yang approved dan belum ada purchase-nya
+        // Cari request items yang approved dan belum completed/arrived
         $requestItems = RequestItem::with(['request.user', 'request.purchase'])
-            ->where('status', 'Approved')
+            ->whereIn('status', ['Approved', 'Completed', 'Arrived'])
             ->whereDoesntHave('request.purchase') // Hanya yang belum ada purchase
             ->get()
             ->map(function ($item) {
@@ -33,7 +33,7 @@ class InputPriceController extends Controller
                     'satuan' => $item->satuan,
                     'catatan' => $item->catatan,
                     'status' => $item->status,
-                    'harga' => $item->harga, // Harga dari database (jika ada)
+                    'harga' => $item->harga,
                     'request' => [
                         'id' => $item->request->id,
                         'request_number' => $item->request->request_number,
@@ -50,7 +50,7 @@ class InputPriceController extends Controller
     }
 
     /**
-     * Konfirmasi preorder - simpan semua harga sekaligus ke purchases
+     * Konfirmasi preorder - simpan harga dan update status jadi Completed
      */
     public function confirmPreorder(Request $request)
     {
@@ -64,84 +64,42 @@ class InputPriceController extends Controller
             DB::beginTransaction();
 
             $priceData = $validated['price_data'];
-            
-            // Group by request_id untuk membuat/mengupdate purchases
-            $purchasesData = [];
-            $updatedItemIds = [];
+            $successCount = 0;
             
             foreach ($priceData as $data) {
-                $requestItem = RequestItem::with('request')->find($data['item_id']);
+                $requestItem = RequestItem::find($data['item_id']);
                 
-                if (!$requestItem) {
-                    continue;
-                }
-                
-                $requestId = $requestItem->request->id;
-                $jumlah = $requestItem->jumlah_disetujui ?? $requestItem->jumlah_diajukan;
-                $hargaSatuan = $data['harga'];
-                $totalHargaItem = $hargaSatuan * $jumlah;
-                
-                // Update harga di request_item
-                $requestItem->update(['harga' => $hargaSatuan]);
-                $updatedItemIds[] = $requestItem->id;
-                
-                if (!isset($purchasesData[$requestId])) {
-                    $purchasesData[$requestId] = [
-                        'request_id' => $requestId,
-                        'total_harga' => 0,
-                        'items' => []
-                    ];
-                }
-                
-                $purchasesData[$requestId]['total_harga'] += $totalHargaItem;
-                $purchasesData[$requestId]['items'][] = [
-                    'item_id' => $data['item_id'],
-                    'harga' => $hargaSatuan,
-                    'total' => $totalHargaItem
-                ];
-            }
-
-            // Create or update purchases
-            foreach ($purchasesData as $requestId => $purchaseData) {
-                $purchase = Purchase::where('request_id', $requestId)->first();
-                
-                if ($purchase) {
-                    $purchase->update([
-                        'total_harga' => $purchaseData['total_harga'],
-                        'status' => 'Approved',
-                        'tanggal_beli' => now()
+                // Hanya update item yang berstatus Approved
+                if ($requestItem && $requestItem->status === 'Approved') {
+                    $requestItem->update([
+                        'harga' => $data['harga'],
+                        'status' => 'Completed'
                     ]);
-                } else {
-                    Purchase::create([
-                        'request_id' => $requestId,
-                        'total_harga' => $purchaseData['total_harga'],
-                        'status' => 'Approved',
-                        'tanggal_beli' => now()
-                    ]);
+                    $successCount++;
                 }
-
-                // Update status request items menjadi Completed
-                RequestItem::whereIn('id', $updatedItemIds)
-                    ->where('request_id', $requestId)
-                    ->update(['status' => 'Completed']);
             }
 
             DB::commit();
 
-            return redirect()->back()->with([
-                'success' => 'Preorder berhasil dikonfirmasi dan semua harga telah disimpan!',
-                'purchases_created' => count($purchasesData)
-            ]);
+            if ($successCount > 0) {
+                return redirect()->back()->with([
+                    'success' => 'Preorder berhasil dikonfirmasi! ' . $successCount . ' item telah diproses.'
+                ]);
+            } else {
+                return redirect()->back()->with([
+                    'error' => 'Tidak ada item yang dapat diproses. Pastikan item berstatus Approved.'
+                ]);
+            }
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
     /**
-     * Tandai barang sudah sampai
+     * Tandai barang sudah sampai - ubah status dari Completed ke Arrived
+     * Support untuk single item atau multiple items
      */
     public function markAsArrived(Request $request)
     {
@@ -150,76 +108,74 @@ class InputPriceController extends Controller
             'item_ids.*' => 'exists:request_items,id',
         ]);
 
-        $itemIds = $validated['item_ids'];
-        
         try {
-            // Update status dan tanggal terima
-            RequestItem::whereIn('id', $itemIds)
-                ->update([
-                    'status' => 'Completed',
-                    'received_date' => now()
-                ]);
+            DB::beginTransaction();
 
-            return redirect()->back()->with('success', 'Barang berhasil ditandai sudah diterima!');
+            $itemIds = $validated['item_ids'];
+            $updatedCount = 0;
+            $skippedCount = 0;
+
+            foreach ($itemIds as $itemId) {
+                $requestItem = RequestItem::find($itemId);
+                
+                // Hanya update jika status adalah Completed
+                if ($requestItem) {
+                    if ($requestItem->status === 'Completed') {
+                        $requestItem->update([
+                            'status' => 'Arrived',
+                            'received_date' => now()
+                        ]);
+                        $updatedCount++;
+                    } else {
+                        $skippedCount++;
+                    }
+                }
+            }
+
+            DB::commit();
+
+            if ($updatedCount > 0) {
+                $message = $updatedCount . ' barang berhasil ditandai sudah sampai!';
+                if ($skippedCount > 0) {
+                    $message .= ' (' . $skippedCount . ' item dilewati karena bukan status Completed)';
+                }
+                return redirect()->back()->with('success', $message);
+            } else {
+                return redirect()->back()->with('error', 'Tidak ada barang yang dapat ditandai. Pastikan status barang adalah Completed.');
+            }
 
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
     /**
-     * Get summary data dari purchases untuk request tertentu
+     * Tandai semua barang yang Completed jadi Arrived
      */
-    public function getSummary(Request $request, $requestId)
+    public function markAllArrived(Request $request)
     {
-        $purchase = Purchase::where('request_id', $requestId)
-            ->with('request')
-            ->first();
-        
-        if (!$purchase) {
-            // Jika belum ada purchase, ambil data request
-            $requestModel = RequestModel::find($requestId);
-            
-            return response()->json([
-                'id' => null,
-                'request_id' => (int) $requestId,
-                'request_number' => $requestModel?->request_number ?? '',
-                'total_harga' => 0,
-                'status' => 'Pending',
-                'tanggal_beli' => null
-            ]);
+        try {
+            DB::beginTransaction();
+
+            // Update status semua item yang Completed jadi Arrived
+            $updatedItems = RequestItem::where('status', 'Completed')
+                ->update([
+                    'status' => 'Arrived',
+                    'received_date' => now()
+                ]);
+
+            DB::commit();
+
+            if ($updatedItems > 0) {
+                return redirect()->back()->with('success', $updatedItems . ' barang berhasil ditandai sudah sampai!');
+            } else {
+                return redirect()->back()->with('error', 'Tidak ada barang dengan status Completed.');
+            }
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
-        
-        return response()->json([
-            'id' => $purchase->id,
-            'request_id' => (int) $requestId,
-            'request_number' => $purchase->request->request_number,
-            'total_harga' => (float) $purchase->total_harga,
-            'status' => $purchase->status,
-            'tanggal_beli' => $purchase->tanggal_beli
-        ]);
-    }
-
-    /**
-     * Get detail items untuk request tertentu (optional)
-     */
-    public function getRequestItems($requestId)
-    {
-        $items = RequestItem::where('request_id', $requestId)
-            ->where('status', 'Approved')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'nama_barang' => $item->nama_barang,
-                    'jumlah_diajukan' => $item->jumlah_diajukan,
-                    'jumlah_disetujui' => $item->jumlah_disetujui,
-                    'satuan' => $item->satuan,
-                    'harga' => $item->harga,
-                    'catatan' => $item->catatan,
-                ];
-            });
-
-        return response()->json($items);
     }
 }

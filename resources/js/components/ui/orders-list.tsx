@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Pencil, Trash2 } from "lucide-react"
+import { Pencil, Trash2, Package, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -20,7 +20,7 @@ interface OrderItem {
   jumlah_disetujui?: number
   satuan: string
   catatan?: string
-  status: "Pending" | "Approved" | "Rejected" | "Completed"
+  status: "Pending" | "Approved" | "Rejected" | "Completed" | "Arrived"
   harga?: number
   request?: {
     id: number
@@ -35,19 +35,24 @@ interface OrdersListProps {
   disabled?: boolean
   orders?: OrderItem[]
   onPriceUpdate?: (itemId: number, harga: number) => void
+  onMarkArrived?: (itemId: number) => void
+  showArrivedButton?: boolean
 }
 
 export function OrdersList({
   mode = "default",
   disabled = false,
-  orders = [], // Default value untuk orders
-  onPriceUpdate
+  orders = [],
+  onPriceUpdate,
+  onMarkArrived,
+  showArrivedButton = false
 }: OrdersListProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [localOrders, setLocalOrders] = useState<OrderItem[]>(orders)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isPriceOpen, setIsPriceOpen] = useState(false)
+  const [isArrivedOpen, setIsArrivedOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null)
   const [editValues, setEditValues] = useState({
     jumlah_diajukan: 0,
@@ -75,7 +80,8 @@ export function OrdersList({
       "Pending": { color: "bg-yellow-100 text-yellow-700 border-yellow-300", label: "Menunggu" },
       "Approved": { color: "bg-green-100 text-green-700 border-green-300", label: "Disetujui" },
       "Rejected": { color: "bg-red-100 text-red-700 border-red-300", label: "Ditolak" },
-      "Completed": { color: "bg-blue-100 text-blue-700 border-blue-300", label: "Selesai" }
+      "Completed": { color: "bg-blue-100 text-blue-700 border-blue-300", label: "Selesai" },
+      "Arrived": { color: "bg-purple-100 text-purple-700 border-purple-300", label: "Tiba" }
     }
 
     const config = statusConfig[status] || statusConfig.Pending
@@ -90,6 +96,11 @@ export function OrdersList({
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount)
+  }
+
+  // Cek apakah status sudah final (Completed atau Arrived)
+  const isFinalStatus = (status: OrderItem["status"]) => {
+    return status === "Completed" || status === "Arrived"
   }
 
   const handleEditClick = (order: OrderItem) => {
@@ -112,6 +123,33 @@ export function OrdersList({
     setPriceValue(price.toString())
     setDisplayPrice(formatRupiah(price))
     setIsPriceOpen(true)
+  }
+
+  const handleArrivedClick = (order: OrderItem) => {
+    setSelectedOrder(order)
+    setIsArrivedOpen(true)
+  }
+
+  const handleMarkArrivedConfirm = () => {
+    if (!selectedOrder) return
+
+    if (onMarkArrived) {
+      onMarkArrived(selectedOrder.id)
+    }
+    
+    // Update local state
+    setLocalOrders((prev) =>
+      prev.map((o) =>
+        o.id === selectedOrder.id
+          ? {
+              ...o,
+              status: "Arrived",
+            }
+          : o
+      )
+    )
+    
+    setIsArrivedOpen(false)
   }
 
   const handleEditSave = () => {
@@ -200,7 +238,22 @@ export function OrdersList({
 
   const ActionButtons = ({ order }: { order: OrderItem }) => (
     <div className="flex items-center justify-center gap-3 mt-5 sm:mt-0 pl-3">
-      {mode === "price" && (
+      {/* Tombol Package untuk Completed items */}
+      {mode === "price" && order.status === "Completed" && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-purple-600 hover:scale-110 transition-all duration-300 bg-purple-50 hover:bg-purple-100 border border-purple-200"
+          onClick={() => handleArrivedClick(order)}
+          disabled={disabled}
+          title="Tandai Barang Sampai"
+        >
+          <Package className="w-4 h-4" />
+        </Button>
+      )}
+      
+      {/* Tombol Pencil untuk input harga (hanya untuk status Approved) */}
+      {mode === "price" && order.status === "Approved" && (
         <Button
           variant="ghost"
           size="icon"
@@ -217,6 +270,7 @@ export function OrdersList({
         </Button>
       )}
       
+      {/* Tombol untuk mode selain price dan monitoring */}
       {mode !== "price" && mode !== "monitoring" && (
         <>
           <Button
@@ -270,9 +324,7 @@ export function OrdersList({
                     </p>
                   )}
                 </div>
-                {mode === "monitoring" && (
-                  <StatusBadge status={order.status} />
-                )}
+                <StatusBadge status={order.status} />
               </div>
 
               <div className="space-y-2 text-sm text-slate-700">
@@ -289,7 +341,11 @@ export function OrdersList({
                 {(mode === "monitoring" || mode === "price") && (
                   <div className="flex justify-between">
                     <span className="font-medium">Harga Satuan:</span>
-                    {order.harga && order.harga > 0 ? (
+                    {isFinalStatus(order.status) ? (
+                      <span className="flex items-center justify-center text-green-600 bg-green-50 px-2 py-1 rounded">
+                        <CheckCircle2 className="w-5 h-5" />
+                      </span>
+                    ) : order.harga && order.harga > 0 ? (
                       <span className="font-semibold text-green-700">
                         {formatRupiah(order.harga)}
                       </span>
@@ -298,12 +354,20 @@ export function OrdersList({
                     )}
                   </div>
                 )}
-                {order.harga && order.harga > 0 && (
-                  <div className="flex justify-between bg-green-50 p-2 rounded border border-green-200">
+                {(mode === "monitoring" || mode === "price") && (
+                  <div className="flex justify-between">
                     <span className="font-medium">Total:</span>
-                    <span className="font-bold text-green-700">
-                      {formatRupiah(order.harga * (order.jumlah_disetujui || order.jumlah_diajukan))}
-                    </span>
+                    {isFinalStatus(order.status) ? (
+                      <span className="flex items-center justify-center text-green-600 bg-green-50 px-2 py-1 rounded">
+                        <CheckCircle2 className="w-5 h-5" />
+                      </span>
+                    ) : order.harga && order.harga > 0 ? (
+                      <span className="font-bold text-green-700">
+                        {formatRupiah(order.harga * (order.jumlah_disetujui || order.jumlah_diajukan))}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-xs">-</span>
+                    )}
                   </div>
                 )}
                 <div>
@@ -382,7 +446,10 @@ export function OrdersList({
                 </>
               )}
               <th className="text-center py-4 px-4 text-sm font-semibold text-slate-700">
-                {mode === "monitoring" ? "Status" : "Aksi"}
+                Status
+              </th>
+              <th className="text-center py-4 px-4 text-sm font-semibold text-slate-700">
+                Aksi
               </th>
             </tr>
           </thead>
@@ -391,8 +458,8 @@ export function OrdersList({
               <tr>
                 <td 
                   colSpan={
-                    mode === "monitoring" ? 10 : 
-                    mode === "price" ? 8 : 5
+                    mode === "monitoring" ? 11 : 
+                    mode === "price" ? 9 : 6
                   } 
                   className="py-8 text-center text-gray-500"
                 >
@@ -431,7 +498,11 @@ export function OrdersList({
                   </td>
                   {(mode === "monitoring" || mode === "price") && (
                     <td className="py-4 px-4 text-center font-medium">
-                      {order.harga && order.harga > 0 ? (
+                      {isFinalStatus(order.status) ? (
+                        <span className="flex items-center justify-center text-green-600 ">
+                          <CheckCircle2 className="w-5 h-5" />
+                        </span>
+                      ) : order.harga && order.harga > 0 ? (
                         <span className="text-green-700">{formatRupiah(order.harga)}</span>
                       ) : (
                         <span className="text-red-500 text-xs bg-red-50 px-2 py-1 rounded">Belum diisi</span>
@@ -440,7 +511,11 @@ export function OrdersList({
                   )}
                   {(mode === "monitoring" || mode === "price") && (
                     <td className="py-4 px-4 text-center font-bold">
-                      {order.harga && order.harga > 0 ? (
+                      {isFinalStatus(order.status) ? (
+                        <span className="flex items-center justify-center text-green-600 ">
+                          <CheckCircle2 className="w-5 h-5" />
+                        </span>
+                      ) : order.harga && order.harga > 0 ? (
                         <span className="text-blue-700">
                           {formatRupiah(order.harga * (order.jumlah_disetujui || order.jumlah_diajukan))}
                         </span>
@@ -465,11 +540,10 @@ export function OrdersList({
                     </>
                   )}
                   <td className="py-4 px-4 text-center">
-                    {mode === "monitoring" ? (
-                      <StatusBadge status={order.status} />
-                    ) : (
-                      <ActionButtons order={order} />
-                    )}
+                    <StatusBadge status={order.status} />
+                  </td>
+                  <td className="py-4 px-4 text-center">
+                    <ActionButtons order={order} />
                   </td>
                 </tr>
               ))
@@ -605,6 +679,58 @@ export function OrdersList({
               disabled={!priceValue || parseInt(priceValue) <= 0}
             >
               Simpan Harga
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Mark as Arrived Dialog */}
+      <Dialog open={isArrivedOpen} onOpenChange={setIsArrivedOpen}>
+        <DialogContent className="max-w-md rounded-xl border border-purple-100 shadow-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <Package className="w-5 h-5 text-purple-600" />
+              Tandai Barang Sampai
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+              <p className="text-sm text-slate-600">Informasi Item:</p>
+              <p className="font-medium text-slate-900">
+                {selectedOrder?.nama_barang}
+              </p>
+              <p className="text-sm text-slate-600">
+                Jumlah: {selectedOrder?.jumlah_disetujui || selectedOrder?.jumlah_diajukan} {selectedOrder?.satuan}
+              </p>
+              {selectedOrder?.harga && selectedOrder.harga > 0 && (
+                <p className="text-sm text-slate-600">
+                  Harga: {formatRupiah(selectedOrder.harga)}
+                </p>
+              )}
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
+              <p className="text-xs text-yellow-800">
+                ⚠️ Tindakan ini akan mengubah status barang dari <strong>Completed</strong> menjadi <strong>Arrived</strong>.
+                Pastikan barang sudah benar-benar sampai sebelum melanjutkan.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="flex justify-end gap-3 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsArrivedOpen(false)}
+              className="border-gray-300 text-gray-700 hover:bg-gray-100"
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleMarkArrivedConfirm}
+              className="bg-purple-600 text-white hover:bg-purple-700"
+            >
+              Ya, Barang Sudah Sampai
             </Button>
           </DialogFooter>
         </DialogContent>

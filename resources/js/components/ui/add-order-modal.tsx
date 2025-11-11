@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { X, Search, Trash2 } from "lucide-react"
+import { useState, useEffect } from "react"
+import { X, Search, Trash2, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface OrderItem {
@@ -44,6 +44,39 @@ export default function AddOrderModal({ isOpen, onClose, onAdd }: AddOrderModalP
   const filteredProducts = sampleProducts.filter((product) => 
     product.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  // Fungsi generate kode otomatis
+  const generateKodeBarang = () => {
+    if (!formData.nama_barang) return ""
+    
+    const words = formData.nama_barang.split(' ')
+    let kode = ''
+    
+    if (words.length === 1) {
+      // Jika hanya satu kata, ambil 3-4 karakter pertama
+      kode = words[0].substring(0, 4).toUpperCase()
+    } else {
+      // Jika multiple words, ambil inisial dari 2-3 kata pertama
+      kode = words.slice(0, 3).map(word => word.charAt(0)).join('').toUpperCase()
+    }
+    
+    // Tambahkan timestamp untuk membuat unik
+    const timestamp = Date.now().toString().slice(-4)
+    return `${kode}${timestamp}`
+  }
+
+  // Auto-generate kode ketika nama barang berubah
+  useEffect(() => {
+    if (formData.nama_barang && !formData.kode_barang) {
+      const generatedKode = generateKodeBarang()
+      setFormData(prev => ({ ...prev, kode_barang: generatedKode }))
+    }
+  }, [formData.nama_barang])
+
+  const handleGenerateKode = () => {
+    const generatedKode = generateKodeBarang()
+    setFormData(prev => ({ ...prev, kode_barang: generatedKode }))
+  }
 
   const handleAddItem = () => {
     if (formData.nama_barang && formData.jumlah && formData.satuan) {
@@ -130,13 +163,28 @@ export default function AddOrderModal({ isOpen, onClose, onAdd }: AddOrderModalP
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Kode Barang
                 </label>
-                <input
-                  type="text"
-                  value={formData.kode_barang}
-                  onChange={(e) => setFormData({ ...formData, kode_barang: e.target.value })}
-                  placeholder="Kode barang (optional)"
-                  className="w-full rounded-lg border-2 border-blue-300 px-4 py-3 font-poppins text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={formData.kode_barang}
+                    onChange={(e) => setFormData({ ...formData, kode_barang: e.target.value })}
+                    placeholder="Kode akan digenerate otomatis"
+                    className="flex-1 rounded-lg border-2 border-blue-300 px-4 py-3 font-poppins text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleGenerateKode}
+                    disabled={!formData.nama_barang}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold border-2 border-blue-600 rounded-lg px-4 py-3 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    title="Generate Kode Barang"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Generate
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Kode akan digenerate otomatis dari nama barang
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -222,7 +270,7 @@ export default function AddOrderModal({ isOpen, onClose, onAdd }: AddOrderModalP
                           <p className="text-sm font-medium text-gray-700">{item.nama_barang}</p>
                           <p className="text-xs text-gray-500">
                             {item.jumlah} {item.satuan}
-                            {item.kode_barang && ` • ${item.kode_barang}`}
+                            {item.kode_barang && ` • Kode: ${item.kode_barang}`}
                           </p>
                         </div>
                         <button
