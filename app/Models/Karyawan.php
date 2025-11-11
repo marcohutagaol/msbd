@@ -12,4 +12,8 @@ class Karyawan extends Model
     {
         return $this->belongsTo(Department::class, 'kode_department', 'kode_department');
     }
+
+    public function permissions() { 
+      return $this->hasMany(Permission::class, 'id_karyawan', 'id_karyawan'); 
+    }
 }

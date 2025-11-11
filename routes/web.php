@@ -68,16 +68,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/table-inventory', fn() => Inertia::render('inventory/table-inventory'))->name('table-inventory');
 
     // =======================
-    // ADMIN
-    // =======================
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::get('/admin/absensi', fn() => Inertia::render('admin/Absensi'))->name('admin.absensi');
-    Route::get('/admin/inventory', fn() => Inertia::render('admin/Inventory'))->name('admin.inventory');
-    Route::get('/admin/requestitem', fn() => Inertia::render('admin/RequestItem'))->name('admin.requestitem');
-    Route::get('/admin/requestdetail', fn() => Inertia::render('admin/RequestDetailPage'))->name('admin.requestdetail');
-    Route::get('/admin/dashboard/detail/{status}', fn($status) => Inertia::render('admin/StatusDetail', ['status' => $status]))->name('admin.dashboard.detail');
-
-    // =======================
     // PURCHASING APPROVAL
     // =======================
     Route::post('/purchasing-detail/{departmentId}/approve-all', [PurchasingDetailController::class, 'approveAll'])->name('purchasing.approve-all');
@@ -98,6 +88,18 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/transfer/batch', [TransferBarangController::class, 'transferBatch'])->name('transfer.batch');
     Route::get('/api/department/items', [TransferBarangController::class, 'getDepartmentItems'])->name('department.items');
     Route::patch('/api/department/items/{id}/quantity', [TransferBarangController::class, 'updateDepartmentItemQuantity'])->name('department.items.update-quantity');
+
+    // =======================
+    // ADMIN
+    // =======================
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/absensi', [AdminController::class, 'absensi'])->name('absensi');
+        Route::get('/inventory', [AdminController::class, 'inventory'])->name('inventory');
+        Route::get('/requestitem', fn() => Inertia::render('admin/RequestItem'))->name('requestitem');
+        Route::get('/requestdetail', fn() => Inertia::render('admin/RequestDetailPage'))->name('requestdetail');
+        Route::get('/dashboard/detail/{status}', fn($status) => Inertia::render('admin/StatusDetail', ['status' => $status]))->name('dashboard.detail');
+    });
 });
 
 // =======================
