@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Absensi;
+use App\Models\AdminRequestItem;
 use App\Models\Inventory;
 use App\Models\Karyawan;
 use App\Models\Permission;
@@ -170,7 +171,7 @@ class AdminController extends Controller
 
   public function requestItem()
   {
-    $requests = RequestItem::with(['department', 'detail'])
+    $requests = AdminRequestItem::with(['department', 'detail'])
       ->get()
       ->groupBy('kode_department')
       ->map(function ($group) {

@@ -6,22 +6,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class RequestItem extends Model
+class Purchase extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'request_id',
-        'kode_barang',
-        'nama_barang',
-        'jumlah_diajukan',
-        'jumlah_disetujui',
+        'tanggal_beli',
+        'total_harga',
         'status',
-        'departemen', // Tambahkan departemen ke fillable
-        'catatan',
-        'satuan'
     ];
 
+    protected $casts = [
+        'tanggal_beli' => 'date', // Ubah dari datetime ke date sesuai database
+        'total_harga' => 'decimal:2',
+    ];
+
+    /**
+     * Relasi ke Request
+     */
     public function request(): BelongsTo
     {
         return $this->belongsTo(Request::class);
