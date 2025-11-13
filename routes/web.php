@@ -77,12 +77,14 @@ Route::get('/table-inventory', function () {
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 Route::get('/admin/absensi', [AdminController::class, 'absensi'])->name('admin.absensi');
 Route::get('/admin/inventory', [AdminController::class, 'inventory'])->name('admin.inventory');
+Route::get('/admin/requestitem', [AdminController::class, 'requestItem'])->name('admin.requestitem');
 
 
-Route::get('/admin/requestitem', function () {
-    return Inertia::render('admin/RequestItem');
-})->name('admin.requestitem');
-;
+// Route::get('/admin/requestitem', function () {
+//     return Inertia::render('admin/RequestItem');
+// })->name('admin.requestitem');
+// ;
+
 Route::get('/admin/requestdetail', function () {
     return Inertia::render('admin/RequestDetailPage');
 })->name('admin.requestdetail');
