@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Absensi;
+use App\Models\AdminRequestItem;
 use App\Models\Inventory;
 use App\Models\Karyawan;
 use App\Models\Permission;
+use App\Models\RequestDetail;
+use App\Models\RequestItem;
 use Carbon\Carbon;
+use DB;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -164,4 +168,35 @@ class AdminController extends Controller
       'inventories' => $inventories
     ]);
   }
+
+  public function requestItem()
+  {
+    $requests = AdminRequestItem::with(['department', 'detail'])
+      ->get()
+      ->groupBy('kode_department')
+      ->map(function ($group) {
+        // Ambil semua detail dari request_items
+        $detail = $group->flatMap->detail;
+
+        return [
+          'name' => $group->first()->department->nama_department ?? 'Unknown',
+          'totalRequest' => $group->count(),
+          'completed' => $detail->where('status', 'Completed')->count(),
+          'pending' => $detail->where('status', 'Pending')->count(),
+          'canceled' => $detail->where('status', 'Rejected')->count(),
+          'growth' => rand(-5, 10),
+          'isPositive' => rand(0, 1) == 1,
+          'totalCost' => $detail->sum('total_cost') ?? 0,
+        ];
+      })
+      ->sortByDesc('totalRequest')
+      ->values();
+
+    return inertia('admin/RequestItem', [
+      'departments' => $requests,
+    ]);
+  }
+
+
+
 }

@@ -60,7 +60,49 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/permissions', [PermissionController::class, 'index'])->name('permissions.index');
     Route::post('/api/permissions', [PermissionController::class, 'store'])->name('permissions.store');
     Route::delete('/api/permissions/{id}', [PermissionController::class, 'destroy'])->name('permissions.destroy');
+  
+  // ADMIN
+Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+Route::get('/admin/absensi', [AdminController::class, 'absensi'])->name('admin.absensi');
+Route::get('/admin/inventory', [AdminController::class, 'inventory'])->name('admin.inventory');
+Route::get('/admin/requestitem', [AdminController::class, 'requestItem'])->name('admin.requestitem');
+  
+  Route::get('/admin/requestdetail', function () {
+    return Inertia::render('admin/RequestDetailPage');
+})->name('admin.requestdetail');
+;
 
+
+// Route::get('/admin/requestitem', function () {
+//     return Inertia::render('admin/RequestItem');
+// })->name('admin.requestitem');
+// ;
+
+
+
+
+Route::get('/admin/dashboard/detail/{status}', function ($status) {
+
+        return Inertia::render('admin/StatusDetail', [
+            'status' => $status,
+        ]);
+    })->name('admin.dashboard.detail');
+
+
+// Toko Route
+Route::get('/toko', function () {
+    return Inertia::render('table/searchtoko');
+})->name('searchtoko');
+
+// Purchasing Approval Routes
+Route::post('/purchasing-detail/{departmentId}/approve-all', [PurchasingDetailController::class, 'approveAll'])
+    ->name('purchasing.approve-all');
+
+Route::post('/purchasing-detail/item/{itemId}/update-status', [PurchasingDetailController::class, 'updateStatus'])
+    ->name('purchasing.update-status');
+
+// Input Price Routes
+Route::middleware(['auth'])->group(function () {
     // =======================
     // INVENTORY
     // =======================
