@@ -115,6 +115,10 @@ Route::get('/api/inventory/gudang/{id}', [GudangController::class, 'show']);
 Route::post('/api/inventory/transfer', [TransferBarangController::class, 'saveTransfer']);
 Route::get('/api/inventory/departemen', [TransferBarangController::class, 'getDepartemenItems']);
 
+
+Route::get('/chat', fn() => Inertia::render('chat/page'))->name('chat');
+
+
 // =======================
 // SETTINGS
 // =======================
