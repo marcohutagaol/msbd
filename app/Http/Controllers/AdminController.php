@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Absensi;
 use App\Models\AdminRequestItem;
+use App\Models\Department;
 use App\Models\Inventory;
 use App\Models\Karyawan;
 use App\Models\Permission;
@@ -179,6 +180,7 @@ class AdminController extends Controller
         $detail = $group->flatMap->detail;
 
         return [
+          'code' => $group->first()->kode_department,
           'name' => $group->first()->department->nama_department ?? 'Unknown',
           'totalRequest' => $group->count(),
           'completed' => $detail->where('status', 'Completed')->count(),
@@ -197,6 +199,126 @@ class AdminController extends Controller
     ]);
   }
 
+  public function requestDetail($dept)
+  {
+    $requests = AdminRequestItem::with('department', 'detail')
+      ->where('kode_department', $dept)
+      ->get();
 
+    // Hitung statistik
+    $totalOrder = $requests->count();
+    $completed = $requests->flatMap->detail->where('status', 'Completed')->count();
+    $pending = $requests->flatMap->detail->where('status', 'Pending')->count();
+    $canceled = $requests->flatMap->detail->where('status', 'Canceled')->count();
 
+    // Total Cost
+    $totalCost = 0;
+    foreach ($requests as $req) {
+      foreach ($req->detail as $d) {
+        $totalCost += ((int) $d->qty * (int) $d->price);
+      }
+    }
+
+    // Template minggu
+    // $weekTemplate = [
+    //   'Mon' => 0,
+    //   'Tue' => 0,
+    //   'Wed' => 0,
+    //   'Thu' => 0,
+    //   'Fri' => 0,
+    //   'Sat' => 0,
+    //   'Sun' => 0
+    // ];
+
+    // // Ambil data chart dari DB
+    // $raw = RequestDetail::selectRaw('
+    //             DAYNAME(created_at) as day,
+    //             DATE(created_at) as date,
+    //             COUNT(*) as total
+    //         ')
+    //   ->whereHas('request', function ($q) use ($dept) {
+    //     $q->where('kode_department', $dept);
+    //   })
+    //   ->whereBetween('created_at', [
+    //     now()->subDays(6)->startOfDay(),
+    //     now()->endOfDay()
+    //   ])
+    //   ->groupBy('day', 'date')
+    //   ->get()
+    //   ->map(function ($item) {
+    //     return [
+    //       'day' => Carbon::parse($item->date)->translatedFormat('D'),
+    //       'total' => $item->total
+    //     ];
+    //   });
+
+    // // Gabungkan data DB ke template minggu
+    // foreach ($raw as $item) {
+    //   $weekTemplate[$item['day']] = $item['total'];
+    // }
+
+    // // Ubah ke format array chart final
+    // $chart = collect($weekTemplate)
+    //   ->map(function ($total, $day) {
+    //     return [
+    //       'day' => $day,
+    //       'total' => $total
+    //     ];
+    //   })
+    //   ->values();
+
+    // Data tabel
+    $requestTable = RequestDetail::with('request')
+      ->whereHas('request', function ($q) use ($dept) {
+        $q->where('kode_department', $dept);
+      })
+      ->orderBy('created_at', 'desc')
+      ->get()
+      ->map(function ($item) {
+        return [
+          "id" => $item->id,
+          "item_name" => $item->nama_barang,
+          "qty" => (int) $item->jumlah_diajukan,
+          "price" => (int) $item->price,
+          "created_at" => $item->created_at->format('Y-m-d'),
+          "status" => $item->request->status ?? "unknown",
+          "request_id" => $item->request_id
+        ];
+      });
+
+      $history = RequestDetail::with('request')
+      ->where('status', 'Completed')
+      ->whereHas('request', function ($q) use ($dept) {
+        $q->where('kode_department', $dept);
+      })
+      ->orderBy('created_at', 'desc')
+      ->get()
+      ->map(function ($item) {
+        return [
+          "id" => $item->id,
+          "item_name" => $item->nama_barang,
+          "qty" => (int) $item->jumlah_diajukan,
+          "price" => (int) $item->price,
+          "created_at" => $item->created_at->format('Y-m-d'),
+          "status" => $item->request->status ?? "unknown",
+          "request_id" => $item->request_id
+        ];
+      });
+
+    return Inertia::render('admin/RequestDetailPage', [
+      'deptName' => Department::where('kode_department', $dept)->first()->nama_department ?? 'Unknown',
+
+      'stats' => [
+        'totalOrder' => $totalOrder,
+        'pending' => $pending,
+        'completed' => $completed,
+        'canceled' => $canceled,
+        'totalCost' => $totalCost
+      ],
+
+      // 'chart' => $chart,
+      'requests' => $requestTable,
+      'history' => $history,
+    ]);
+  }
 }
