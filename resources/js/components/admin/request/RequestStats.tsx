@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 interface Department {
+  code: string;
   name: string;
   totalRequest: number;
   completed: number;
@@ -153,7 +154,7 @@ export default function RequestStats() {
 
               {/* Tombol Detail */}
               <div className="mt-5 flex justify-end">
-                <Link href={`/admin/requestdetail`}>
+                <Link href={`/admin/requestdetail/${dept.code}`}>
                   <Button className="bg-[#4789A8] hover:bg-[#356b87] text-white px-4 py-1.5 rounded-lg shadow-sm transition-all">
                     Detail
                   </Button>

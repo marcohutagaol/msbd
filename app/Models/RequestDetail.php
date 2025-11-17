@@ -10,6 +10,6 @@ class RequestDetail extends Model
 
     public function request() 
     {
-      return $this->belongsTo(RequestItem::class, 'request_id', 'id');
+      return $this->belongsTo(AdminRequestItem::class, 'request_id', 'id');
     }
 }
