@@ -3,12 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Absen;
+use App\Models\Absensi;
+use App\Models\AdminRequestItem;
+use App\Models\Department;
+use App\Models\Inventory;
 use App\Models\Karyawan;
 use App\Models\Permission;
+use App\Models\RequestDetail;
+use App\Models\RequestItem;
 use Carbon\Carbon;
+use DB;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB as FacadesDB;
 
 class AdminController extends Controller
 {
@@ -297,5 +304,106 @@ class AdminController extends Controller
             default:
                 return 'Tanpa Keterangan';
         }
+    }
+
+    public function requestItem()
+    {
+        $requests = AdminRequestItem::with(['department', 'detail'])
+            ->get()
+            ->groupBy('kode_department')
+            ->map(function ($group) {
+                // Ambil semua detail dari request_items
+                $detail = $group->flatMap->detail;
+
+                return [
+                    'code' => $group->first()->kode_department,
+                    'name' => $group->first()->department->nama_department ?? 'Unknown',
+                    'totalRequest' => $group->count(),
+                    'completed' => $detail->where('status', 'Completed')->count(),
+                    'pending' => $detail->where('status', 'Pending')->count(),
+                    'canceled' => $detail->where('status', 'Rejected')->count(),
+                    'growth' => rand(-5, 10),
+                    'isPositive' => rand(0, 1) == 1,
+                    'totalCost' => $detail->sum('total_cost') ?? 0,
+                ];
+            })
+            ->sortByDesc('totalRequest')
+            ->values();
+
+        return Inertia::render('admin/RequestItem', [
+            'departments' => $requests,
+        ]);
+    }
+
+    public function requestDetail($dept)
+    {
+        $requests = AdminRequestItem::with('department', 'detail')
+            ->where('kode_department', $dept)
+            ->get();
+
+        // Hitung statistik
+        $totalOrder = $requests->count();
+        $completed = $requests->flatMap->detail->where('status', 'Completed')->count();
+        $pending = $requests->flatMap->detail->where('status', 'Pending')->count();
+        $canceled = $requests->flatMap->detail->where('status', 'Canceled')->count();
+
+        // Total Cost
+        $totalCost = 0;
+        foreach ($requests as $req) {
+            foreach ($req->detail as $d) {
+                $totalCost += ((int) $d->qty * (int) $d->price);
+            }
+        }
+
+        // Data tabel
+        $requestTable = RequestDetail::with('request')
+            ->whereHas('request', function ($q) use ($dept) {
+                $q->where('kode_department', $dept);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    "id" => $item->id,
+                    "item_name" => $item->nama_barang,
+                    "qty" => (int) $item->jumlah_diajukan,
+                    "price" => (int) $item->price,
+                    "created_at" => $item->created_at->format('Y-m-d'),
+                    "status" => $item->request->status ?? "unknown",
+                    "request_id" => $item->request_id
+                ];
+            });
+
+        $history = RequestDetail::with('request')
+            ->where('status', 'Completed')
+            ->whereHas('request', function ($q) use ($dept) {
+                $q->where('kode_department', $dept);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    "id" => $item->id,
+                    "item_name" => $item->nama_barang,
+                    "qty" => (int) $item->jumlah_diajukan,
+                    "price" => (int) $item->price,
+                    "created_at" => $item->created_at->format('Y-m-d'),
+                    "status" => $item->request->status ?? "unknown",
+                    "request_id" => $item->request_id
+                ];
+            });
+
+        return Inertia::render('admin/RequestDetailPage', [
+            'deptName' => Department::where('kode_department', $dept)->first()->nama_department ?? 'Unknown',
+            'stats' => [
+                'totalOrder' => $totalOrder,
+                'pending' => $pending,
+                'completed' => $completed,
+                'canceled' => $canceled,
+                'totalCost' => $totalCost
+            ],
+            'requests' => $requestTable,
+            'history' => $history,
+        ]);
     }
 }

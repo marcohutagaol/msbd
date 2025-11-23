@@ -78,6 +78,12 @@ const mainNavItems: NavItem[] = [
         href: '/inventory',
         icon: LayoutGrid,
     },
+
+    {
+        title: 'Chat',
+        href: '/chat',
+        icon: LayoutGrid,
+    },
 ];
 
 const footerNavItems: NavItem[] = [

@@ -22,4 +22,14 @@ class Department extends Model
     {
         return $this->hasMany(Karyawan::class, 'kode_department', 'kode_department');
     }
+
+    public function inventory()
+    {
+        return $this->hasMany(Inventory::class);
+    }
+
+    public function request()
+    {
+        return $this->hasMany(RequestItem::class);
+    }
 }
