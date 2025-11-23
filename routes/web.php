@@ -1,18 +1,20 @@
 <?php
 
-use App\Http\Controllers\TransferBarangController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\AdminController;
+
+use App\Http\Controllers\GudangController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\InputPriceController;
 use App\Http\Controllers\MonitoringController;
 use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\GudangController;
+use App\Http\Controllers\DepartemenItemController;
+use App\Http\Controllers\TransferBarangController;
 use App\Http\Controllers\PurchasingDetailController;
+use App\Http\Controllers\RequestManagementController;
 use App\Http\Controllers\DashboardPurchasingController;
 
 // =======================
@@ -60,6 +62,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/permissions', [PermissionController::class, 'index'])->name('permissions.index');
     Route::post('/api/permissions', [PermissionController::class, 'store'])->name('permissions.store');
     Route::delete('/api/permissions/{id}', [PermissionController::class, 'destroy'])->name('permissions.destroy');
+    
 
     // =======================
     // INVENTORY
@@ -97,7 +100,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/absensi', [AdminController::class, 'absensi'])->name('absensi');
         Route::get('/inventory', [AdminController::class, 'inventory'])->name('inventory');
         Route::get('/requestitem', fn() => Inertia::render('admin/RequestItem'))->name('requestitem');
-        Route::get('/requestdetail', fn() => Inertia::render('admin/RequestDetailPage'))->name('requestdetail');
+        
+        // Update route untuk menerima parameter kode_department
+        Route::get('/requestdetail/{kode_department}', 
+            fn($kode_department) => Inertia::render('admin/RequestDetailPage', ['kode_department' => $kode_department])
+        )->name('requestdetail');
+        
         Route::get('/dashboard/detail/{status}', fn($status) => Inertia::render('admin/StatusDetail', ['status' => $status]))->name('dashboard.detail');
     });
 });
@@ -115,7 +123,23 @@ Route::get('/api/inventory/gudang/{id}', [GudangController::class, 'show']);
 Route::post('/api/inventory/transfer', [TransferBarangController::class, 'saveTransfer']);
 Route::get('/api/inventory/departemen', [TransferBarangController::class, 'getDepartemenItems']);
 
+Route::get('/api/departemen-items', [DepartemenItemController::class, 'index'])->name('departemen-items.index');
+Route::get('/api/departemen-items/{departemen}', [DepartemenItemController::class, 'getByDepartemen'])->name('departemen-items.show');
+Route::get('/api/departemen', [DepartemenItemController::class, 'getDepartemen'])->name('departemen.list');
+
 // =======================
-// SETTINGS
+// REQUEST MANAGEMENT API ROUTES
 // =======================
+Route::get('/api/departments-stats', [RequestManagementController::class, 'getDepartmentsStats']);
+Route::get('/api/requests-by-department/{kode_department}', [RequestManagementController::class, 'getRequestsByDepartment']);
+
+Route::middleware(['auth'])->group(function () {
+    // REQUEST MANAGEMENT
+    Route::get('/admin/requests-management', [RequestManagementController::class, 'index'])
+        ->name('admin.requests-management');
+    
+    Route::get('/admin/requests-detail/{kodeDepartment}', [RequestManagementController::class, 'showDetail'])
+        ->name('admin.requests-detail');
+});
+
 require __DIR__.'/settings.php';

@@ -17,6 +17,8 @@ export interface Permission {
   status: "pending" | "approved" | "rejected"
   createdBy: string
   createdDate: string
+  document_path?: string
+  document_url?: string
   [key: string]: any
 }
 
@@ -44,37 +46,55 @@ export default function PermissionDashboard() {
     }
   }
 
-  const handleAddPermission = async (newPermission: Permission) => {
-    try {
-      const formData = new FormData()
-      
-      // Add all fields to FormData
-      Object.keys(newPermission).forEach(key => {
-        if (newPermission[key] !== null && newPermission[key] !== undefined) {
-          if (key === 'document' && newPermission[key] instanceof File) {
-            formData.append('document', newPermission[key])
-          } else if (key !== 'id' && key !== 'status' && key !== 'createdBy' && key !== 'createdDate') {
-            formData.append(key, newPermission[key])
-          }
+const handleAddPermission = async (newPermission: Permission) => {
+  try {
+    const formData = new FormData()
+    
+    console.log('New Permission Data:', newPermission);
+    
+    // Add all fields to FormData
+    Object.keys(newPermission).forEach(key => {
+      if (newPermission[key] !== null && newPermission[key] !== undefined) {
+        if (key === 'document' && newPermission[key] instanceof File) {
+          // Kirim file dengan field name 'document'
+          console.log('Adding file to FormData:', newPermission[key].name);
+          formData.append('document', newPermission[key]);
+        } else if (key !== 'id' && key !== 'status' && key !== 'createdBy' && key !== 'createdDate') {
+          // Kirim field lainnya sesuai dengan nama di database
+          console.log(`Adding field ${key}:`, newPermission[key]);
+          formData.append(key, newPermission[key].toString());
         }
-      })
+      }
+    })
 
-      const response = await axios.post('/api/permissions', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
+    // Tambahkan type permission
+    formData.append('type', newPermission.type);
 
-      // Add new permission to state
-      setPermissions([response.data.permission, ...permissions])
-      setActiveForm(null)
-      alert('Izin berhasil diajukan!')
-    } catch (error: any) {
-      console.error('Error submitting permission:', error)
-      const errorMessage = error.response?.data?.message || 'Gagal mengajukan izin'
-      alert(errorMessage)
+    // Debug FormData contents
+    console.log('FormData entries:');
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
     }
+
+    const response = await axios.post('/api/permissions', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+
+    console.log('Response from server:', response.data);
+
+    // Add new permission to state dengan data dari response
+    setPermissions([response.data.permission, ...permissions])
+    setActiveForm(null)
+    alert('Izin berhasil diajukan!')
+  } catch (error: any) {
+    console.error('Error submitting permission:', error)
+    const errorMessage = error.response?.data?.message || 'Gagal mengajukan izin'
+    alert(errorMessage)
+    throw error
   }
+}
 
   if (loading) {
     return (

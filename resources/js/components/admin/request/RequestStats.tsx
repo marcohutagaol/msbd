@@ -14,9 +14,12 @@ import {
   Plus,
   Bell,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Department {
-  name: string;
+  id_department: number;
+  kode_department: string;
+  nama_department: string;
   totalRequest: number;
   completed: number;
   pending: number;
@@ -26,54 +29,50 @@ interface Department {
   totalCost: number;
 }
 
-const departments: Department[] = [
-  {
-    name: "Front Office",
-    totalRequest: 40,
-    completed: 32,
-    pending: 6,
-    canceled: 2,
-    growth: 8,
-    isPositive: true,
-    totalCost: 12000000,
-  },
-  {
-    name: "House Keeping",
-    totalRequest: 35,
-    completed: 28,
-    pending: 5,
-    canceled: 2,
-    growth: 5,
-    isPositive: true,
-    totalCost: 9500000,
-  },
-  {
-    name: "F&B",
-    totalRequest: 38,
-    completed: 30,
-    pending: 6,
-    canceled: 2,
-    growth: -2,
-    isPositive: false,
-    totalCost: 11000000,
-  },
-  {
-    name: "Accounting & Administration",
-    totalRequest: 42,
-    completed: 36,
-    pending: 4,
-    canceled: 2,
-    growth: 10,
-    isPositive: true,
-    totalCost: 13500000,
-  },
-];
-
 const formatShortRupiah = (angka: number) => {
   return "Rp" + (angka / 1000).toFixed(1) + "K";
 };
 
 export default function RequestStats() {
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDepartmentsStats = async () => {
+      try {
+        const response = await fetch('/api/departments-stats');
+        const data = await response.json();
+        setDepartments(data);
+      } catch (error) {
+        console.error('Error fetching departments stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDepartmentsStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {[1, 2].map((i) => (
+          <Card key={i} className="p-6 bg-white shadow-md rounded-2xl border border-gray-100 animate-pulse">
+            <div className="space-y-4">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+              <div className="grid grid-cols-3 gap-3">
+                {[1, 2, 3].map((j) => (
+                  <div key={j} className="h-16 bg-gray-200 rounded"></div>
+                ))}
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {departments.map((dept, idx) => {
@@ -93,7 +92,7 @@ export default function RequestStats() {
 
         return (
           <Card
-            key={idx}
+            key={dept.id_department}
             className="p-6 bg-white shadow-md rounded-2xl border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-between relative"
           >
             {/* Notifikasi di pojok kanan atas */}
@@ -112,7 +111,7 @@ export default function RequestStats() {
                 <div>
                   <h3 className="text-slate-700 text-sm font-medium flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-[#4789A8]" />
-                    {dept.name}
+                    {dept.nama_department}
                   </h3>
                   <div className="flex items-center gap-2 mt-1">
                     <p className="text-3xl font-bold text-slate-900">
@@ -189,11 +188,13 @@ export default function RequestStats() {
             {/* Tombol Detail */}
             <div className="mt-5 flex justify-between items-center">
               <div className="flex items-center gap-2 mt-2">
-                <span className="flex items-center gap-1 bg-[#E6F4F1] text-[#356b87] text-xs font-semibold px-2 py-1 rounded-full">
-                  <Plus className="w-3 h-3" /> +12 new request
-                </span>
+                {newRequest > 0 && (
+                  <span className="flex items-center gap-1 bg-[#E6F4F1] text-[#356b87] text-xs font-semibold px-2 py-1 rounded-full">
+                    <Plus className="w-3 h-3" /> +{newRequest} new request
+                  </span>
+                )}
               </div>
-              <Link href={`/admin/requestdetail`}>
+              <Link href={`/admin/requestdetail/${dept.kode_department}`}>
                 <Button className="bg-[#4789A8] hover:bg-[#356b87] text-white px-4 py-1.5 rounded-lg shadow-sm transition-all">
                   Detail
                 </Button>

@@ -2,166 +2,300 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Absensi;
-use App\Models\Inventory;
+use App\Models\Absen;
 use App\Models\Karyawan;
 use App\Models\Permission;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
-  public function dashboard()
-  {
-    $hadir = Absensi::whereDate('waktu_absen', today())->count();
-    $sakit = Permission::where('reason', 'like', '%sakit')->whereDate('created_at', today())->count();
-    $izin = Permission::where('status', 'approved')->whereDate('created_at', today())->count();
-    $belum_absen = Karyawan::with('absensi')->
-      whereNotIn('id_karyawan', function ($query) {
-        $query->select('id_absensi')
-          ->from('detail_absen')
-          ->whereDate('created_at', today());
-      })->count();
-    $tanpa_keterangan = Karyawan::whereNotIn('id_karyawan', function ($query) {
-      $query->select('id_absensi')
-        ->from('detail_absen')
-        ->whereDate('created_at', today());
-    })
-      ->whereNotIn('id_karyawan', function ($query) {
-        $query->select('id_karyawan')
-          ->from('permissions')
-          ->whereDate('created_at', today());
-      })
-      ->count();
+    public function dashboard()
+    {
+        $today = now()->toDateString();
 
+        // Hitung hadir berdasarkan tabel absen
+        $hadir = Absen::whereDate('tanggal_absen', $today)
+            ->whereIn('status_absen', ['HADIR', 'TERLAMBAT'])
+            ->distinct('id_karyawan')
+            ->count('id_karyawan');
 
-    $employees = Karyawan::with(['department'])
-      ->get()
-      ->map(function ($karyawan) {
-        // Ambil absensi HARI INI berdasarkan id_karyawan
-        $absen = Absensi::where('id_absensi', $karyawan->id_karyawan)
-          ->whereDate('waktu_absen', today())
-          ->first();
+        // Hitung sakit dari permissions
+        $sakit = Permission::where('type', 'sick')
+            ->where('status', 'approved')
+            ->whereDate('created_at', $today)
+            ->count();
 
-        $time = $absen && $absen->waktu_absen
-          ? Carbon::parse($absen->waktu_absen)->format('H:i')
-          : '';
+        // Hitung izin dari permissions
+        $izin = Permission::where('type', 'permission')
+            ->where('status', 'approved')
+            ->whereDate('created_at', $today)
+            ->count();
 
-        return [
-          'id' => $karyawan->id_karyawan,
-          'name' => $karyawan->nama,
-          'department' => $karyawan->department->nama_department,
-          'time' => $time,
-          'status' => $absen->tipe_absen ?? '',
-        ];
-      });
+        // Total karyawan aktif
+        $totalKaryawan = Karyawan::where('status_aktif', 'AKTIF')->count();
 
-    return Inertia::render('admin/Dashboard', [
-      'hadir' => $hadir,
-      'sakit' => $sakit,
-      'izin' => $izin,
-      'belum_absen' => $belum_absen,
-      'tanpa_keterangan' => $tanpa_keterangan,
-      'employees' => $employees
-    ]);
-  }
+        // Hitung belum absen
+        $belum_absen = $totalKaryawan - $hadir;
 
-  public function absensi()
-  {
-    $today = now()->toDateString();
+        // Hitung tanpa keterangan (belum absen dan tidak ada permission)
+        $karyawanSudahPermission = Permission::where('status', 'approved')
+            ->whereDate('created_at', $today)
+            ->distinct('user_id')
+            ->count('user_id');
 
-    // === DETAIL HARIAN ===
-    $employees = Karyawan::with(['department'])
-      ->get()
-      ->map(function ($karyawan) use ($today) {
-        // Ambil data absen berdasarkan karyawan & tanggal hari ini
-        $absenMasuk = Absensi::where('id_absensi', $karyawan->id_karyawan)
-          ->where('tipe_absen', 'DATANG')
-          ->whereDate('waktu_absen', $today)
-          ->first();
+        $tanpa_keterangan = $belum_absen - $karyawanSudahPermission;
 
-        $absenKeluar = Absensi::where('id_absensi', $karyawan->id_karyawan)
-          ->where('tipe_absen', 'BALIK')
-          ->whereDate('waktu_absen', $today)
-          ->first();
+        // Data employees untuk tabel
+        $employees = Karyawan::with(['department', 'detailKaryawan'])
+            ->where('status_aktif', 'AKTIF')
+            ->get()
+            ->map(function ($karyawan) use ($today) {
+                // Ambil data absen hari ini
+                $absen = Absen::where('id_karyawan', $karyawan->id_karyawan)
+                    ->whereDate('tanggal_absen', $today)
+                    ->first();
 
-        // Format waktu absen (jam:menit)
-        $masuk = $absenMasuk && $absenMasuk->waktu_absen
-          ? Carbon::parse($absenMasuk->waktu_absen)->format('H:i')
-          : '-';
+                // Format waktu
+                $time = $absen && $absen->jam_datang
+                    ? Carbon::parse($absen->jam_datang)->format('H:i')
+                    : '';
 
-        $keluar = $absenKeluar && $absenKeluar->waktu_absen
-          ? Carbon::parse($absenKeluar->waktu_absen)->format('H:i')
-          : '-';
+                // Tentukan status
+                $status = $absen ? $absen->status_absen : 'Belum Absen';
 
-        // Tentukan status absensi
-        $status = $absenMasuk ? 'Hadir' : 'Tanpa Keterangan';
+                return [
+                    'id' => $karyawan->id_karyawan,
+                    'name' => $karyawan->detailKaryawan->nama ?? $karyawan->id_karyawan,
+                    'department' => $karyawan->department->nama_department ?? '-',
+                    'time' => $time,
+                    'status' => $status,
+                ];
+            });
 
-        return [
-          'id' => $karyawan->id_karyawan,
-          'name' => $karyawan->nama,
-          'department' => $karyawan->department->nama_department ?? '-',
-          'jam_kerja' => '08.00 - 12.00',
-          'absen_masuk' => $masuk,
-          'absen_keluar' => $keluar,
-          'status' => $status,
-        ];
-      });
+        return Inertia::render('admin/Dashboard', [
+            'hadir' => $hadir,
+            'sakit' => $sakit,
+            'izin' => $izin,
+            'belum_absen' => $belum_absen,
+            'tanpa_keterangan' => $tanpa_keterangan,
+            'employees' => $employees
+        ]);
+    }
 
-    // === REKAP MINGGUAN ===
-    $weeklyData = collect(range(0, 6))->map(function ($i) {
-      $date = now()->startOfWeek()->addDays($i);
+    public function absensi()
+    {
+        $today = now()->toDateString();
 
-      $hadir = Absensi::whereDate('waktu_absen', $date)
-        ->where('tipe_absen', 'DATANG')
-        ->count();
+        // === DETAIL HARIAN ===
+        $employees = Karyawan::with(['department', 'detailKaryawan'])
+            ->where('status_aktif', 'AKTIF')
+            ->get()
+            ->map(function ($karyawan) use ($today) {
+                
+                // Ambil nama dari detail_karyawan
+                $nama = $karyawan->detailKaryawan->nama ?? $karyawan->id_karyawan;
 
-      $izin = Permission::where('status', 'approved')
-        ->whereDate('created_at', $date)
-        ->count();
+                // Ambil data absen dari tabel absen
+                $absenHariIni = Absen::where('id_karyawan', $karyawan->id_karyawan)
+                    ->whereDate('tanggal_absen', $today)
+                    ->first();
 
-      $sakit = Permission::where('reason', 'like', '%sakit%')
-        ->whereDate('created_at', $date)
-        ->count();
+                // Format waktu absen
+                $masuk = $absenHariIni && $absenHariIni->jam_datang
+                    ? Carbon::parse($absenHariIni->jam_datang)->format('H:i')
+                    : '-';
 
-      $total = Karyawan::count();
-      $tanpa = max($total - ($hadir + $izin + $sakit), 0);
+                $keluar = $absenHariIni && $absenHariIni->jam_balik
+                    ? Carbon::parse($absenHariIni->jam_balik)->format('H:i')
+                    : '-';
 
-      return [
-        'day' => $date->translatedFormat('D'), // contoh: Sen, Sel, Rab
-        'date' => $date->format('d M'),
-        'hadir' => $hadir,
-        'izin' => $izin,
-        'sakit' => $sakit,
-        'tanpa' => $tanpa,
-      ];
-    });
+                // Cek Permission (Izin/Sakit) untuk hari ini
+                $permission = DB::table('permissions')
+                    ->where('user_id', $karyawan->id_karyawan)
+                    ->whereDate('created_at', $today)
+                    ->where('status', 'approved')
+                    ->first();
 
-    return Inertia::render('admin/Absensi', [
-      'absensiData' => $employees,
-      'weeklyData' => $weeklyData,
-    ]);
-  }
+                // Tentukan status absensi
+                $status = 'Tanpa Keterangan'; // default
+                
+                if ($permission) {
+                    if ($permission->type === 'sick') {
+                        $status = 'Sakit';
+                    } elseif ($permission->type === 'permission') {
+                        $status = 'Izin';
+                    } else {
+                        $status = 'Izin';
+                    }
+                } elseif ($absenHariIni) {
+                    // Konversi status dari database ke format yang lebih user-friendly
+                    $statusDb = $absenHariIni->status_absen;
+                    switch ($statusDb) {
+                        case 'HADIR':
+                            $status = 'Hadir';
+                            break;
+                        case 'TERLAMBAT':
+                            $status = 'Terlambat';
+                            break;
+                        case 'IZIN':
+                            $status = 'Izin';
+                            break;
+                        case 'CUTI':
+                            $status = 'Cuti';
+                            break;
+                        case 'TIDAK_HADIR':
+                            $status = 'Tidak Hadir';
+                            break;
+                        default:
+                            $status = 'Hadir'; // default jika status tidak dikenali
+                    }
+                }
 
-  public function inventory()
-  {
-    $inventories = Inventory::with('department')
-      ->get()
-      ->map(function ($inventory) {
+                return [
+                    'id' => $karyawan->id_karyawan,
+                    'name' => $nama,
+                    'department' => $karyawan->department->nama_department ?? '-',
+                    'jam_kerja' => '08:00 - 17:00',
+                    'absen_masuk' => $masuk,
+                    'absen_keluar' => $keluar,
+                    'status' => $status,
+                ];
+            });
 
-        return [
-          'id' => $inventory->id,
-          'nama_barang' => $inventory->nama_barang,
-          'department' => $inventory->department->nama_department ?? '-',
-          'stok' => $inventory->stok,
+        // === REKAP MINGGUAN ===
+        $weeklyData = collect(range(0, 6))->map(function ($i) {
+            $date = now()->startOfWeek()->addDays($i);
+            $dateString = $date->toDateString();
 
-        ];
-      });
+            // Hitung Hadir (berdasarkan tabel absen dengan status HADIR atau TERLAMBAT)
+            $hadir = DB::table('absen')
+                ->whereIn('status_absen', ['HADIR', 'TERLAMBAT'])
+                ->whereDate('tanggal_absen', $dateString)
+                ->distinct('id_karyawan')
+                ->count('id_karyawan');
 
+            // Hitung Izin (permission dengan type = permission)
+            $izin = DB::table('permissions')
+                ->where('type', 'permission')
+                ->where('status', 'approved')
+                ->whereDate('created_at', $dateString)
+                ->count();
 
-    return Inertia::render('admin/Inventory', [
-      'inventories' => $inventories
-    ]);
-  }
+            // Hitung Sakit (permission dengan type = sick)
+            $sakit = DB::table('permissions')
+                ->where('type', 'sick')
+                ->where('status', 'approved')
+                ->whereDate('created_at', $dateString)
+                ->count();
+
+            // Total karyawan aktif
+            $total = DB::table('karyawan')
+                ->where('status_aktif', 'AKTIF')
+                ->count();
+            
+            // Tanpa Keterangan = Total - (Hadir + Izin + Sakit)
+            $tanpa = max($total - ($hadir + $izin + $sakit), 0);
+
+            return [
+                'day' => $date->translatedFormat('D'),
+                'date' => $date->format('d M'),
+                'hadir' => $hadir,
+                'izin' => $izin,
+                'sakit' => $sakit,
+                'tanpa' => $tanpa,
+            ];
+        });
+
+        return Inertia::render('admin/Absensi', [
+            'absensiData' => $employees,
+            'weeklyData' => $weeklyData,
+        ]);
+    }
+
+    public function inventory()
+    {
+        // GUNAKAN TABEL GUDANG YANG ADA DI DATABASE ANDA
+        $inventories = DB::table('gudang')
+            ->select('id', 'nama_barang', 'stok', 'satuan')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'nama_barang' => $item->nama_barang,
+                    'department' => 'Gudang', // Default department karena tabel gudang tidak ada kolom department
+                    'stok' => $item->stok,
+                    'satuan' => $item->satuan,
+                ];
+            });
+
+        return Inertia::render('admin/Inventory', [
+            'inventories' => $inventories
+        ]);
+    }
+
+    // Method untuk detail berdasarkan status (jika diperlukan)
+    public function dashboardDetail($status)
+    {
+        $today = now()->toDateString();
+        
+        $employees = Karyawan::with(['department', 'detailKaryawan'])
+            ->where('status_aktif', 'AKTIF')
+            ->get()
+            ->map(function ($karyawan) use ($today, $status) {
+                // Ambil data absen
+                $absen = Absen::where('id_karyawan', $karyawan->id_karyawan)
+                    ->whereDate('tanggal_absen', $today)
+                    ->first();
+
+                // Tentukan status karyawan
+                $karyawanStatus = 'Tanpa Keterangan';
+                if ($absen) {
+                    $karyawanStatus = $this->convertStatus($absen->status_absen);
+                }
+
+                // Filter berdasarkan status yang diminta
+                if ($karyawanStatus !== $status) {
+                    return null;
+                }
+
+                return [
+                    'id' => $karyawan->id_karyawan,
+                    'name' => $karyawan->detailKaryawan->nama ?? $karyawan->id_karyawan,
+                    'department' => $karyawan->department->nama_department ?? '-',
+                    'status' => $karyawanStatus,
+                    'waktu_absen' => $absen && $absen->jam_datang 
+                        ? Carbon::parse($absen->jam_datang)->format('H:i') 
+                        : '-',
+                ];
+            })
+            ->filter() // Hapus null values
+            ->values(); // Reset array keys
+
+        return Inertia::render('admin/StatusDetail', [
+            'status' => $status,
+            'employees' => $employees
+        ]);
+    }
+
+    // Method helper untuk konversi status
+    private function convertStatus($statusDb)
+    {
+        switch ($statusDb) {
+            case 'HADIR':
+                return 'Hadir';
+            case 'TERLAMBAT':
+                return 'Terlambat';
+            case 'IZIN':
+                return 'Izin';
+            case 'CUTI':
+                return 'Cuti';
+            case 'TIDAK_HADIR':
+                return 'Tidak Hadir';
+            default:
+                return 'Tanpa Keterangan';
+        }
+    }
 }
