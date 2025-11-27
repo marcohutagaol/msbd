@@ -14,6 +14,7 @@ import {
   Plus,
   Bell,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Department {
   code: string;

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('transfer_barang', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('gudang_id')->nullable(); // relasi ke tabel gudang
+            $table->unsignedBigInteger('gudang_id')->nullable();
             $table->string('nama_barang');
             $table->integer('jumlah');
             $table->string('satuan')->nullable();

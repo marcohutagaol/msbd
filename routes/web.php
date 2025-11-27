@@ -1,18 +1,19 @@
 <?php
 
-use App\Http\Controllers\TransferBarangController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\GudangController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\InputPriceController;
 use App\Http\Controllers\MonitoringController;
 use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\GudangController;
+use App\Http\Controllers\DepartemenItemController;
+use App\Http\Controllers\TransferBarangController;
 use App\Http\Controllers\PurchasingDetailController;
+use App\Http\Controllers\RequestManagementController;
 use App\Http\Controllers\DashboardPurchasingController;
 
 // =======================
@@ -24,7 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // =======================
-// AUTH PROTECTED ROUTES
+// AUTHENTICATED ROUTES
 // =======================
 Route::middleware(['auth'])->group(function () {
 
@@ -42,13 +43,17 @@ Route::middleware(['auth'])->group(function () {
   Route::get('/dashboard-purchasing', [DashboardPurchasingController::class, 'index'])->name('dashboard-purchasing');
   Route::get('/dashboard-purchasing/department/{id}', [DashboardPurchasingController::class, 'getDepartmentDetails'])->name('dashboard-purchasing.department');
   Route::get('/purchasing/{departmentId}', [PurchasingDetailController::class, 'show'])->name('purchasing.detail');
+  Route::post('/purchasing-detail/{departmentId}/approve-all', [PurchasingDetailController::class, 'approveAll'])->name('purchasing.approve-all');
+  Route::post('/purchasing-detail/item/{itemId}/update-status', [PurchasingDetailController::class, 'updateStatus'])->name('purchasing.update-status');
 
   Route::get('/request', fn() => Inertia::render('table/request'))->name('request');
   Route::get('/request-item', [RequestController::class, 'index'])->name('request-item');
   Route::post('/requests', [RequestController::class, 'store'])->name('requests.store');
   Route::get('/requests/history', [RequestController::class, 'getRequestHistory'])->name('requests.history');
 
-  // Monitoring
+  // =======================
+  // MONITORING
+  // =======================
   Route::get('/monitoring-item', [MonitoringController::class, 'index'])->name('monitoring-item');
   Route::patch('/request-items/{id}', [MonitoringController::class, 'update'])->name('request-items.update');
   Route::delete('/request-items/{id}', [MonitoringController::class, 'destroy'])->name('request-items.destroy');
@@ -61,56 +66,11 @@ Route::middleware(['auth'])->group(function () {
   Route::post('/api/permissions', [PermissionController::class, 'store'])->name('permissions.store');
   Route::delete('/api/permissions/{id}', [PermissionController::class, 'destroy'])->name('permissions.destroy');
 
-
-  // ADMIN
-  Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-  Route::get('/admin/absensi', [AdminController::class, 'absensi'])->name('admin.absensi');
-  Route::get('/admin/inventory', [AdminController::class, 'inventory'])->name('admin.inventory');
-  Route::get('/admin/requests', [AdminController::class, 'requestItem'])->name('admin.requestitem');
-  Route::get('/admin/requestdetail/{dept}', [AdminController::class, 'requestDetail'])->name('admin.requestdetail');
-});
-
-// Route::get('/admin/requestitem', function () {
-//     return Inertia::render('admin/RequestItem');
-// })->name('admin.requestitem');
-// ;
-
-
-
-
-Route::get('/admin/dashboard/detail/{status}', function ($status) {
-
-  return Inertia::render('admin/StatusDetail', [
-    'status' => $status,
-  ]);
-})->name('admin.dashboard.detail');
-
-
-// Toko Route
-Route::get('/toko', function () {
-  return Inertia::render('table/searchtoko');
-})->name('searchtoko');
-
-// Purchasing Approval Routes
-Route::post('/purchasing-detail/{departmentId}/approve-all', [PurchasingDetailController::class, 'approveAll'])
-  ->name('purchasing.approve-all');
-
-Route::post('/purchasing-detail/item/{itemId}/update-status', [PurchasingDetailController::class, 'updateStatus'])
-  ->name('purchasing.update-status');
-
-// Input Price Routes
-Route::middleware(['auth'])->group(function () {
   // =======================
   // INVENTORY
   // =======================
   Route::get('/inventory', fn() => Inertia::render('inventory/page'))->name('inventory');
   Route::get('/table-inventory', fn() => Inertia::render('inventory/table-inventory'))->name('table-inventory');
-
-  // =======================
-  // PURCHASING APPROVAL
-  // =======================
-  Route::post('/purchasing-detail/{departmentId}/approve-all', [PurchasingDetailController::class, 'approveAll'])->name('purchasing.approve-all');
-  Route::post('/purchasing-detail/item/{itemId}/update-status', [PurchasingDetailController::class, 'updateStatus'])->name('purchasing.update-status');
 
   // =======================
   // INPUT PRICE
@@ -127,36 +87,44 @@ Route::middleware(['auth'])->group(function () {
   Route::post('/api/transfer/batch', [TransferBarangController::class, 'transferBatch'])->name('transfer.batch');
   Route::get('/api/department/items', [TransferBarangController::class, 'getDepartmentItems'])->name('department.items');
   Route::patch('/api/department/items/{id}/quantity', [TransferBarangController::class, 'updateDepartmentItemQuantity'])->name('department.items.update-quantity');
+  Route::post('/api/inventory/transfer', [TransferBarangController::class, 'saveTransfer']);
+  Route::get('/api/inventory/departemen', [TransferBarangController::class, 'getDepartemenItems']);
 
   // =======================
-  // ADMIN
+  // TOKO
   // =======================
-  Route::prefix('admin')->name('admin.')->group(function () {
+  Route::get('/toko', fn() => Inertia::render('table/searchtoko'))->name('searchtoko');
+
+  // =======================
+  // ADMIN ROUTES
+  // =======================
+  Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/absensi', [AdminController::class, 'absensi'])->name('absensi');
     Route::get('/inventory', [AdminController::class, 'inventory'])->name('inventory');
     Route::get('/requestitem', fn() => Inertia::render('admin/RequestItem'))->name('requestitem');
-    Route::get('/requestdetail', fn() => Inertia::render('admin/RequestDetailPage'))->name('requestdetail');
+    Route::get('/requestdetail/{kode_department}', fn($kode_department) => Inertia::render('admin/RequestDetailPage', ['kode_department' => $kode_department]))->name('requestdetail');
     Route::get('/dashboard/detail/{status}', fn($status) => Inertia::render('admin/StatusDetail', ['status' => $status]))->name('dashboard.detail');
+    Route::get('/requests-management', [RequestManagementController::class, 'index'])->name('requests-management');
+    Route::get('/requests-detail/{kodeDepartment}', [RequestManagementController::class, 'showDetail'])->name('requests-detail');
   });
+
+
+  // =======================
+  // REQUEST MANAGEMENT API
+  // =======================
+  Route::get('/api/requests-by-department/{kode_department}', [RequestManagementController::class, 'getRequestsByDepartment']);
+
 });
 
 // =======================
-// PUBLIC ROUTES
-// =======================
-Route::get('/toko', fn() => Inertia::render('table/searchtoko'))->name('searchtoko');
-
-// =======================
-// API ROUTES (PUBLIC)
+// PUBLIC API ROUTES
 // =======================
 Route::get('/api/inventory/gudang', [GudangController::class, 'index']);
 Route::get('/api/inventory/gudang/{id}', [GudangController::class, 'show']);
-Route::post('/api/inventory/transfer', [TransferBarangController::class, 'saveTransfer']);
-Route::get('/api/inventory/departemen', [TransferBarangController::class, 'getDepartemenItems']);
-
-
-Route::get('/chat', fn() => Inertia::render('chat/page'))->name('chat');
-
+Route::get('/api/departemen-items', [DepartemenItemController::class, 'index'])->name('departemen-items.index');
+Route::get('/api/departemen-items/{departemen}', [DepartemenItemController::class, 'getByDepartemen'])->name('departemen-items.show');
+Route::get('/api/departemen', [DepartemenItemController::class, 'getDepartemen'])->name('departemen.list');
 
 // =======================
 // SETTINGS

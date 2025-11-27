@@ -27,6 +27,41 @@ const CustomTooltip = ({ active, payload }: any) => {
     return null;
 };
 
+interface RequestItem {
+    id: number;
+    request_id: number;
+    nama_barang: string;
+    jumlah_diajukan: number;
+    jumlah_disetujui: number;
+    status: string;
+    satuan: string;
+    departemen: string;
+    catatan: string;
+    created_at: string;
+}
+
+interface DepartmentData {
+    request_number: string;
+    status: string;
+    request_date: string;
+    totalItems: number;
+    totalCost: number;
+    completed: number;
+    pending: number;
+    items: RequestItem[];
+    chartData: Array<{
+        day: string;
+        date: string;
+        total: number;
+    }>;
+}
+
+// Fix: Tambahkan index signature untuk PageProps
+interface PageProps {
+    kode_department: string;
+    [key: string]: any; // Index signature
+}
+
 export default function RequestDetailPage() {
     // Ambil data dari Laravel
     const { stats, chart, requests, history, deptName } = usePage()
@@ -78,7 +113,7 @@ export default function RequestDetailPage() {
                                         {deptName}
                                     </h1>
                                     <p className="text-sm text-gray-500">
-                                        Detail aktivitas 
+                                        Detail aktivitas
                                     </p>
                                 </div>
                             </div>

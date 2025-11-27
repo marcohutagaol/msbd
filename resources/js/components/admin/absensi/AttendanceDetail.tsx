@@ -35,40 +35,52 @@ export default function AttendanceDetail() {
   const badgeBase =
     "flex items-center justify-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full border min-w-[110px] min-h-[32px]";
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Hadir":
-        return (
-          <Badge className={`${badgeBase} bg-green-100 text-green-700 border-green-200`}>
-            <UserCheck size={13} /> Hadir
-          </Badge>
-        );
-      case "Izin":
-        return (
-          <Badge className={`${badgeBase} bg-yellow-100 text-yellow-700 border-yellow-200`}>
-            <Clock4 size={13} /> Izin
-          </Badge>
-        );
-      case "Sakit":
-        return (
-          <Badge className={`${badgeBase} bg-blue-100 text-blue-700 border-blue-200`}>
-            <AlertCircle size={13} /> Sakit
-          </Badge>
-        );
-      case "Tanpa Keterangan":
-        return (
-          <Badge className={`${badgeBase} bg-red-100 text-red-700 border-red-200`}>
-            <UserX size={13} /> Tanpa Ket.
-          </Badge>
-        );
-      default:
-        return (
-          <Badge className={`${badgeBase} bg-slate-100 text-slate-700 border-slate-200`}>
-            <AlertCircle size={13} /> Belum Absen
-          </Badge>
-        );
+ // Dalam komponen getStatusBadge, tambahkan pengecekan untuk status database
+const getStatusBadge = (status: string) => {
+    // Normalisasi status ke uppercase untuk konsistensi
+    const normalizedStatus = status.toUpperCase();
+    
+    switch (normalizedStatus) {
+        case "HADIR":
+        case "HADIR":
+            return (
+                <Badge className={`${badgeBase} bg-green-100 text-green-700 border-green-200`}>
+                    <UserCheck size={13} /> Hadir
+                </Badge>
+            );
+        case "IZIN":
+            return (
+                <Badge className={`${badgeBase} bg-yellow-100 text-yellow-700 border-yellow-200`}>
+                    <Clock4 size={13} /> Izin
+                </Badge>
+            );
+        case "SAKIT":
+            return (
+                <Badge className={`${badgeBase} bg-blue-100 text-blue-700 border-blue-200`}>
+                    <AlertCircle size={13} /> Sakit
+                </Badge>
+            );
+        case "TERLAMBAT":
+            return (
+                <Badge className={`${badgeBase} bg-orange-100 text-orange-700 border-orange-200`}>
+                    <Clock size={13} /> Terlambat
+                </Badge>
+            );
+        case "TANPA KETERANGAN":
+        case "TIDAK_HADIR":
+            return (
+                <Badge className={`${badgeBase} bg-red-100 text-red-700 border-red-200`}>
+                    <UserX size={13} /> Tanpa Ket.
+                </Badge>
+            );
+        default:
+            return (
+                <Badge className={`${badgeBase} bg-slate-100 text-slate-700 border-slate-200`}>
+                    <AlertCircle size={13} /> {status}
+                </Badge>
+            );
     }
-  };
+};
 
   const rekap = {
     hadir: allData.filter((d) => d.status === "Hadir").length,

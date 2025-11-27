@@ -25,11 +25,32 @@ class Permission extends Model
         'vacation_type',
         'vacation_reason',
         'location',
-        'document_path',
+        'document_path', // Full path disimpan di sini
     ];
 
-    // JANGAN PAKAI CASTS untuk date
-    // Biarkan sebagai string saja
+    // Accessor untuk mendapatkan full URL
+    public function getDocumentUrlAttribute()
+    {
+        return $this->document_path ? \Illuminate\Support\Facades\Storage::url($this->document_path) : null;
+    }
+
+    // Accessor untuk mendapatkan nama file asli
+    public function getDocumentNameAttribute()
+    {
+        if (!$this->document_path) {
+            return null;
+        }
+        
+        $parts = explode('_', $this->document_path);
+        if (count($parts) > 2) {
+            // Hapus timestamp dan uniqid di depan
+            array_shift($parts); // hapus timestamp
+            array_shift($parts); // hapus uniqid
+            return implode('_', $parts);
+        }
+        
+        return basename($this->document_path);
+    }
 
     public function user()
     {
