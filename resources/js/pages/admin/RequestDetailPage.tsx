@@ -78,7 +78,7 @@ export default function RequestDetailPage() {
                                         {deptName}
                                     </h1>
                                     <p className="text-sm text-gray-500">
-                                        Detail aktivitas permintaan barang
+                                        Detail aktivitas 
                                     </p>
                                 </div>
                             </div>
