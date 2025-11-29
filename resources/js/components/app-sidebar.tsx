@@ -80,8 +80,8 @@ const mainNavItems: NavItem[] = [
     },
 
     {
-        title: 'Chat',
-        href: '/chat',
+        title: 'Manager',
+        href: '/manager',
         icon: LayoutGrid,
     },
 ];
