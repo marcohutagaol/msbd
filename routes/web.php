@@ -130,3 +130,6 @@ Route::get('/api/departemen', [DepartemenItemController::class, 'getDepartemen']
 // SETTINGS
 // =======================
 require __DIR__ . '/settings.php';
+
+
+Route::get('/manager', fn() => Inertia::render('manager/page'))->name('manager');
