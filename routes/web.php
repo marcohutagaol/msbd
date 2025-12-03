@@ -7,9 +7,25 @@ use Laravel\Fortify\Features;
 use App\Http\Controllers\AbsensiController;
 
 
-Route::get('/', function () {
-    return Inertia::render('dashboard');
-})->middleware(['auth', 'verified'])->name('home');
+
+
+  Route::get('/admin/karyawan', function () {
+      return Inertia::render('admin/karyawan');
+  })->name('admin.karyawan');
+
+   Route::get('/admin/detailKaryawan', function () {
+      return Inertia::render('admin/detailKaryawan');
+  })->name('admin.detailKaryawan');
+
+    Route::get('/admin/mantanKaryawan', function () {
+      return Inertia::render('admin/mantanKaryawan');
+  })->name('admin.mantanKaryawan');
+
+
+
+// =======================
+// AUTH | HOME
+// =======================
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
