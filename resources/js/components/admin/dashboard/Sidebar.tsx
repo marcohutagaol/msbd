@@ -15,6 +15,7 @@ export default function Sidebar() {
     { icon: <FaUsers size={18} />, label: "Inventory", href: "/admin/inventory" },
 
     { icon: <IoDocumentTextSharp size={18} />, label: "Request Item", href: "/admin/requests" },
+    { icon: <MdSettings size={18} />, label: "Karyawan", href: "/admin/karyawan" },
 
   ]
 
