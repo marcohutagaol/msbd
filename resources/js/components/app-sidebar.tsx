@@ -80,8 +80,24 @@ const mainNavItems: NavItem[] = [
     },
 
     {
-        title: 'Manager',
+        title: 'Manager Dashboard',
         href: '/manager',
+        icon: LayoutGrid,
+    },
+    
+    {
+        title: 'Manager Absensi',
+        href: '/manager-absensi',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Manager Karyawan',
+        href: '/manager-karyawan',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Report',
+        href: '/report',
         icon: LayoutGrid,
     },
 ];
