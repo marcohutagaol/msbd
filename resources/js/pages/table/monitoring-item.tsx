@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { OrdersList } from "@/components/ui/orders-list";
 import AppLayout from "@/layouts/app-layout";
 import { type BreadcrumbItem } from "@/types";
 import { Head } from "@inertiajs/react";
-import { CheckCircle2 } from "lucide-react";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -18,22 +17,19 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-function OrdersPage() {
-  const [success, setSuccess] = useState(false); // ✅ notifikasi sukses
+interface OrdersPageProps {
+  requestItems: any[];
+}
 
-  const handleStoreTransfer = () => {
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 2500); // notifikasi hilang otomatis
-  };
+function OrdersPage({ requestItems }: OrdersPageProps) {
+  console.log('Data dari backend:', requestItems); // Untuk debugging
 
   return (
     <>
       <Head title="Monitoring Item" />
       <main className="min-h-screen bg-white p-6 font-[Poppins]">
         <div className="mx-auto max-w-6xl space-y-6">
-          {/* 🧩 Container utama */}
           <div className="rounded-xl border-2 border-blue-400 p-6 shadow-sm bg-white transition-all duration-300 hover:shadow-lg hover:border-blue-500">
-            {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
@@ -46,33 +42,15 @@ function OrdersPage() {
               </div>
             </div>
 
-            {/* List Orders */}
-            <OrdersList mode="monitoring" />
+            {/* Pass data requestItems dari database ke OrdersList */}
+            <OrdersList 
+              mode="monitoring" 
+              orders={requestItems} 
+            />
           </div>
-
-          {/* 🟦 Tombol Storing Store */}
-          <div className="flex justify-end">
-            <button
-              onClick={handleStoreTransfer}
-              className="rounded-lg bg-blue-600 px-8 py-3 font-semibold text-white shadow-md shadow-blue-500/30 transition-all duration-300 hover:bg-blue-700 hover:shadow-blue-600/40"
-            >
-              Storing Store
-            </button>
-          </div>
+          
         </div>
       </main>
-
-      {/* ✅ Notifikasi sukses (popup card) */}
-      {success && (
-        <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-3 shadow-md shadow-green-100/60">
-            <CheckCircle2 className="w-5 h-5 text-green-600" />
-            <p className="text-sm font-medium text-green-800">
-              Item berhasil ditransfer ke gudang!
-            </p>
-          </div>
-        </div>
-      )}
     </>
   );
 }

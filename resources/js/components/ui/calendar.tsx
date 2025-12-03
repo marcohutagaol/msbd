@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+<<<<<<< HEAD
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { DayPicker } from "react-day-picker"
 
@@ -67,3 +68,23 @@ function Calendar({
 Calendar.displayName = "Calendar"
 
 export { Calendar }
+=======
+import { DayPicker } from "react-day-picker"
+import { cn } from "@/lib/utils"
+
+export type CalendarProps = React.ComponentProps<typeof DayPicker>
+
+export function Calendar({ className, ...props }: CalendarProps) {
+  return (
+    <DayPicker
+      {...props}
+      className={cn("p-3", className)}
+      styles={{
+        caption: { textAlign: "center", fontWeight: 500 },
+        head_cell: { color: "#666", fontSize: "0.8rem" },
+        day: { borderRadius: "6px", width: "36px", height: "36px" },
+      }}
+    />
+  )
+}
+>>>>>>> 5fade2fd9132e4e1e5cd2cf896b5b6bfd89c9d08

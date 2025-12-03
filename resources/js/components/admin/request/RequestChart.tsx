@@ -111,4 +111,6 @@ export default function RequestChart() {
       </ResponsiveContainer>
     </Card>
   );
+
 }
+

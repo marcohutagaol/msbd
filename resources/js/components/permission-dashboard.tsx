@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import PermissionCards from "./permission-cards"
 import SickLeaveSection from "./sections/sick-leave-section"
 import PermissionSection from "./sections/permission-section"
@@ -9,6 +9,7 @@ import GeneralSection from "./sections/general-section"
 import SickLeaveForm from "./forms/sick-leave-form"
 import PermissionForm from "./forms/permission-form"
 import VacationForm from "./forms/vacation-form"
+import axios from "axios"
 
 export interface Permission {
   id: string
@@ -16,68 +17,98 @@ export interface Permission {
   status: "pending" | "approved" | "rejected"
   createdBy: string
   createdDate: string
+  document_path?: string
+  document_url?: string
   [key: string]: any
 }
 
 export default function PermissionDashboard() {
-  const [permissions, setPermissions] = useState<Permission[]>([
-    {
-      id: "1",
-      type: "sick",
-      status: "approved",
-      createdBy: "Raihan Fikri",
-      createdDate: "2024-11-01",
-      startDate: "2024-11-01",
-      endDate: "2024-11-03",
-      days: 3,
-      sickType: "sedang",
-      notes: "Demam dan batuk",
-      location: "Online",
-    },
-    {
-      id: "2",
-      type: "permission",
-      status: "approved",
-      createdBy: "Raihan Fikri",
-      createdDate: "2024-10-01",
-      date: "2024-10-01",
-      reason: "Aptitude test",
-      permissionType: "Tidak hadir",
-      notes: "with Bogus Fikri",
-      time: "11:00AM - 12:00AM",
-      location: "Online",
-    },
-    {
-      id: "3",
-      type: "vacation",
-      status: "approved",
-      createdBy: "Raihan Fikri",
-      createdDate: "2024-09-15",
-      startDate: "2024-11-15",
-      endDate: "2024-11-22",
-      vacationType: "Cuti Tahunan",
-      reason: "Liburan keluarga",
-      days: 8,
-      location: "Bali",
-    },
-  ])
-
+  const [permissions, setPermissions] = useState<Permission[]>([])
+  const [loading, setLoading] = useState(true)
   const [activeForm, setActiveForm] = useState<"sick" | "permission" | "vacation" | null>(null)
   const [activeTab, setActiveTab] = useState<"sick" | "permission" | "vacation" | "general">("general")
 
-  const handleAddPermission = (newPermission: Permission) => {
-    setPermissions([...permissions, newPermission])
+  // Fetch permissions from API
+  useEffect(() => {
+    fetchPermissions()
+  }, [])
+
+  const fetchPermissions = async () => {
+    try {
+      setLoading(true)
+      const response = await axios.get('/api/permissions')
+      setPermissions(response.data)
+    } catch (error) {
+      console.error('Error fetching permissions:', error)
+      alert('Gagal memuat data izin')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+const handleAddPermission = async (newPermission: Permission) => {
+  try {
+    const formData = new FormData()
+    
+    console.log('New Permission Data:', newPermission);
+    
+    // Add all fields to FormData
+    Object.keys(newPermission).forEach(key => {
+      if (newPermission[key] !== null && newPermission[key] !== undefined) {
+        if (key === 'document' && newPermission[key] instanceof File) {
+          // Kirim file dengan field name 'document'
+          console.log('Adding file to FormData:', newPermission[key].name);
+          formData.append('document', newPermission[key]);
+        } else if (key !== 'id' && key !== 'status' && key !== 'createdBy' && key !== 'createdDate') {
+          // Kirim field lainnya sesuai dengan nama di database
+          console.log(`Adding field ${key}:`, newPermission[key]);
+          formData.append(key, newPermission[key].toString());
+        }
+      }
+    })
+
+    // Tambahkan type permission
+    formData.append('type', newPermission.type);
+
+    // Debug FormData contents
+    console.log('FormData entries:');
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+
+    const response = await axios.post('/api/permissions', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+
+    console.log('Response from server:', response.data);
+
+    // Add new permission to state dengan data dari response
+    setPermissions([response.data.permission, ...permissions])
     setActiveForm(null)
+    alert('Izin berhasil diajukan!')
+  } catch (error: any) {
+    console.error('Error submitting permission:', error)
+    const errorMessage = error.response?.data?.message || 'Gagal mengajukan izin'
+    alert(errorMessage)
+    throw error
+  }
+}
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
+          <p className="mt-4 text-gray-600">Memuat data...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      {/* <div className="border-b-2 border-blue-500 p-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard Perizinan</h1>
-        <p className="mt-2 text-gray-600">Kelola permohonan cuti, sakit, dan izin Anda</p>
-      </div> */}
-
       {/* Permission Cards */}
       <PermissionCards permissions={permissions} onCardClick={setActiveForm} />
 

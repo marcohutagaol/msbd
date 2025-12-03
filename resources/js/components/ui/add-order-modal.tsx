@@ -1,14 +1,16 @@
 "use client"
 
-import { useState } from "react"
-import { X, Search, Trash2 } from "lucide-react"
+import { useState, useEffect } from "react"
+import { X, Search, Trash2, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface OrderItem {
   id: string
-  name: string
-  quantity: number
-  unit: string
+  nama_barang: string
+  jumlah: number
+  satuan: string
+  kode_barang?: string
+  catatan?: string
 }
 
 interface AddOrderModalProps {
@@ -30,35 +32,70 @@ const sampleProducts = [
 export default function AddOrderModal({ isOpen, onClose, onAdd }: AddOrderModalProps) {
   const [itemCount, setItemCount] = useState(1)
   const [formData, setFormData] = useState({
-    productName: "",
-    department: "",
-    date: "",
-    quantity: "",
-    unit: "",
-    notes: "",
+    nama_barang: "",
+    kode_barang: "",
+    jumlah: "",
+    satuan: "",
+    catatan: "",
   })
   const [orderedItems, setOrderedItems] = useState<OrderItem[]>([])
   const [searchQuery, setSearchQuery] = useState("")
 
-  const filteredProducts = sampleProducts.filter((product) => product.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredProducts = sampleProducts.filter((product) => 
+    product.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  // Fungsi generate kode otomatis
+  const generateKodeBarang = () => {
+    if (!formData.nama_barang) return ""
+    
+    const words = formData.nama_barang.split(' ')
+    let kode = ''
+    
+    if (words.length === 1) {
+      // Jika hanya satu kata, ambil 3-4 karakter pertama
+      kode = words[0].substring(0, 4).toUpperCase()
+    } else {
+      // Jika multiple words, ambil inisial dari 2-3 kata pertama
+      kode = words.slice(0, 3).map(word => word.charAt(0)).join('').toUpperCase()
+    }
+    
+    // Tambahkan timestamp untuk membuat unik
+    const timestamp = Date.now().toString().slice(-4)
+    return `${kode}${timestamp}`
+  }
+
+  // Auto-generate kode ketika nama barang berubah
+  useEffect(() => {
+    if (formData.nama_barang && !formData.kode_barang) {
+      const generatedKode = generateKodeBarang()
+      setFormData(prev => ({ ...prev, kode_barang: generatedKode }))
+    }
+  }, [formData.nama_barang])
+
+  const handleGenerateKode = () => {
+    const generatedKode = generateKodeBarang()
+    setFormData(prev => ({ ...prev, kode_barang: generatedKode }))
+  }
 
   const handleAddItem = () => {
-    if (formData.productName && formData.quantity && formData.unit) {
+    if (formData.nama_barang && formData.jumlah && formData.satuan) {
       const newItem: OrderItem = {
         id: Math.random().toString(),
-        name: formData.productName,
-        quantity: Number.parseInt(formData.quantity),
-        unit: formData.unit,
+        nama_barang: formData.nama_barang,
+        jumlah: Number.parseInt(formData.jumlah),
+        satuan: formData.satuan,
+        kode_barang: formData.kode_barang || undefined,
+        catatan: formData.catatan || undefined,
       }
       setOrderedItems([...orderedItems, newItem])
       setItemCount(itemCount + 1)
       setFormData({
-        productName: "",
-        department: "",
-        date: "",
-        quantity: "",
-        unit: "",
-        notes: "",
+        nama_barang: "",
+        kode_barang: "",
+        jumlah: "",
+        satuan: "",
+        catatan: "",
       })
     }
   }
@@ -76,6 +113,19 @@ export default function AddOrderModal({ isOpen, onClose, onAdd }: AddOrderModalP
     }
   }
 
+  const handleClose = () => {
+    setOrderedItems([])
+    setItemCount(1)
+    setFormData({
+      nama_barang: "",
+      kode_barang: "",
+      jumlah: "",
+      satuan: "",
+      catatan: "",
+    })
+    onClose()
+  }
+
   if (!isOpen) return null
 
   return (
@@ -84,7 +134,7 @@ export default function AddOrderModal({ isOpen, onClose, onAdd }: AddOrderModalP
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between border-b-2 border-blue-200 bg-gradient-to-r from-blue-50 to-white p-6">
           <h2 className="text-2xl font-bold text-gray-800">Barang - {itemCount}</h2>
-          <button onClick={onClose} className="rounded-lg p-2 hover:bg-blue-100 transition-colors">
+          <button onClick={handleClose} className="rounded-lg p-2 hover:bg-blue-100 transition-colors">
             <X className="h-6 w-6 text-gray-600" />
           </button>
         </div>
@@ -97,55 +147,67 @@ export default function AddOrderModal({ isOpen, onClose, onAdd }: AddOrderModalP
               <h3 className="text-lg font-bold text-gray-800">List Barang</h3>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Nama barang</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nama barang *
+                </label>
                 <input
                   type="text"
-                  value={formData.productName}
-                  onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
+                  value={formData.nama_barang}
+                  onChange={(e) => setFormData({ ...formData, nama_barang: e.target.value })}
                   placeholder="Enter product name"
                   className="w-full rounded-lg border-2 border-blue-300 px-4 py-3 font-poppins text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Department</label>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Kode Barang
+                </label>
+                <div className="flex gap-2">
                   <input
                     type="text"
-                    value={formData.department}
-                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                    placeholder="Department"
-                    className="w-full rounded-lg border-2 border-blue-300 px-4 py-3 font-poppins text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
+                    value={formData.kode_barang}
+                    onChange={(e) => setFormData({ ...formData, kode_barang: e.target.value })}
+                    placeholder="Kode akan digenerate otomatis"
+                    className="flex-1 rounded-lg border-2 border-blue-300 px-4 py-3 font-poppins text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
                   />
+                  <Button
+                    type="button"
+                    onClick={handleGenerateKode}
+                    disabled={!formData.nama_barang}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold border-2 border-blue-600 rounded-lg px-4 py-3 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    title="Generate Kode Barang"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Generate
+                  </Button>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
-                  <input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full rounded-lg border-2 border-blue-300 px-4 py-3 font-poppins text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
-                  />
-                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Kode akan digenerate otomatis dari nama barang
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Jumlah</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Jumlah *
+                  </label>
                   <input
                     type="number"
-                    value={formData.quantity}
-                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                    value={formData.jumlah}
+                    onChange={(e) => setFormData({ ...formData, jumlah: e.target.value })}
                     placeholder="0"
                     className="w-full rounded-lg border-2 border-blue-300 px-4 py-3 font-poppins text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Satuan</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Satuan *
+                  </label>
                   <input
                     type="text"
-                    value={formData.unit}
-                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                    value={formData.satuan}
+                    onChange={(e) => setFormData({ ...formData, satuan: e.target.value })}
                     placeholder="e.g. pcs, box"
                     className="w-full rounded-lg border-2 border-blue-300 px-4 py-3 font-poppins text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
                   />
@@ -155,8 +217,8 @@ export default function AddOrderModal({ isOpen, onClose, onAdd }: AddOrderModalP
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Catatan</label>
                 <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  value={formData.catatan}
+                  onChange={(e) => setFormData({ ...formData, catatan: e.target.value })}
                   placeholder="Add notes here..."
                   rows={4}
                   className="w-full rounded-lg border-2 border-blue-300 px-4 py-3 font-poppins text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all resize-none"
@@ -184,7 +246,7 @@ export default function AddOrderModal({ isOpen, onClose, onAdd }: AddOrderModalP
                   filteredProducts.map((product, idx) => (
                     <button
                       key={idx}
-                      onClick={() => setFormData({ ...formData, productName: product })}
+                      onClick={() => setFormData({ ...formData, nama_barang: product })}
                       className="block w-full rounded-lg border border-blue-200 bg-white p-3 text-left text-sm text-gray-700 hover:bg-blue-100 hover:border-blue-400 transition-all font-poppins"
                     >
                       {product}
@@ -205,9 +267,10 @@ export default function AddOrderModal({ isOpen, onClose, onAdd }: AddOrderModalP
                         className="flex items-center justify-between rounded-lg border-2 border-blue-300 bg-blue-50 p-3"
                       >
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-700">{item.name}</p>
+                          <p className="text-sm font-medium text-gray-700">{item.nama_barang}</p>
                           <p className="text-xs text-gray-500">
-                            {item.quantity} {item.unit}
+                            {item.jumlah} {item.satuan}
+                            {item.kode_barang && ` • Kode: ${item.kode_barang}`}
                           </p>
                         </div>
                         <button
@@ -230,19 +293,20 @@ export default function AddOrderModal({ isOpen, onClose, onAdd }: AddOrderModalP
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
             <Button
               onClick={handleAddItem}
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold border-2 border-blue-600 rounded-lg py-3 transition-all duration-300"
+              disabled={!formData.nama_barang || !formData.jumlah || !formData.satuan}
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold border-2 border-blue-600 rounded-lg py-3 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Add Items
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={orderedItems.length === 0}
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold border-2 border-blue-600 rounded-lg py-3 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold border-2 border-green-600 rounded-lg py-3 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Add Items and Insert new
+              Confirm & Close
             </Button>
             <Button
-              onClick={onClose}
+              onClick={handleClose}
               className="w-full sm:w-auto bg-white hover:bg-blue-50 text-blue-600 font-semibold border-2 border-blue-300 rounded-lg py-3 transition-all duration-300"
             >
               Cancel

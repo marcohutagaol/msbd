@@ -9,16 +9,15 @@ import {
 } from "@/components/ui/sidebar";
 import { resolveUrl } from "@/lib/utils";
 import { type NavItem } from "@/types";
-import { Link, usePage, router } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
     const page = usePage();
     const current = page.url;
     const [openMenus, setOpenMenus] = useState<string[]>([]);
-    const [clickedParent, setClickedParent] = useState<string | null>(null);
 
-    // otomatis buka parent jika anak aktif ATAU baru diklik
+    // Otomatis buka parent jika anak aktif
     useEffect(() => {
         items.forEach((item) => {
             if (item.items) {
@@ -26,9 +25,8 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                     item.items.some((child) =>
                         current.startsWith(resolveUrl(child.href))
                     ) ||
-                    current.startsWith(resolveUrl(item.href)); // aktif jika di halaman parent
+                    current.startsWith(resolveUrl(item.href));
 
-                // jika di halaman parent / anak → buka submenu
                 if (childActive && !openMenus.includes(item.title)) {
                     setOpenMenus((prev) => [...prev, item.title]);
                 }
@@ -36,26 +34,17 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
         });
     }, [current]);
 
-    const handleParentClick = (item: NavItem, e: React.MouseEvent) => {
-        const hasChildren = item.items && item.items.length > 0;
-        if (hasChildren) {
-            e.preventDefault(); // cegah Link langsung pindah dulu
-            setClickedParent(item.title);
-            router.visit(item.href as string, { preserveScroll: true });
-        }
-    };
-
-    // setelah halaman berpindah dan parent diklik → pastikan submenu terbuka
-    useEffect(() => {
-        if (clickedParent) {
-            setOpenMenus((prev) =>
-                prev.includes(clickedParent)
-                    ? prev
-                    : [...prev, clickedParent]
-            );
-            setClickedParent(null);
-        }
-    }, [current]);
+    const handleParentClick = (item: NavItem, e: React.MouseEvent<Element>) => {
+    const hasChildren = item.items && item.items.length > 0
+    if (hasChildren) {
+        e.preventDefault()
+        setOpenMenus((prev) =>
+            prev.includes(item.title)
+                ? prev.filter((title) => title !== item.title)
+                : [...prev, item.title]
+        )
+    }
+}
 
     return (
         <SidebarGroup className="px-2 py-0">
@@ -76,15 +65,19 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                 asChild
                                 isActive={isActive}
                                 tooltip={{ children: item.title }}
-                                onClick={(e) => handleParentClick(item, e)}
                             >
-                                <Link href={item.href} prefetch>
+                                <Link
+                                    href={item.href}
+                                    prefetch
+                                    onClick={(e) => handleParentClick(item, e)}
+                                    className="flex items-center gap-2"
+                                >
                                     {item.icon && <item.icon size={18} />}
                                     <span>{item.title}</span>
                                 </Link>
                             </SidebarMenuButton>
 
-                            {/* Anak menu */}
+                            {/* Anak menu tampil jika parent terbuka */}
                             {hasChildren && isOpen && (
                                 <div className="ml-4 mt-1 space-y-1 border-l border-border pl-3">
                                     {item.items?.map((child) => {

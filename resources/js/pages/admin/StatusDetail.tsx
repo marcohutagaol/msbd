@@ -108,7 +108,9 @@ export default function StatusDetail() {
     <div className="flex min-h-screen font-[Poppins,Segoe_UI,system-ui,sans-serif] bg-[#f5f7fa]">
       {/* SIDEBAR */}
       <div
-        className={`fixed top-0 left-0 h-full w-[260px] bg-white shadow-md z-[150] transition-transform duration-300 ${
+
+        className={`fixed top-0 left-0 h-full w-[260px] bg-white shadow-md z-150 transition-transform duration-300 ${
+
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -119,7 +121,9 @@ export default function StatusDetail() {
       <div className={`flex flex-col flex-1 min-h-screen transition-all duration-300 ${isSidebarOpen ? "ml-[260px]" : "ml-0"}`}>
         {/* HEADER */}
         <div
-          className={`fixed top-0 right-0 bg-white shadow-sm z-[200] transition-all duration-300 ${
+
+          className={`fixed top-0 right-0 bg-white shadow-sm z-200 transition-all duration-300 ${
+
             isSidebarOpen ? "left-[260px]" : "left-0"
           }`}
         >
@@ -127,7 +131,9 @@ export default function StatusDetail() {
         </div>
 
         {/* CONTENT */}
-        <div className="flex flex-col flex-1 gap-8 px-5 sm:px-10 pt-[110px] pb-[40px]">
+
+        <div className="flex flex-col flex-1 gap-8 px-5 sm:px-10 pt-[110px] pb-40px">
+
           {/* FILTER CARD */}
           <Card className="rounded-2xl border border-slate-200 shadow-sm bg-white p-6 px-7 flex flex-col gap-5">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -263,10 +269,12 @@ export default function StatusDetail() {
                         {day.data.map((d, i) => (
                           <tr key={d.id} className="border-t border-slate-100 hover:bg-slate-50 transition">
                             <td className="p-2 text-slate-700">{i + 1}</td>
-                            <td className="p-2 text-slate-700 [break-words]">{d.nama}</td>
-                            <td className="p-2 text-slate-600 [break-words]">{d.departemen}</td>
-                            <td className="p-2 text-slate-600 [break-words]">{d.divisi}</td>
-                            <td className="p-2 text-slate-500 italic [break-words]">{d.keterangan}</td>
+
+                            <td className="p-2 text-slate-700 wrap-break-words">{d.nama}</td>
+                            <td className="p-2 text-slate-600 wrap-break-words">{d.departemen}</td>
+                            <td className="p-2 text-slate-600 wrap-break-words">{d.divisi}</td>
+                            <td className="p-2 text-slate-500 italic wrap-break-words">{d.keterangan}</td>
+
                           </tr>
                         ))}
                       </tbody>
@@ -280,4 +288,6 @@ export default function StatusDetail() {
       </div>
     </div>
   );
+
 }
+

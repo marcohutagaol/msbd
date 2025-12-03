@@ -18,7 +18,7 @@ import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Beranda',
         href: dashboard(),
         icon: LayoutGrid,
     },
@@ -27,39 +27,78 @@ const mainNavItems: NavItem[] = [
         href: '/absensi/1',
         icon: LayoutGrid,
     },
-        {
-        title: 'Permission',
+    {
+        title: 'Izin',
         href: '/permission',
         icon: LayoutGrid,
     },
     {
-        title: 'Request Item',
-        href: '/request',
+        title: 'Barang',
+        href: '#',
         icon: LayoutGrid,
         items: [
             {
-                title: 'Monitoring Item',
+                title: 'Permintaan',
+                href: '/request',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Pemantauan Item',
                 href: '/monitoring-item',
                 icon: LayoutGrid,
             },
         ],
     },
     {
-        title: 'Dashboard Purchasing',
-        href: '/dashboard-purchasing',
+        title: 'Pembelian',
+        href: '#',
         icon: LayoutGrid,
         items: [
             {
-                title: 'Purchasing Detail',
-                href: '/purchasing',
+                title: 'Pembelian',
+                href: '/dashboard-purchasing',
                 icon: LayoutGrid,
             },
+       
             {
-                title: 'Input Price',
+                title: 'Input Harga',
                 href: '/input-price',
                 icon: LayoutGrid,
             },
+                {
+                title: 'Toko ',
+                href: '/toko',
+                icon: LayoutGrid,
+            },
         ],
+    },
+
+    {
+        title: 'Inventory',
+        href: '/inventory',
+        icon: LayoutGrid,
+    },
+
+    {
+        title: 'Manager Dashboard',
+        href: '/manager',
+        icon: LayoutGrid,
+    },
+    
+    {
+        title: 'Manager Absensi',
+        href: '/manager-absensi',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Manager Karyawan',
+        href: '/manager-karyawan',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Report',
+        href: '/report',
+        icon: LayoutGrid,
     },
 ];
 

@@ -13,10 +13,9 @@ export default function Sidebar() {
     { icon: <MdDashboard size={18} />, label: "Dashboard", href: "/admin/dashboard" },
     { icon: <FaUserCheck size={18} />, label: "Absensi", href: "/admin/absensi" },
     { icon: <FaUsers size={18} />, label: "Inventory", href: "/admin/inventory" },
-    { icon: <IoDocumentTextSharp size={18} />, label: "Request Item", href: "/admin/requestitem" },
-    { icon: <MdSettings size={18} />, label: "Karyawan", href: "/admin/karyawan" },
 
-    
+    { icon: <IoDocumentTextSharp size={18} />, label: "Request Item", href: "/admin/requests" },
+
   ]
 
   return (
@@ -65,7 +64,8 @@ export default function Sidebar() {
           })}
         </nav>
       </div>
-      
+
+
 
       {/* Logout Section */}
       <div className="px-5 py-5 border-t border-white/20">
@@ -79,4 +79,6 @@ export default function Sidebar() {
       </div>
     </aside>
   )
+
 }
+

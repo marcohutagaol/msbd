@@ -12,55 +12,79 @@ import {
   CalendarDays,
 } from "lucide-react";
 
+import { usePage } from "@inertiajs/react"; // <--- ambil data dari Inertia
+
+interface AbsensiItem {
+  id: number;
+  name: string;
+  department: string;
+  jam_kerja: string;
+  absen_masuk: string;
+  absen_keluar: string;
+  status: string;
+}
+
+interface PageProps {
+  absensiData: AbsensiItem[];
+}
+
 export default function AttendanceDetail() {
-  const allData = [
-    { no: 1, name: "Andi Pratama", jamKerja: "08.00 - 12.00", absenMasuk: "08.05", absenKeluar: "12.03", status: "Hadir" },
-    { no: 2, name: "Budi Santoso", jamKerja: "08.00 - 12.00", absenMasuk: "-", absenKeluar: "-", status: "Izin" },
-    { no: 3, name: "Citra Lestari", jamKerja: "08.00 - 12.00", absenMasuk: "08.10", absenKeluar: "12.02", status: "Hadir" },
-    { no: 4, name: "Dewi Ayu", jamKerja: "08.00 - 12.00", absenMasuk: "-", absenKeluar: "-", status: "Sakit" },
-    { no: 5, name: "Eka Nugraha", jamKerja: "08.00 - 12.00", absenMasuk: "-", absenKeluar: "-", status: "Tanpa Keterangan" },
-    { no: 6, name: "Fajar Prasetyo", jamKerja: "08.00 - 12.00", absenMasuk: "08.00", absenKeluar: "12.01", status: "Hadir" },
-    { no: 7, name: "Gina Marlina", jamKerja: "08.00 - 12.00", absenMasuk: "-", absenKeluar: "-", status: "Izin" },
-    { no: 8, name: "Hendra Wijaya", jamKerja: "08.00 - 12.00", absenMasuk: "08.12", absenKeluar: "12.05", status: "Hadir" },
-  ];
+  // ambil data dari props Inertia (tanpa fetch, tanpa JSON)
+  const { absensiData } = usePage().props as unknown as PageProps;
+  const allData = absensiData || [];
+
 
   const badgeBase =
     "flex items-center justify-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full border min-w-[110px] min-h-[32px]";
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Hadir":
-        return (
-          <Badge className={`${badgeBase} bg-green-100 text-green-700 border-green-200`}>
-            <UserCheck size={13} /> Hadir
-          </Badge>
-        );
-      case "Izin":
-        return (
-          <Badge className={`${badgeBase} bg-yellow-100 text-yellow-700 border-yellow-200`}>
-            <Clock4 size={13} /> Izin
-          </Badge>
-        );
-      case "Sakit":
-        return (
-          <Badge className={`${badgeBase} bg-blue-100 text-blue-700 border-blue-200`}>
-            <AlertCircle size={13} /> Sakit
-          </Badge>
-        );
-      case "Tanpa Keterangan":
-        return (
-          <Badge className={`${badgeBase} bg-red-100 text-red-700 border-red-200`}>
-            <UserX size={13} /> Tanpa Ket.
-          </Badge>
-        );
-      default:
-        return (
-          <Badge className={`${badgeBase} bg-slate-100 text-slate-700 border-slate-200`}>
-            <AlertCircle size={13} /> Belum Absen
-          </Badge>
-        );
+
+ // Dalam komponen getStatusBadge, tambahkan pengecekan untuk status database
+const getStatusBadge = (status: string) => {
+    // Normalisasi status ke uppercase untuk konsistensi
+    const normalizedStatus = status.toUpperCase();
+    
+    switch (normalizedStatus) {
+        case "HADIR":
+        case "HADIR":
+            return (
+                <Badge className={`${badgeBase} bg-green-100 text-green-700 border-green-200`}>
+                    <UserCheck size={13} /> Hadir
+                </Badge>
+            );
+        case "IZIN":
+            return (
+                <Badge className={`${badgeBase} bg-yellow-100 text-yellow-700 border-yellow-200`}>
+                    <Clock4 size={13} /> Izin
+                </Badge>
+            );
+        case "SAKIT":
+            return (
+                <Badge className={`${badgeBase} bg-blue-100 text-blue-700 border-blue-200`}>
+                    <AlertCircle size={13} /> Sakit
+                </Badge>
+            );
+        case "TERLAMBAT":
+            return (
+                <Badge className={`${badgeBase} bg-orange-100 text-orange-700 border-orange-200`}>
+                    <Clock size={13} /> Terlambat
+                </Badge>
+            );
+        case "TANPA KETERANGAN":
+        case "TIDAK_HADIR":
+            return (
+                <Badge className={`${badgeBase} bg-red-100 text-red-700 border-red-200`}>
+                    <UserX size={13} /> Tanpa Ket.
+                </Badge>
+            );
+        default:
+            return (
+                <Badge className={`${badgeBase} bg-slate-100 text-slate-700 border-slate-200`}>
+                    <AlertCircle size={13} /> {status}
+                </Badge>
+            );
     }
-  };
+};
+
 
   const rekap = {
     hadir: allData.filter((d) => d.status === "Hadir").length,
@@ -105,14 +129,16 @@ export default function AttendanceDetail() {
             <tbody>
               {allData.map((item, index) => (
                 <tr
-                  key={item.no}
+
+                  key={item.id}
                   className={`${index % 2 === 0 ? "bg-white" : "bg-slate-50"} hover:bg-slate-100 transition-colors`}
                 >
-                  <td className="py-3 px-4 font-medium">{item.no}</td>
+                  <td className="py-3 px-4 font-medium">{index + 1}</td>
                   <td className="py-3 px-4 font-semibold text-slate-700">{item.name}</td>
-                  <td className="py-3 px-4 text-slate-700">{item.jamKerja}</td>
-                  <td className="py-3 px-4 text-slate-700">{item.absenMasuk}</td>
-                  <td className="py-3 px-4 text-slate-700">{item.absenKeluar}</td>
+                  <td className="py-3 px-4 text-slate-700">{item.jam_kerja}</td>
+                  <td className="py-3 px-4 text-slate-700">{item.absen_masuk}</td>
+                  <td className="py-3 px-4 text-slate-700">{item.absen_keluar}</td>
+
                   <td className="py-3 px-4 flex items-center justify-center">{getStatusBadge(item.status)}</td>
                 </tr>
               ))}
@@ -127,7 +153,7 @@ export default function AttendanceDetail() {
 
       {/* KANAN: Rekapitulasi Absensi */}
       <Card className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col justify-center items-center h-[450px]">
-        
+
 
         <div className="grid grid-cols-2 gap-4 w-full">
           <div className="flex flex-col items-center bg-green-50 border border-green-100 rounded-xl p-4">
@@ -156,9 +182,12 @@ export default function AttendanceDetail() {
         </div>
 
         <p className="text-xs text-slate-500 mt-5 italic text-center">
-        Jumlah karyawan berdasarkan status absensi hari ini.
+
+          Jumlah karyawan berdasarkan status absensi hari ini.
         </p>
       </Card>
-    </div>  
+    </div>
+    
+
   );
 }

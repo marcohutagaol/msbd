@@ -5,9 +5,21 @@ import Sidebar from "../../components/admin/dashboard/Sidebar";
 import Header from "../../components/admin/dashboard/Header";
 import RequestStats from "../../components/admin/request/RequestStats";
 
+import RequestChart from "../../components/admin/request/RequestChart";
+import RequestHistory from "../../components/admin/request/RequestHistory";
 import { Card } from "@/components/ui/card";
 
-export default function RequestItemPage() {
+type DepartmentStat = {
+  name: string;
+  totalRequest: number;
+};
+
+export default function RequestItemPage({
+  departments,
+}: {
+  departments: DepartmentStat[];
+}) {
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
@@ -51,4 +63,6 @@ export default function RequestItemPage() {
       </div>
     </div>
   );
+
 }
+
