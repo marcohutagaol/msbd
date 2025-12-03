@@ -134,7 +134,7 @@ require __DIR__ . '/settings.php';
 
 Route::get('/manager', fn() => Inertia::render('manager/page'))->name('manager.page');
 Route::get('/manager-absensi', fn() => Inertia::render('manager/absensi'))->name('manager.absensi');
+Route::get('/manager-karyawan/{id}', fn($id) => Inertia::render('manager/detail-karyawan', ['id' => $id]))->name('manager.detail-karyawan');
 Route::get('/manager-karyawan', fn() => Inertia::render('manager/karyawan'))->name('manager.karyawan');
-// Route::get('/manager-karyawan/{id}', fn($id) => Inertia::render('manager/detail-karyawan', ['id' => $id]))->name('manager.detail-karyawan');
 
 Route::get('/report', fn() => Inertia::render('report/page'))->name('report');

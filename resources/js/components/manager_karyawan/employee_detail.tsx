@@ -1,5 +1,4 @@
-"use client"
-import Link from "next/link"
+import { Link } from "@inertiajs/react"
 import { ChevronLeft } from "lucide-react"
 import { Card } from "@/components/ui/card"
 
@@ -53,7 +52,7 @@ const EMPLOYEE_DATA: EmployeeData = {
   ],
 }
 
-export default function EmployeeDetail() {
+export default function EmployeeDetail({ id }: { id: string | number }) {
   const employee = EMPLOYEE_DATA
 
   const getBadgeStyle = (type: string) => {
@@ -71,17 +70,6 @@ export default function EmployeeDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <Link href="/">
-            <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity w-fit">
-              <ChevronLeft className="w-6 h-6 text-foreground" />
-              <h1 className="text-3xl font-bold text-foreground">Detail Manajemen Karyawan</h1>
-            </div>
-          </Link>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -160,7 +148,7 @@ export default function EmployeeDetail() {
 
         {/* Badges Section */}
         <Card className="bg-white border border-border shadow-sm p-6">
-          <h3 className="font-bold text-foreground text-lg mb-6">Penghargaan & Teguran</h3>
+          <h3 className="font-bold text-foreground text-lg mb-6">Status</h3>
           <div className="flex flex-wrap gap-3">
             {employee.badges.map((badge) => (
               <div

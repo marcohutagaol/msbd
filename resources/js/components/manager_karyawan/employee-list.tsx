@@ -1,7 +1,5 @@
-"use client"
-
 import { useState } from "react"
-import Link from "next/link"
+import { Link } from "@inertiajs/react"
 import { ChevronLeft, Search, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -95,14 +93,6 @@ export default function EmployeeList() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b border-border bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <div className="flex items-center gap-3 mb-6">
-            <ChevronLeft className="w-6 h-6 text-foreground" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Manajemen Karyawan</h1>
-          </div>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
@@ -237,16 +227,13 @@ export default function EmployeeList() {
                     <td className="px-6 py-4 text-sm text-foreground">{employee.name}</td>
                     <td className="px-6 py-4 text-sm text-foreground">{employee.department}</td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          employee.status,
-                        )}`}
-                      >
-                        {employee.status}
+                      <span className={`inline-flex items-center justify-center w-24 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(employee.status,)}`}>
+                      {employee.status}
                       </span>
+
                     </td>
                     <td className="px-6 py-4">
-                      <Link href={`/employee/${employee.id}`}>
+                      <Link href={`/manager-karyawan/${employee.id}`}>
                         <Button size="sm" className="bg-foreground text-white hover:bg-foreground/90">
                           View Detail
                         </Button>
