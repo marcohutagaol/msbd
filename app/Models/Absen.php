@@ -19,6 +19,7 @@ class Absen extends Model
         'lokasi_datang',
         'lokasi_balik',
         'status_absen',
+        'link_gambar_datang',
         'keterangan',
         'id_karyawan',
         'kode_department'

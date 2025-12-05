@@ -1,10 +1,17 @@
 "use client"
 
 import { Link, usePage } from "@inertiajs/react"
-import { MdDashboard, MdLogout, MdSettings } from "react-icons/md"
-import { FaUserCheck, FaUsers } from "react-icons/fa"
+import { 
+  MdDashboard, 
+  MdLogout, 
+  MdSettings,
+  MdPeople,
+  MdAssignment
+} from "react-icons/md"
+import { FaUserCheck, FaUsers, FaFileSignature } from "react-icons/fa"
 import { IoDocumentTextSharp } from "react-icons/io5"
-import { FaLeaf } from "react-icons/fa6" // ikon sementara untuk logo
+import { FaLeaf } from "react-icons/fa6" 
+
 
 export default function Sidebar() {
   const { url } = usePage()
@@ -13,7 +20,12 @@ export default function Sidebar() {
     { icon: <MdDashboard size={18} />, label: "Dashboard", href: "/admin/dashboard" },
     { icon: <FaUserCheck size={18} />, label: "Absensi", href: "/admin/absensi" },
     { icon: <FaUsers size={18} />, label: "Inventory", href: "/admin/inventory" },
+
     { icon: <IoDocumentTextSharp size={18} />, label: "Request Item", href: "/admin/requests" },
+    { icon: <MdPeople size={18} />, label: "Karyawan", href: "/admin/karyawan" },
+    { icon: <MdAssignment size={18} />, label: "Permission", href: "/admin/permission" },
+    
+
   ]
 
   return (
@@ -63,6 +75,8 @@ export default function Sidebar() {
         </nav>
       </div>
 
+
+
       {/* Logout Section */}
       <div className="px-5 py-5 border-t border-white/20">
         <button
@@ -75,4 +89,5 @@ export default function Sidebar() {
       </div>
     </aside>
   )
+
 }
