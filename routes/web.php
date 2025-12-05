@@ -32,6 +32,11 @@ use App\Http\Controllers\DashboardPurchasingController;
       return Inertia::render('admin/mantanKaryawan');
   })->name('admin.mantanKaryawan');
 
+      Route::get('/admin/permission', function () {
+      return Inertia::render('admin/permission');
+  })->name('admin.permission');
+
+
 
 
 // =======================

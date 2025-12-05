@@ -203,7 +203,7 @@ const Karyawan: React.FC = () => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#f5f7fa] font-[Poppins,Segoe_UI,system-ui,sans-serif] transition-all duration-300">
+   <div className="flex min-h-screen bg-[#f5f7fa] font-[Poppins,Segoe_UI,system-ui,sans-serif] transition-all duration-300">
       {/* === SIDEBAR === */}
       <div
         className={`fixed top-0 left-0 z-50 h-full w-[260px] bg-white shadow-md transition-transform duration-300 ${
@@ -845,8 +845,8 @@ const Karyawan: React.FC = () => {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         
-        body {
-          font-family: 'Poppins', sans-serif;
+         body {
+          font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
         }
         
         /* Animasi untuk modal */

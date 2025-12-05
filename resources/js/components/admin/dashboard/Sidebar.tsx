@@ -1,10 +1,17 @@
 "use client"
 
 import { Link, usePage } from "@inertiajs/react"
-import { MdDashboard, MdLogout, MdSettings } from "react-icons/md"
-import { FaUserCheck, FaUsers } from "react-icons/fa"
+import { 
+  MdDashboard, 
+  MdLogout, 
+  MdSettings,
+  MdPeople,
+  MdAssignment
+} from "react-icons/md"
+import { FaUserCheck, FaUsers, FaFileSignature } from "react-icons/fa"
 import { IoDocumentTextSharp } from "react-icons/io5"
-import { FaLeaf } from "react-icons/fa6" // ikon sementara untuk logo
+import { FaLeaf } from "react-icons/fa6" 
+
 
 export default function Sidebar() {
   const { url } = usePage()
@@ -15,7 +22,9 @@ export default function Sidebar() {
     { icon: <FaUsers size={18} />, label: "Inventory", href: "/admin/inventory" },
 
     { icon: <IoDocumentTextSharp size={18} />, label: "Request Item", href: "/admin/requests" },
-    { icon: <MdSettings size={18} />, label: "Karyawan", href: "/admin/karyawan" },
+    { icon: <MdPeople size={18} />, label: "Karyawan", href: "/admin/karyawan" },
+    { icon: <MdAssignment size={18} />, label: "Permission", href: "/admin/permission" },
+    
 
   ]
 
