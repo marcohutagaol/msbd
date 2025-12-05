@@ -10,7 +10,6 @@ interface Employee {
 
 interface PageProps {
   employees: Employee[];
-
 }
 
 export default function EmployeeStatus() {

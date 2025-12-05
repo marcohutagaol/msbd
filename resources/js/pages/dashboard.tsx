@@ -102,7 +102,7 @@ export default function Dashboard() {
               {/* Clock In/Out */}
               <div className="lg:col-span-2 space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-white border border-blue-100 p-8 text-center shadow-sm hover:shadow-md transition">
+                  <div className="rounded-2xl bg-linear-to-br from-blue-50 to-white border border-blue-100 p-8 text-center shadow-sm hover:shadow-md transition">
                     <p className="mb-3 text-sm font-medium text-gray-500">
                       Absen Masuk
                     </p>
@@ -111,7 +111,7 @@ export default function Dashboard() {
                     </p>
                   </div>
 
-                  <div className="rounded-2xl bg-gradient-to-br from-pink-50 to-white border border-pink-100 p-8 text-center shadow-sm hover:shadow-md transition">
+                  <div className="rounded-2xl bg-linear-to-br from-pink-50 to-white border border-pink-100 p-8 text-center shadow-sm hover:shadow-md transition">
                     <p className="mb-3 text-sm font-medium text-gray-500">
                       Absen Keluar
                     </p>
@@ -125,7 +125,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <button
                     onClick={() => router.visit(`/absensi/${user.id}`)}
-                    className="relative flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 py-4 sm:py-5 text-base font-semibold text-white shadow-md transition-all hover:from-blue-700 hover:to-blue-600 hover:shadow-lg active:scale-95"
+                    className="relative flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-blue-600 to-blue-500 py-4 sm:py-5 text-base font-semibold text-white shadow-md transition-all hover:from-blue-700 hover:to-blue-600 hover:shadow-lg active:scale-95"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -144,7 +144,7 @@ export default function Dashboard() {
                     <span>Clock In</span>
                   </button>
 
-                  <button className="relative flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-pink-400 py-4 sm:py-5 text-base font-semibold text-white shadow-md transition-all hover:from-pink-600 hover:to-pink-500 hover:shadow-lg active:scale-95">
+                  <button className="relative flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-pink-500 to-pink-400 py-4 sm:py-5 text-base font-semibold text-white shadow-md transition-all hover:from-pink-600 hover:to-pink-500 hover:shadow-lg active:scale-95">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -206,7 +206,7 @@ export default function Dashboard() {
                     key={i}
                     className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
                   >
-                    <div className="h-36 sm:h-40 bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 relative">
+                    <div className="h-36 sm:h-40 bg-linear-to-br from-blue-200 via-purple-200 to-pink-200 relative">
                       <div className="absolute inset-0 opacity-30">
                         <div className="absolute top-2 left-4 w-8 h-8 bg-white rounded-full"></div>
                         <div className="absolute top-6 right-6 w-6 h-6 bg-white rounded-full"></div>
