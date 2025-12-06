@@ -36,6 +36,24 @@ use App\Http\Controllers\DashboardPurchasingController;
       return Inertia::render('admin/permission');
   })->name('admin.permission');
 
+    Route::get('/admin/RequestItem', function () {
+      return Inertia::render('admin/RequestItem');
+  })->name('admin.RequestItem');
+
+  Route::get('/admin/invoice', function () {
+      return Inertia::render('admin/invoice');
+  })->name('admin.invoice');
+  
+    Route::get('/admin/LogRequest', function () {
+      return Inertia::render('admin/LogRequest');
+  })->name('admin.LogRequest');
+
+    Route::get('/admin/ReportItem', function () {
+      return Inertia::render('admin/ReportItem');
+  })->name('admin.ReportItem');
+
+
+
 
 
 
