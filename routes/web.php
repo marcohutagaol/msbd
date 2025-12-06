@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\KaryawanController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
@@ -51,6 +52,11 @@ use App\Http\Controllers\DashboardPurchasingController;
     Route::get('/admin/ReportItem', function () {
       return Inertia::render('admin/ReportItem');
   })->name('admin.ReportItem');
+
+      Route::get('/admin/LogAbsensi', function () {
+      return Inertia::render('admin/LogAbsensi');
+  })->name('admin.LogAbsensi');
+
 
 
 
@@ -151,6 +157,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/detail/{status}', fn($status) => Inertia::render('admin/StatusDetail', ['status' => $status]))->name('dashboard.detail');
     Route::get('/requests-management', [RequestManagementController::class, 'index'])->name('requests-management');
     Route::get('/requests-detail/{kodeDepartment}', [RequestManagementController::class, 'showDetail'])->name('requests-detail');
+    Route::get('/karyawan', [KaryawanController::class, 'index'])->name('karyawan');
+    Route::post('/karyawan/store', [KaryawanController::class, 'store']);
+    Route::put('/karyawan/update/{id}', [KaryawanController::class, 'update'])->name('karyawan.update');
+    Route::get('/detailKaryawan/{id}', [KaryawanController::class, 'detail']);
+    Route::get('/mantanKaryawan', [KaryawanController::class, 'mantan']);
+
+    Route::get('/permission', function () {
+      return Inertia::render('admin/permission');
+  })->name('admin.permission');
   });
 
 

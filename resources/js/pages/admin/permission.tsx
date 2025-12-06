@@ -297,7 +297,9 @@ export default function PermissionPage({
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center">
-                    <div className={`p-3 rounded-lg bg-gradient-to-r ${item.color} text-white mr-4`}>
+
+                    <div className={`p-3 rounded-lg bg-linear-to-r ${item.color} text-white mr-4`}>
+
                       {item.icon}
                     </div>
                     <div>
@@ -317,7 +319,9 @@ export default function PermissionPage({
                       {[3, 6, 4, 8, 5, 7, 4].map((height, i) => (
                         <div 
                           key={i} 
-                          className={`flex-1 mx-0.5 rounded-t ${item.trend === 'naik' ? 'bg-gradient-to-t from-green-400 to-green-300' : 'bg-gradient-to-t from-red-400 to-red-300'}`}
+
+                          className={`flex-1 mx-0.5 rounded-t ${item.trend === 'naik' ? 'bg-linear-to-t from-green-400 to-green-300' : 'bg-linear-to-t from-red-400 to-red-300'}`}
+
                           style={{ height: `${height * 10}%` }}
                         ></div>
                       ))}
@@ -715,7 +719,9 @@ export default function PermissionPage({
           <tr key={permission.id} className="hover:bg-gray-50 transition-colors">
             <td className="py-4 px-6">
               <div className="flex items-center">
-                <div className="h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-r from-[#4789A8] to-[#5ba3c7] flex items-center justify-center text-white font-semibold">
+
+                <div className="h-10 w-10 shrink-0 rounded-full bg-linear-to-r from-[#4789A8] to-[#5ba3c7] flex items-center justify-center text-white font-semibold">
+
                   {permission.nama.charAt(0)}
                 </div>
                 <div className="ml-4">
@@ -779,7 +785,9 @@ export default function PermissionPage({
       {isModalOpen && selectedPermission && (
         <>
           <div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[999] transition-opacity duration-300"
+
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-999 transition-opacity duration-300"
+
             onClick={closeDetailPopup}
             style={{
               backdropFilter: 'blur(8px)',
@@ -788,7 +796,9 @@ export default function PermissionPage({
           />
           
           {/* Pop-Up Detail Perizinan */}
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+
+          <div className="fixed inset-0 z-1000 flex items-center justify-center p-4">
+
             <div 
               className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()} // Mencegah penutupan saat klik di dalam popup
@@ -816,7 +826,9 @@ export default function PermissionPage({
                   </h4>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center">
-                      <div className="h-14 w-14 flex-shrink-0 rounded-full bg-gradient-to-r from-[#4789A8] to-[#5ba3c7] flex items-center justify-center text-white font-bold text-xl">
+
+                      <div className="h-14 w-14 shrink-0 rounded-full bg-linear-to-r from-[#4789A8] to-[#5ba3c7] flex items-center justify-center text-white font-bold text-xl">
+
                         {selectedPermission.nama.charAt(0)}
                       </div>
                       <div className="ml-4">

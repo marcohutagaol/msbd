@@ -1,3 +1,6 @@
+
+
+
 'use client';
 
 import { useState } from 'react';
@@ -44,16 +47,19 @@ import {
 import Header from '../../components/admin/dashboard/Header';
 import Sidebar from '../../components/admin/dashboard/Sidebar';
 
+import { router, usePage } from '@inertiajs/react';
+
+
 // Interface untuk data karyawan
 interface Karyawan {
   id: number;
   nama: string;
-  departemen: string;
-  email: string;
-  telepon: string;
-  status: 'Active' | 'Deactive';
+
+  department: string;
+  jabatan: string;
+  status_aktif: 'AKTIF' | 'NONAKTIF';
   tanggalBergabung: string;
-  avatar: string;
+
 }
 
 const Karyawan: React.FC = () => {
@@ -62,40 +68,60 @@ const Karyawan: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [karyawanEdit, setKaryawanEdit] = useState<Karyawan | null>(null);
   const [formData, setFormData] = useState({
-    nama: '',
-    departemen: '',
-    email: '',
-    telepon: '',
-    status: 'Active' as 'Active' | 'Deactive',
-  });
+
+  nama: '',
+  department: '',
+  jabatan: '',
+  status_aktif: 'AKTIF' as 'AKTIF' | 'NONAKTIF',
+  alamat: '',
+  tanggal_lahir: '',
+  tempat_lahir: '',
+  no_telepon: '',
+});
+
+
 
   // Fungsi toggle sidebar
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   // Fungsi untuk membuka modal edit
-  const openEditModal = (karyawan: Karyawan) => {
-    setKaryawanEdit(karyawan);
-    setFormData({
-      nama: karyawan.nama,
-      departemen: karyawan.departemen,
-      email: karyawan.email,
-      telepon: karyawan.telepon,
-      status: karyawan.status,
-    });
-    setShowEditModal(true);
-    document.body.style.overflow = 'hidden';
-  };
+
+  const openEditModal = (karyawan: any) => {
+  setEditId(karyawan.id_karyawan);
+
+  setFormData({
+    nama: karyawan.nama,
+    department: karyawan.department,
+    jabatan: karyawan.jabatan,
+    status_aktif: karyawan.status_aktif,
+
+    alamat: karyawan.alamat ?? "",
+    tanggal_lahir: karyawan.tanggal_lahir ?? "",
+    tempat_lahir: karyawan.tempat_lahir ?? "",
+    no_telepon: karyawan.no_telepon ?? ""
+  });
+
+  setShowEditModal(true);
+};
+
+
+
 
   // Fungsi untuk membuka modal tambah
   const openAddModal = () => {
     // Reset form data untuk modal tambah
     setFormData({
-      nama: '',
-      departemen: '',
-      email: '',
-      telepon: '',
-      status: 'Active',
-    });
+
+    nama: '',
+    department: '',
+    jabatan: '',
+    status_aktif: 'AKTIF',
+    alamat:'',
+    tanggal_lahir: '',
+    tempat_lahir: '',
+    no_telepon: '',
+  });
+
     setShowAddModal(true);
     document.body.style.overflow = 'hidden';
   };
@@ -119,91 +145,124 @@ const Karyawan: React.FC = () => {
 
   // Fungsi untuk menyimpan perubahan edit
   const handleSaveEdit = () => {
-    console.log('Data yang disimpan:', formData);
-    alert('Data karyawan berhasil diperbarui!');
-    closeModal();
-  };
+
+  if (!karyawanEdit) return;
+
+  router.put(`/admin/karyawan/update/${karyawanEdit.id}`, formData, {
+    onSuccess: () => {
+      closeModal();
+    },
+    onError: (errors) => {
+  console.log("ERROR DARI SERVER:", errors);
+  alert("Terjadi kesalahan saat update.");
+}
+
+  });
+};
+
+
 
   // Fungsi untuk menyimpan karyawan baru
   const handleSaveAdd = () => {
-    // Validasi form
-    if (!formData.nama || !formData.departemen || !formData.email || !formData.telepon) {
-      alert('Harap lengkapi semua field yang wajib diisi!');
-      return;
+  router.post('/admin/karyawan/store', formData, {
+    onSuccess: () => {
+      closeModal();
+      setFormData({
+    nama: '',
+    department: '',
+    jabatan: '',
+    status_aktif: 'AKTIF',
+    alamat:'',
+    tanggal_lahir: '',
+    tempat_lahir: '',
+    no_telepon: '',
+  });
+    },
+    onError: (errors) => {
+      console.log(errors);
+      alert("Terjadi kesalahan.");
     }
+  });
+};
 
-    console.log('Karyawan baru yang ditambahkan:', formData);
-    alert('Karyawan baru berhasil ditambahkan!');
-    closeModal();
-    
-    // Reset form
-    setFormData({
-      nama: '',
-      departemen: '',
-      email: '',
-      telepon: '',
-      status: 'Active',
-    });
-  };
+const [editId, setEditId] = useState<string | null>(null);
+
 
   // Fungsi untuk menangani submit form
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (showEditModal) {
-      handleSaveEdit();
-    } else {
-      handleSaveAdd();
-    }
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const url = editId
+    ? `/karyawan/update/${editId}`
+    : `/karyawan/store`;
+
+  const method = editId ? 'POST' : 'POST'; 
+  // PUT tidak bisa dipakai langsung tanpa _method
+  // Jadi kita override manual
+
+  const form = new FormData();
+  Object.entries(formData).forEach(([key, value]) => {
+    form.append(key, value as string);
+  });
+
+  if (editId) {
+    form.append("_method", "PUT"); // Laravel style
+  }
+
+  await fetch(url, {
+    method: "POST",
+    headers: {
+      "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement).content
+    },
+    body: form
+  });
+
+  setShowEditModal(false);
+  window.location.reload();
+};
+
+
+
 
   // Data dummy karyawan
-  const karyawanData: Karyawan[] = [
-    {
-      id: 1,
-      nama: 'Ahmad Santoso',
-      departemen: 'Front Office',
-      email: 'ahmad.s@kawaland.com',
-      telepon: '+62 812-3456-7890',
-      status: 'Active',
-      tanggalBergabung: '15 Mar 2022',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmad'
-    },
-    {
-      id: 2,
-      nama: 'Siti Rahayu',
-      departemen: 'Housekeeping',
-      email: 'siti.r@kawaland.com',
-      telepon: '+62 813-4567-8901',
-      status: 'Active',
-      tanggalBergabung: '10 Agu 2021',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Siti'
-    },
-    {
-      id: 3,
-      nama: 'Budi Pratama',
-      departemen: 'Food & Beverage',
-      email: 'budi.p@kawaland.com',
-      telepon: '+62 814-5678-9012',
-      status: 'Deactive',
-      tanggalBergabung: '05 Nov 2020',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Budi'
-    },
-  ];
+  const { karyawanData, totalKaryawan, totalKaryawanAktif, totalMantanKaryawan } = usePage<{
+    karyawanData: Karyawan[];
+    totalKaryawan: number;
+    totalKaryawanAktif: number;
+    totalMantanKaryawan: number;
+}>().props;
 
   // Data mantan karyawan
-  const mantanKaryawanData = karyawanData.filter(k => k.status === 'Deactive');
+  const mantanKaryawanData = karyawanData.filter(k => k.status_aktif === 'NONAKTIF');
 
-  // List departemen untuk dropdown
+  // List department untuk dropdown
   const departmentsList = [
-    'Front Office',
-    'Housekeeping', 
-    'Food & Beverage',
-    'Accounting & Administration',
-   
+    { kode: "FNB", nama: "Food & Beverage Department" },
+    { kode: "FO", nama: "Front Office Department" },
+    { kode: "HK", nama: "Housekeeping Department" },
+    { kode: "LS", nama: "Landscape Department" },
+    { kode: "ENG", nama: "Engineering & Maintenance Department" },
+    { kode: "SEC", nama: "Security Department" },
+    { kode: "ACC", nama: "Accounting & Administration" },
+    { kode: "MKT", nama: "Marketing Department" },
   ];
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // jumlah karyawan per halaman
+
+  const totalItems = karyawanData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
+  const paginatedData = karyawanData.slice(startIndex, endIndex);
+  
+
+
   return (
-   <div className="flex min-h-screen bg-[#f5f7fa] font-[Poppins,Segoe_UI,system-ui,sans-serif] transition-all duration-300">
+    <div className="flex min-h-screen bg-[#f5f7fa] font-[Poppins,Segoe_UI,system-ui,sans-serif] transition-all duration-300">
+
       {/* === SIDEBAR === */}
       <div
         className={`fixed top-0 left-0 z-50 h-full w-[260px] bg-white shadow-md transition-transform duration-300 ${
@@ -261,7 +320,9 @@ const Karyawan: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-500 text-sm font-medium mb-1">Total Karyawan</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">{karyawanData.length}</p>
+
+                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">{totalKaryawan}</p>
+
                   <p className="text-xs md:text-sm text-gray-400">Semua karyawan terdaftar</p>
                 </div>
                 <div className="p-3 rounded-xl bg-blue-50">
@@ -276,11 +337,13 @@ const Karyawan: React.FC = () => {
                 <div>
                   <p className="text-gray-500 text-sm font-medium mb-1">Karyawan Aktif</p>
                   <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-                    {karyawanData.filter(k => k.status === 'Active').length}
+
+                    {totalKaryawanAktif}
                   </p>
                   <p className="text-xs md:text-sm text-green-600 font-medium flex items-center gap-1">
                     <CheckCircle className="w-3 h-3 md:w-4 md:h-4" />
-                    {Math.round((karyawanData.filter(k => k.status === 'Active').length / karyawanData.length) * 100)}% active rate
+                    {Math.round((totalKaryawanAktif / totalKaryawan) * 100)}% active rate
+
                   </p>
                 </div>
                 <div className="p-3 rounded-xl bg-green-50">
@@ -295,11 +358,13 @@ const Karyawan: React.FC = () => {
                 <div>
                   <p className="text-gray-500 text-sm font-medium mb-1">Mantan Karyawan</p>
                   <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-                    {karyawanData.filter(k => k.status === 'Deactive').length}
+
+                    {totalMantanKaryawan}
                   </p>
                   <p className="text-xs md:text-sm text-red-600 font-medium flex items-center gap-1">
                     <XCircle className="w-3 h-3 md:w-4 md:h-4" />
-                    {Math.round((karyawanData.filter(k => k.status === 'Deactive').length / karyawanData.length) * 100)}% turnover
+                    {Math.round((totalMantanKaryawan / totalKaryawan) * 100)}% turnover
+
                   </p>
                 </div>
                 <div className="p-3 rounded-xl bg-red-50">
@@ -353,7 +418,8 @@ const Karyawan: React.FC = () => {
                       </button>
                       <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-700 transition-colors">
                         <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                        <span>Deactive</span>
+
+                        <span>NONAKTIF</span>
                       </button>
                       <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-700 transition-colors border-t border-gray-100">
                         <div className="w-2 h-2 rounded-full bg-gray-400"></div>
@@ -363,14 +429,18 @@ const Karyawan: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Departemen Filter */}
+
+                {/* department Filter */}
+
                 <div className="relative group">
                   <button className="w-full flex items-center justify-between pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-xl bg-white text-sm md:text-base text-gray-700 hover:border-gray-400 transition-all duration-300">
                     <div className="flex items-center gap-3">
                       <div className="absolute left-3">
                         <Building className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                       </div>
-                      <span>Semua Departemen</span>
+
+                      <span>Semua department</span>
+
                     </div>
                     <ChevronDown className="w-4 h-4 text-gray-400 transition-transform duration-200 group-hover:rotate-180" />
                   </button>
@@ -418,10 +488,12 @@ const Karyawan: React.FC = () => {
                       Karyawan
                     </th>
                     <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Departemen 
+
+                      department 
                     </th>
                     <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Kontak
+                      Jabatan
+
                     </th>
                     <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Status
@@ -432,83 +504,85 @@ const Karyawan: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {karyawanData.map((karyawan) => (
+
+                  {paginatedData.map((karyawan, index) => (
                     <tr key={karyawan.id} className="hover:bg-gray-50/80 transition-colors duration-200 group">
-                      {/* Karyawan Info */}
                       <td className="px-4 md:px-6 py-4 md:py-5">
                         <div className="flex items-center gap-3 md:gap-4">
                           <div className="relative shrink-0">
-                            <img
+                            {/* <img
                               src={karyawan.avatar}
                               alt={karyawan.nama}
                               className="w-10 h-10 md:w-12 md:h-12 rounded-xl border-2 border-white shadow-sm"
-                            />
+                            /> */}
                             <div className={`absolute -bottom-1 -right-1 w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white ${
-                              karyawan.status === 'Active' ? 'bg-green-500' : 'bg-red-500'
+                              karyawan.status_aktif === 'AKTIF' ? 'bg-green-500' : 'bg-red-500'
+
                             }`} />
                           </div>
                           <div className="min-w-0">
                             <div className="font-semibold text-gray-900 truncate text-sm md:text-base">{karyawan.nama}</div>
                             
-                            <div className="text-gray-400 text-xs flex items-center gap-1 mt-0.5 md:mt-1">
+
+                            {/* <div className="text-gray-400 text-xs flex items-center gap-1 mt-0.5 md:mt-1">
                               <Calendar className="w-3 h-3" />
                               <span>Joined {karyawan.tanggalBergabung}</span>
-                            </div>
+                            </div> */}
                             <div className="text-xs text-[#4789A8] font-medium mt-1 md:mt-2">
-                              ID: #{karyawan.id.toString().padStart(3, '0')}
+                              ID: {karyawan.id}
+
                             </div>
                           </div>
                         </div>
                       </td>
                     
-                      {/* Departemen */}
                       <td className="px-4 md:px-6 py-4 md:py-5">
                         <div className="flex items-center gap-2 md:gap-3">
                           <div className="p-2 rounded-lg shrink-0 bg-blue-50 text-blue-700">
                             <Building className="w-3 h-3 md:w-4 md:h-4" />
                           </div>
                           <div className="min-w-0">
-                            <div className="font-medium text-gray-900 text-sm md:text-base truncate">{karyawan.departemen}</div>
+
+                            <div className="font-medium text-gray-900 text-sm md:text-base truncate">{karyawan.department}</div>
+
                           </div>
                         </div>
                       </td>
                       
-                      {/* Kontak */}
+
                       <td className="px-4 md:px-6 py-4 md:py-5">
                         <div className="space-y-1.5 md:space-y-2">
                           <div className="flex items-center gap-2 text-xs md:text-sm group/email">
-                            <Mail className="w-3 h-3 md:w-4 md:h-4 text-gray-400" />
-                            <span className="text-gray-700 truncate">{karyawan.email}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs md:text-sm group/phone">
-                            <Phone className="w-3 h-3 md:w-4 md:h-4 text-gray-400" />
-                            <span className="text-gray-700">{karyawan.telepon}</span>
+                            <span className="text-gray-700 truncate">{karyawan.jabatan}</span>
+
                           </div>
                         </div>
                       </td>
                       
-                      {/* Status */}
+
                       <td className="px-4 md:px-6 py-4 md:py-5">
                         <div className="flex flex-col gap-1.5 md:gap-2">
                           <span className={`inline-flex items-center gap-1.5 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-xs font-medium border ${
-                            karyawan.status === 'Active' 
+                            karyawan.status_aktif === 'AKTIF' 
                               ? 'bg-green-50 text-green-700 border-green-100' 
                               : 'bg-red-50 text-red-700 border-red-100'
                           }`}>
-                            {karyawan.status === 'Active' ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                            {karyawan.status}
+                            {karyawan.status_aktif === 'AKTIF' ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                            {karyawan.status_aktif}
                           </span>
                           <span className="text-xs text-gray-500">
-                            {karyawan.status === 'Active' ? 'Aktif bekerja' : 'Tidak aktif'}
+                            {karyawan.status_aktif === 'AKTIF' ? 'Aktif bekerja' : 'Tidak aktif'}
+
                           </span>
                         </div>
                       </td>
                       
-                      {/* Actions */}
+
                       <td className="px-4 md:px-6 py-4 md:py-5">
                         <div className="flex items-center gap-1 md:gap-2">
                           <a 
-                            href="/admin/detailKaryawan"
+                            href={`/admin/detailKaryawan/${karyawan.id}`}
+
                             className="p-1.5 md:p-2 text-gray-600 hover:text-[#4789A8] hover:bg-blue-50 rounded-lg transition-all duration-200 group relative"
                             title="View Details"
                           >
@@ -531,16 +605,18 @@ const Karyawan: React.FC = () => {
                           
                           <button 
                             className={`p-1.5 md:p-2 rounded-lg transition-all duration-200 group/delete relative ${
-                              karyawan.status === 'Active' 
+
+                              karyawan.status_aktif === 'AKTIF' 
                                 ? 'text-gray-400 cursor-not-allowed' 
                                 : 'text-red-600 hover:text-red-700 hover:bg-red-50'
                             }`}
-                            title={karyawan.status === 'Active' ? 'Hanya untuk Deactive' : 'Delete'}
-                            disabled={karyawan.status === 'Active'}
+                            title={karyawan.status_aktif === 'AKTIF' ? 'Hanya untuk NONAKTIF' : 'Delete'}
+                            disabled={karyawan.status_aktif === 'AKTIF'}
                           >
                             <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
                             <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/delete:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                              {karyawan.status === 'Active' ? 'Hanya untuk Deactive' : 'Delete'}
+                              {karyawan.status_aktif === 'AKTIF' ? 'Hanya untuk NONAKTIF' : 'Delete'}
+
                             </div>
                           </button>
                         </div>
@@ -554,14 +630,33 @@ const Karyawan: React.FC = () => {
             {/* Table Footer - Pagination */}
             <div className="px-4 md:px-6 py-4 border-t border-gray-100 bg-gray-50/50">
               <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
+
+
+                {/* Info */}
                 <div className="text-sm text-gray-600 order-2 md:order-1">
-                  Menampilkan <span className="font-semibold">1-{karyawanData.length}</span> dari <span className="font-semibold">{karyawanData.length}</span> karyawan
+                  Menampilkan <span className="font-semibold">{startIndex + 1}-{Math.min(endIndex, totalItems)}</span>
+                  {" "} dari {" "}
+                  <span className="font-semibold">{totalItems}</span> karyawan
                 </div>
-                
+
                 {/* Pagination */}
                 <div className="flex items-center gap-1 order-1 md:order-2 mb-2 md:mb-0">
-                  <button className="w-8 h-8 md:w-10 md:h-10 rounded-lg font-medium bg-[#4789A8] text-white">1</button>
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentPage(i + 1)}
+                      className={`w-8 h-8 md:w-10 md:h-10 rounded-lg font-medium 
+                        ${currentPage === i + 1 
+                          ? "bg-[#4789A8] text-white" 
+                          : "bg-white text-gray-600 border border-gray-300"
+                        }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
                 </div>
+                
+
               </div>
             </div>
           </div>
@@ -571,7 +666,9 @@ const Karyawan: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4 mb-4 md:mb-6">
               <div>
                 <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1">Mantan Karyawan</h3>
-                <p className="text-gray-600 text-sm md:text-base">Karyawan dengan status Deactive</p>
+
+                <p className="text-gray-600 text-sm md:text-base">Karyawan dengan status NONAKTIF</p>
+
               </div>
               <a
                 href="/admin/mantanKaryawan"
@@ -587,17 +684,19 @@ const Karyawan: React.FC = () => {
                 mantanKaryawanData.map((karyawan) => (
                   <div key={karyawan.id} className="border border-gray-200 rounded-xl p-3 md:p-4 hover:border-gray-300 hover:shadow-sm transition-all duration-200 group">
                     <div className="flex items-center gap-3 mb-3 md:mb-4">
-                      <img
+
+                      {/* <img
                         src={karyawan.avatar}
                         alt={karyawan.nama}
                         className="w-12 h-12 md:w-14 md:h-14 rounded-xl border-2 border-white shadow-sm group-hover:scale-105 transition-transform duration-200"
-                      />
+                      /> */}
                       <div className="min-w-0">
                         <h4 className="font-semibold text-gray-900 text-sm md:text-base truncate">{karyawan.nama}</h4>
-                        <p className="text-gray-600 text-xs md:text-sm truncate">{karyawan.departemen}</p>
+                        <p className="text-gray-600 text-xs md:text-sm truncate">{karyawan.department}</p>
                       </div>
                     </div>
-                    <div className="space-y-1.5 md:space-y-2">
+                    {/* <div className="space-y-1.5 md:space-y-2">
+
                       <div className="flex items-center justify-between text-xs md:text-sm">
                         <span className="text-gray-500">Bergabung:</span>
                         <span className="font-medium">{karyawan.tanggalBergabung}</span>
@@ -606,7 +705,9 @@ const Karyawan: React.FC = () => {
                         <span className="text-gray-500">Kontak:</span>
                         <span className="font-medium truncate">{karyawan.email}</span>
                       </div>
-                    </div>
+
+                    </div> */}
+
                     <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-100">
                       <button 
                         className="w-full py-2 text-xs md:text-sm text-[#4789A8] hover:bg-blue-50 rounded-lg transition-colors font-medium"
@@ -634,7 +735,9 @@ const Karyawan: React.FC = () => {
         <>
           {/* Backdrop dengan blur */}
           <div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[999] transition-opacity duration-300"
+
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-999 transition-opacity duration-300"
+
             onClick={closeModal}
             style={{
               backdropFilter: 'blur(8px)',
@@ -643,7 +746,9 @@ const Karyawan: React.FC = () => {
           />
           
           {/* Modal Content */}
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 overflow-y-auto">
+
+          <div className="fixed inset-0 z-1000 flex items-center justify-center p-4 overflow-y-auto">
+
             <div 
               className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-300 scale-100"
               onClick={(e) => e.stopPropagation()}
@@ -669,32 +774,9 @@ const Karyawan: React.FC = () => {
               {/* Modal Body dengan Form */}
               <form onSubmit={handleSubmit} className="p-6">
                 <div className="flex flex-col md:flex-row gap-6 mb-8">
-                  {/* Avatar Section */}
-                  <div className="flex flex-col items-center">
-                    <div className="relative mb-4">
-                      <div className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg bg-gray-100 flex items-center justify-center overflow-hidden">
-                        <User className="w-12 h-12 text-gray-400" />
-                      </div>
-                      <button 
-                        type="button"
-                        className="absolute -bottom-2 -right-2 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors"
-                        onClick={() => {
-                          // Fungsi untuk upload/ganti foto
-                          alert('Fitur upload foto akan segera tersedia!');
-                        }}
-                      >
-                        <Camera className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <div className="text-center">
-                      <p className="font-medium text-gray-900">
-                        {showEditModal ? karyawanEdit?.nama : 'Foto Profil'}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {showEditModal ? `ID: #${karyawanEdit?.id.toString().padStart(3, '0')}` : 'Klik kamera untuk upload'}
-                      </p>
-                    </div>
-                  </div>
+
+                  
+
 
                   {/* Form Section */}
                   <div className="flex-1 space-y-6">
@@ -716,62 +798,51 @@ const Karyawan: React.FC = () => {
                       />
                     </div>
 
-                    {/* Departemen */}
+
+                    {/* department */}
+                    <div>
+  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+    <BuildingIcon className="w-4 h-4" />
+    Department
+    <span className="text-red-500">*</span>
+  </label>
+
+  <select
+    name="department"
+    value={formData.department}
+    onChange={handleInputChange}
+    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300 bg-white"
+    required
+  >
+    <option value="">Pilih department</option>
+
+    {departmentsList.map((dept) => (
+      <option key={dept.kode} value={dept.kode}>
+        {dept.nama}
+      </option>
+    ))}
+  </select>
+</div>
+
+
                     <div>
                       <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                        <BuildingIcon className="w-4 h-4" />
-                        Departemen
+                        <User className="w-4 h-4" />
+                        Jabatan
                         <span className="text-red-500">*</span>
                       </label>
-                      <select
-                        name="departemen"
-                        value={formData.departemen}
+                      <input
+                        type="text"
+                        name="jabatan"
+                        value={formData.jabatan}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300 bg-white"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300"
+                        placeholder="Masukkan jabatan"
                         required
-                      >
-                        <option value="">Pilih Departemen</option>
-                        {departmentsList.map((dept) => (
-                          <option key={dept} value={dept}>{dept}</option>
-                        ))}
-                      </select>
+                      />
                     </div>
 
-                    {/* Kontak */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                          <MailIcon className="w-4 h-4" />
-                          Email
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300"
-                          placeholder="email@domain.com"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                          <PhoneIcon className="w-4 h-4" />
-                          Telepon
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="tel"
-                          name="telepon"
-                          value={formData.telepon}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300"
-                          placeholder="+62 812-3456-7890"
-                          required
-                        />
-                      </div>
-                    </div>
+
 
                     {/* Status */}
                     <div>
@@ -784,9 +855,11 @@ const Karyawan: React.FC = () => {
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
                             type="radio"
-                            name="status"
-                            value="Active"
-                            checked={formData.status === 'Active'}
+
+                            name="status_aktif"
+                            value="AKTIF"
+                            checked={formData.status_aktif === 'AKTIF'}
+
                             onChange={handleInputChange}
                             className="w-4 h-4 text-[#4789A8] cursor-pointer"
                             required
@@ -799,20 +872,26 @@ const Karyawan: React.FC = () => {
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
                             type="radio"
-                            name="status"
-                            value="Deactive"
-                            checked={formData.status === 'Deactive'}
+
+                            name="status_aktif"
+                            value="NONAKTIF"
+                            checked={formData.status_aktif === 'NONAKTIF'}
+
                             onChange={handleInputChange}
                             className="w-4 h-4 text-[#4789A8] cursor-pointer"
                           />
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                            <span className="text-gray-700">Deactive</span>
+
+                            <span className="text-gray-700">NONAKTIF</span>
+
                           </div>
                         </label>
                       </div>
                       <p className="text-xs text-gray-500 mt-2">
-                        Pilih "Active" untuk karyawan aktif, "Deactive" untuk mantan karyawan
+
+                        Pilih "Active" untuk karyawan aktif, "NONAKTIF" untuk mantan karyawan
+
                       </p>
                     </div>
                   </div>
@@ -845,7 +924,9 @@ const Karyawan: React.FC = () => {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         
-         body {
+
+        body {
+>>>>>>> d9280bafcd04a8bf05b301b11fd12992dddabef1
           font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
         }
         
@@ -907,4 +988,6 @@ const Karyawan: React.FC = () => {
   );
 };
 
+
 export default Karyawan;
+

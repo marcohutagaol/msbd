@@ -1,47 +1,57 @@
+
+
 'use client';
 
 import { useState } from 'react';
+import { usePage } from '@inertiajs/react';
+
 import { FaFilter, FaUserSlash, FaUserCircle, FaBuilding, FaIdCard, FaSearch, FaTimes, FaCalendarAlt, FaCaretDown, FaArrowLeft } from 'react-icons/fa';
 import Header from '../../components/admin/dashboard/Header';
 import Sidebar from '../../components/admin/dashboard/Sidebar';
 
-// Data dummy mantan karyawan
-const initialEmployees = [
-  { id: 1, nama: "Ahmad Susanto", departemen: "IT", foto: "https://i.pravatar.cc/150?img=1", status: "deactive", tanggalKeluar: "15 Jan 2023" },
-  { id: 2, nama: "Budi Setiawan", departemen: "HR", foto: "https://i.pravatar.cc/150?img=2", status: "deactive", tanggalKeluar: "20 Feb 2023" },
-  { id: 3, nama: "Citra Lestari", departemen: "Marketing", foto: "https://i.pravatar.cc/150?img=3", status: "deactive", tanggalKeluar: "10 Mar 2023" },
-  { id: 4, nama: "Dewi Anggraini", departemen: "Finance", foto: "https://i.pravatar.cc/150?img=4", status: "deactive", tanggalKeluar: "5 Apr 2023" },
-  { id: 5, nama: "Eko Prasetyo", departemen: "IT", foto: "https://i.pravatar.cc/150?img=5", status: "deactive", tanggalKeluar: "18 Mei 2023" },
-  { id: 6, nama: "Fitri Handayani", departemen: "HR", foto: "https://i.pravatar.cc/150?img=6", status: "deactive", tanggalKeluar: "22 Jun 2023" },
-  { id: 7, nama: "Gunawan Wijaya", departemen: "Operations", foto: "https://i.pravatar.cc/150?img=7", status: "deactive", tanggalKeluar: "30 Jul 2023" },
-  { id: 8, nama: "Hana Puspita", departemen: "Marketing", foto: "https://i.pravatar.cc/150?img=8", status: "deactive", tanggalKeluar: "12 Agu 2023" },
-  { id: 9, nama: "Indra Kurniawan", departemen: "Finance", foto: "https://i.pravatar.cc/150?img=9", status: "deactive", tanggalKeluar: "5 Sep 2023" },
-  { id: 10, nama: "Joko Santoso", departemen: "Operations", foto: "https://i.pravatar.cc/150?img=10", status: "deactive", tanggalKeluar: "19 Okt 2023" },
-  { id: 11, nama: "Kartika Sari", departemen: "IT", foto: "https://i.pravatar.cc/150?img=11", status: "deactive", tanggalKeluar: "8 Nov 2022" },
-  { id: 12, nama: "Lukman Hakim", departemen: "HR", foto: "https://i.pravatar.cc/150?img=12", status: "deactive", tanggalKeluar: "14 Des 2022" },
-];
+
+
+
 
 // Daftar departemen unik untuk filter
 const departments = ["Semua Departemen", "IT", "HR", "Marketing", "Finance", "Operations"];
 
+
+interface Employee {
+  id: string;
+  nama: string;
+  departemen: string;
+  // tambah properti lain kalau ada
+}
+
 export default function FormerEmployees() {
+  const { mantanKaryawan } = usePage<{ mantanKaryawan: Employee[] }>().props;
+
+  const [employees] = useState<Employee[]>(mantanKaryawan);
+  
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [employees] = useState(initialEmployees);
+
   const [selectedDepartment, setSelectedDepartment] = useState("Semua Departemen");
   const [searchTerm, setSearchTerm] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
-  // Filter berdasarkan departemen dan pencarian
+  const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
+
   const filteredEmployees = employees.filter(emp => {
-    const matchesDepartment = selectedDepartment === "Semua Departemen" || emp.departemen === selectedDepartment;
-    const matchesSearch = emp.nama.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         emp.departemen.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         emp.id.toString().includes(searchTerm);
-    
+    const matchesDepartment =
+      selectedDepartment === "Semua Departemen" ||
+      emp.departemen === selectedDepartment;
+
+    const matchesSearch =
+      emp.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.departemen.toLowerCase().includes(searchTerm.toLowerCase());
+
     return matchesDepartment && matchesSearch;
   });
+
+
 
   // Reset filter
   const resetFilters = () => {
@@ -92,7 +102,9 @@ export default function FormerEmployees() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4789A8] to-[#5ca3c7] flex items-center justify-center">
+
+                  <div className="w-12 h-12 rounded-xl bg-linear-to-br from-[#4789A8] to-[#5ca3c7] flex items-center justify-center">
+
                     <FaUserSlash className="text-white text-xl" />
                   </div>
                   Mantan Karyawan
@@ -245,7 +257,9 @@ export default function FormerEmployees() {
                         </div>
                         <div>
                           <div className="text-xs text-gray-500">ID Karyawan</div>
-                          <div className="text-lg font-bold text-gray-800">EMP-{employee.id.toString().padStart(3, '0')}</div>
+
+                          <div className="text-lg font-bold text-gray-800">{employee.id}</div>
+
                         </div>
                       </div>
                       
@@ -260,13 +274,9 @@ export default function FormerEmployees() {
                   <div className="p-5">
                     {/* Profile Photo & Name */}
                     <div className="flex flex-col items-center mb-5">
-                      <div className="w-20 h-20 rounded-full border-4 border-white shadow-md overflow-hidden mb-4 group-hover:scale-105 transition-transform duration-300">
-                        <img 
-                          src={employee.foto} 
-                          alt={employee.nama} 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+
+                      
+f1
                       <h3 className="text-lg font-bold text-center text-gray-800">{employee.nama}</h3>
                     </div>
                     
@@ -300,7 +310,9 @@ export default function FormerEmployees() {
                         </div>
                         <div>
                           <div className="text-xs text-gray-500">Tanggal Keluar</div>
-                          <div className="font-semibold text-gray-800">{employee.tanggalKeluar}</div>
+
+                          {/* <div className="font-semibold text-gray-800">{employee.tanggalKeluar}</div> */}
+
                         </div>
                       </div>
                     </div>
@@ -334,7 +346,9 @@ export default function FormerEmployees() {
           {filteredEmployees.length > 0 && (
             <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+
+                <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+
                   <FaUserSlash className="text-blue-600 text-xs" />
                 </div>
                 <div>
@@ -349,4 +363,6 @@ export default function FormerEmployees() {
       </div>
     </div>
   );
+
 }
+
