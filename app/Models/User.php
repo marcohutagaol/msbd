@@ -8,35 +8,41 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+  use HasFactory, Notifiable;
 
-    protected $table = 'users';
+  protected $table = 'users';
 
-    protected $fillable = [
-        'name',
-        'id_karyawan',
-        'email',
-        'password',
-        'departemen', // Tambahkan ini
-        'role'
+  protected $fillable = [
+    'name',
+    'id_karyawan',
+    'email',
+    'password',
+    'departemen', // Tambahkan ini
+    'role'
+  ];
+
+  protected $hidden = [
+    'password',
+    'remember_token',
+  ];
+
+  protected function casts(): array
+  {
+    return [
+      'email_verified_at' => 'datetime',
+      'password' => 'hashed',
     ];
+  }
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+  // Relasi dengan requests
+  public function requests()
+  {
+    return $this->hasMany(Request::class);
+  }
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+  public function permissions()
+  {
+    return $this->hasMany(Permission::class);
+  }
 
-    // Relasi dengan requests
-    public function requests()
-    {
-        return $this->hasMany(Request::class);
-    }
 }

@@ -406,6 +406,67 @@ class AdminController extends Controller
     ]);
   }
 
-  
+  public function permission()
+  {
+    // =========================================
+    // 1. Permission detail (untuk tabel dan popup)
+    // =========================================
+    $permissions = Permission::with('user')
+      ->orderBy('created_at', 'desc')
+      ->get()
+      ->map(function ($item) {
+        return [
+          'id' => $item->id,
+          'type' => $item->type,
+          'status' => $item->status,
+          'start_date' => $item->start_date,
+          'end_date' => $item->end_date,
+          'days' => $item->days,
+          'reason' => $item->reason,
+          'permission_type' => $item->permission_type,
+          'vacation_type' => $item->vacation_type,
+          'document_path' => $item->document_path,
 
+          'user' => [
+            'name' => $item->user->name,
+            'department' => $item->user->department,
+            'employee_id' => $item->user->employee_id,
+          ],
+        ];
+      });
+
+    // =========================================
+    // 2. Summary data
+    // =========================================
+    $summary = [
+      'sakit' => Permission::where('type', 'sick')->count(),
+      'cuti' => Permission::where('type', 'vacation')->count(),
+      'izin' => Permission::where('type', 'permission')->count(),
+    ];
+
+    // =========================================
+    // 3. Chart data per bulan
+    // =========================================
+    $monthly = [
+      'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      'sakit' => [],
+      'cuti' => [],
+      'izin' => [],
+    ];
+
+    for ($i = 1; $i <= 12; $i++) {
+      $monthly['sakit'][] = Permission::whereMonth('created_at', $i)->where('type', 'sick')->count();
+      $monthly['cuti'][] = Permission::whereMonth('created_at', $i)->where('type', 'vacation')->count();
+      $monthly['izin'][] = Permission::whereMonth('created_at', $i)->where('type', 'permission')->count();
+    }
+
+    // =========================================
+    // 4. Return ke Inertia (React)
+    // =========================================
+    return Inertia::render('admin/permission', [
+      'permissions' => $permissions,
+      'summary' => $summary,
+      'monthly' => $monthly,
+    ]);
+  }
 }
