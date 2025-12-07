@@ -1,5 +1,7 @@
 'use client';
 
+import { usePage } from "@inertiajs/react";
+import { useMemo } from "react";
 import { useState, useEffect } from 'react';
 import Header from '../../components/admin/dashboard/Header';
 import Sidebar from '../../components/admin/dashboard/Sidebar';
@@ -58,6 +60,24 @@ interface DashboardProps {
   tanpa_keterangan: number;
 }
 
+type Permission = {
+  id: number;
+  type: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+  reason: string;
+  permission_type?: string;
+  vacation_type?: string;
+  document_path: string;
+  notes: string;
+  user: {
+    name: string;
+    department: string;
+    employee_id: string;
+  };
+};
+
 export default function PermissionPage({
   hadir,
   sakit,
@@ -66,7 +86,7 @@ export default function PermissionPage({
   tanpa_keterangan,
 }: DashboardProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [selectedPermission, setSelectedPermission] = useState<PermissionData | null>(null);
+  const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null);
   const [chartType, setChartType] = useState<'line' | 'bar' | 'pie'>('bar');
   const [filterJenis, setFilterJenis] = useState<string>('semua');
   const [filterStatus, setFilterStatus] = useState<string>('semua');
@@ -82,32 +102,7 @@ export default function PermissionPage({
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   // Data dummy untuk card ringkasan
-  const summaryData = [
-    { 
-      jenis: 'Sakit', 
-      total: 24, 
-      trend: 'naik', 
-      persentase: 12, 
-      icon: <MdSick size={28} />,
-      color: 'from-red-400 to-red-600'
-    },
-    { 
-      jenis: 'Cuti', 
-      total: 18, 
-      trend: 'turun', 
-      persentase: 8, 
-      icon: <FaUmbrellaBeach size={28} />,
-      color: 'from-amber-400 to-amber-600'
-    },
-    { 
-      jenis: 'Izin', 
-      total: 42, 
-      trend: 'naik', 
-      persentase: 15, 
-      icon: <FaUserClock size={28} />,
-      color: 'from-blue-400 to-blue-600'
-    },
-  ];
+  
 
   // Data dummy untuk tabel dengan departemen
   const permissionData: PermissionData[] = [
@@ -155,16 +150,11 @@ export default function PermissionPage({
   ];
 
   // Data untuk grafik
-  const chartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-    sakit: [18, 22, 24, 20, 19, 21],
-    cuti: [12, 15, 18, 14, 16, 17],
-    izin: [25, 30, 42, 35, 38, 40],
-  };
+  
 
   // Fungsi untuk membuka popup detail
-  const openDetailPopup = (permission: PermissionData) => {
-    setSelectedPermission(permission);
+  const openDetailPopup = (data: Permission) => {
+    setSelectedPermission(data);
     setIsModalOpen(true);
   };
 
@@ -250,6 +240,68 @@ export default function PermissionPage({
   useEffect(() => {
     setFilteredData(permissionData);
   }, []);
+
+  const { props } = usePage<{
+  permissions: Permission[];
+  summary: {
+    sakit: number;
+    cuti: number;
+    izin: number;
+  };
+  monthly: {
+    labels: string[];
+    sakit: number[];
+    cuti: number[];
+    izin: number[];
+  };
+}>();
+  const permissions = props.permissions;
+const summary = props.summary;
+const monthly = props.monthly;
+
+
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => {
+    return permissions.filter((p) =>
+      p.user.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, permissions]);
+
+  const summaryData = [
+  {
+    jenis: "Sakit",
+    total: summary.sakit, // dari database
+    color: "from-red-400 to-red-500",
+    icon: <MdSick />,
+    trend: summary.sakit >= 10 ? "naik" : "turun",
+    persentase: 12,
+  },
+  {
+    jenis: "Cuti",
+    total: summary.cuti, // dari database
+    color: "from-amber-400 to-amber-500",
+    icon: <FaUmbrellaBeach />,
+    trend: summary.cuti >= 10 ? "naik" : "turun",
+    persentase: 8,
+  },
+  {
+    jenis: "Izin",
+    total: summary.izin, // dari database
+    color: "from-blue-400 to-blue-500",
+    icon: <FaUserClock />,
+    trend: summary.izin >= 10 ? "naik" : "turun",
+    persentase: 15,
+  },
+];
+
+  const chartData = {
+  labels: monthly.labels,
+  sakit: monthly.sakit,
+  cuti: monthly.cuti,
+  izin: monthly.izin,
+};
+
 
   return (
     <div className="flex min-h-screen bg-[#f5f7fa] font-[Poppins,Segoe_UI,system-ui,sans-serif] transition-all duration-300">
@@ -429,41 +481,58 @@ export default function PermissionPage({
                 )}
 
                 {chartType === 'pie' && (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="relative w-48 h-48">
-                      <div className="absolute inset-0 rounded-full border-8 border-red-400" 
-                           style={{ clipPath: 'inset(0 0 0 50%)' }}></div>
-                      <div className="absolute inset-0 rounded-full border-8 border-amber-400" 
-                           style={{ clipPath: 'inset(0 50% 0 0)' }}></div>
-                      <div className="absolute inset-0 rounded-full border-8 border-blue-400" 
-                           style={{ clipPath: 'polygon(50% 0%, 50% 50%, 100% 50%, 100% 0%)' }}></div>
-                      
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="bg-white w-24 h-24 rounded-full flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-gray-800">84</div>
-                            <div className="text-sm text-gray-500">Total</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="ml-8 space-y-3">
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 bg-red-400 rounded mr-2"></div>
-                        <span className="text-gray-700">Sakit (24)</span>
-                      </div>
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 bg-amber-400 rounded mr-2"></div>
-                        <span className="text-gray-700">Cuti (18)</span>
-                      </div>
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 bg-blue-400 rounded mr-2"></div>
-                        <span className="text-gray-700">Izin (42)</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+  <div className="flex items-center justify-center h-full">
+    <div className="relative w-48 h-48">
+
+      {/* PIE CHART (DESAIN TETAP) */}
+      <div
+        className="absolute inset-0 rounded-full border-8 border-red-400"
+        style={{ clipPath: 'inset(0 0 0 50%)' }}
+      ></div>
+
+      <div
+        className="absolute inset-0 rounded-full border-8 border-amber-400"
+        style={{ clipPath: 'inset(0 50% 0 0)' }}
+      ></div>
+
+      <div
+        className="absolute inset-0 rounded-full border-8 border-blue-400"
+        style={{ clipPath: 'polygon(50% 0%, 50% 50%, 100% 50%, 100% 0%)' }}
+      ></div>
+
+      {/* TOTAL DI TENGAH */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="bg-white w-24 h-24 rounded-full flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-800">
+              {summary.sakit + summary.cuti + summary.izin}
+            </div>
+            <div className="text-sm text-gray-500">Total</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* LEGEND (DINAMIS) */}
+    <div className="ml-8 space-y-3">
+      <div className="flex items-center">
+        <div className="w-4 h-4 bg-red-400 rounded mr-2"></div>
+        <span className="text-gray-700">Sakit ({summary.sakit})</span>
+      </div>
+
+      <div className="flex items-center">
+        <div className="w-4 h-4 bg-amber-400 rounded mr-2"></div>
+        <span className="text-gray-700">Cuti ({summary.cuti})</span>
+      </div>
+
+      <div className="flex items-center">
+        <div className="w-4 h-4 bg-blue-400 rounded mr-2"></div>
+        <span className="text-gray-700">Izin ({summary.izin})</span>
+      </div>
+    </div>
+  </div>
+)}
+
 
                 {(chartType === 'bar' || chartType === 'line') && (
                   <div className="absolute bottom-0 left-0 right-0 flex justify-center space-x-6">
@@ -710,59 +779,73 @@ export default function PermissionPage({
           </th>
         </tr>
       </thead>
-      <tbody className="divide-y divide-gray-200">
-        {filteredData.map((permission) => (
-          <tr key={permission.id} className="hover:bg-gray-50 transition-colors">
-            <td className="py-4 px-6">
-              <div className="flex items-center">
-                <div className="h-10 w-10 shrink-0 rounded-full bg-linear-to-r from-[#4789A8] to-[#5ba3c7] flex items-center justify-center text-white font-semibold">
-                  {permission.nama.charAt(0)}
-                </div>
-                <div className="ml-4">
-                  <div className="font-medium text-gray-900">{permission.nama}</div>
-                  <div className="text-sm text-gray-500">ID: KRY-{permission.id.toString().padStart(4, '0')}</div>
-                </div>
-              </div>
-            </td>
-            <td className="py-4 px-6">
-              <div className="flex items-center">
-                {getDepartemenIcon(permission.departemen)}
-                <span className="ml-2 font-medium text-gray-700">{permission.departemen}</span>
-              </div>
-            </td>
-            <td className="py-4 px-6">
-              <div className="flex items-center">
-                {permission.jenis === 'Sakit' && <MdSick className="mr-2 text-red-500" />}
-                {permission.jenis === 'Cuti' && <FaUmbrellaBeach className="mr-2 text-amber-500" />}
-                {permission.jenis === 'Izin' && <FaUserClock className="mr-2 text-blue-500" />}
-                <span className="font-medium">{permission.jenis}</span>
-              </div>
-            </td>
-            <td className="py-4 px-6 text-gray-700">
-              <div className="flex items-center">
-                <FaCalendarAlt className="mr-2 text-gray-400" />
-                {permission.tanggal}
-              </div>
-            </td>
-            <td className="py-4 px-6">
-              <div className="flex items-center">
-                {getStatusIcon(permission.status)}
-                <span className={`ml-2 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(permission.status)}`}>
-                  {permission.status}
-                </span>
-              </div>
-            </td>
-            <td className="py-4 px-6">
-              <button
-                onClick={() => openDetailPopup(permission)}
+      <tbody>
+            {filtered.map((p) => (
+              <tr
+                key={p.id}
+                className="border-b hover:bg-gray-50 transition"
+              >
+                <td className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 text-blue-700 flex items-center justify-center rounded-full font-bold">
+                      {p.user.name[0]}
+                    </div>
+                    <div>
+                      <div className="font-semibold">{p.user.name}</div>
+                      <div className="text-xs text-gray-500">
+                        ID: {p.user.employee_id}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <td className="p-3">{p.user.department}</td>
+
+                <td className="p-3 capitalize">
+                  {p.type === "sick" && "Sakit"}
+                  {p.type === "permission" && "Izin"}
+                  {p.type === "vacation" && "Cuti"}
+                </td>
+
+                <td className="p-3">{p.start_date}</td>
+
+                <td className="p-3">
+                  {p.status === "pending" && (
+                    <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
+                      Pending
+                    </span>
+                  )}
+                  {p.status === "approved" && (
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                      Disetujui
+                    </span>
+                  )}
+                  {p.status === "rejected" && (
+                    <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">
+                      Ditolak
+                    </span>
+                  )}
+                </td>
+
+                <td className="p-3">
+                  <button
+                onClick={() => openDetailPopup(p)}
                 className="px-4 py-2 bg-[#4789A8] hover:bg-[#3a7796] text-white rounded-lg flex items-center transition-colors"
               >
                 <FaEye className="mr-2" /> Detail
               </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
+                </td>
+              </tr>
+            ))}
+
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={6} className="text-center py-5 text-gray-500">
+                  Tidak ada data ditemukan
+                </td>
+              </tr>
+            )}
+          </tbody>
     </table>
     
     {filteredData.length === 0 && (
@@ -808,112 +891,166 @@ export default function PermissionPage({
               </div>
 
               {/* Body Pop-up */}
-              <div className="p-6">
-                {/* Info Karyawan */}
-                <div className="mb-6">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                    <FaUser className="mr-2 text-[#4789A8]" /> Informasi Karyawan
-                  </h4>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center">
-                      <div className="h-14 w-14 shrink-0 rounded-full bg-linear-to-r from-[#4789A8] to-[#5ba3c7] flex items-center justify-center text-white font-bold text-xl">
-                        {selectedPermission.nama.charAt(0)}
-                      </div>
-                      <div className="ml-4">
-                        <div className="font-bold text-gray-900 text-lg">{selectedPermission.nama}</div>
-                        <div className="text-gray-600">ID: KRY-{selectedPermission.id.toString().padStart(4, '0')}</div>
-                        <div className="flex items-center mt-1">
-                          {getDepartemenIcon(selectedPermission.departemen)}
-                          <span className="ml-2 text-gray-700">{selectedPermission.departemen}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+<div className="p-6">
+  {/* Info Karyawan */}
+  <div className="mb-6">
+    <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+      <FaUser className="mr-2 text-[#4789A8]" /> Informasi Karyawan
+    </h4>
+
+    <div className="bg-gray-50 rounded-lg p-4">
+      <div className="flex items-center">
+        <div className="h-14 w-14 shrink-0 rounded-full bg-linear-to-r from-[#4789A8] to-[#5ba3c7] flex items-center justify-center text-white font-bold text-xl">
+          {selectedPermission.user.name.charAt(0)}
+        </div>
+
+        <div className="ml-4">
+          <div className="font-bold text-gray-900 text-lg">
+            {selectedPermission.user.name}
+          </div>
+
+          <div className="text-gray-600">
+            ID: {selectedPermission.user.employee_id ?? "-"}
+          </div>
+
+          <div className="flex items-center mt-1">
+            {getDepartemenIcon(selectedPermission.user.department)}
+            <span className="ml-2 text-gray-700">
+              {selectedPermission.user.department ?? "-"}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Detail Perizinan */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div>
+      <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+        <FaCalendarAlt className="mr-2 text-[#4789A8]" /> Detail Perizinan
+      </h4>
+
+      <div className="space-y-3">
+
+        {/* Jenis Izin */}
+        <div className="flex justify-between py-2 border-b border-gray-100">
+          <span className="text-gray-600">Jenis Izin</span>
+
+          <div className="flex items-center">
+            {selectedPermission.type === "sick" && <MdSick className="mr-2 text-red-500" />}
+            {selectedPermission.type === "vacation" && <FaUmbrellaBeach className="mr-2 text-amber-500" />}
+            {selectedPermission.type === "permission" && <FaUserClock className="mr-2 text-blue-500" />}
+
+            <span className="font-medium">
+              {selectedPermission.type === "sick" && "Sakit"}
+              {selectedPermission.type === "vacation" && "Cuti"}
+              {selectedPermission.type === "permission" && "Izin"}
+            </span>
+          </div>
+        </div>
+
+        {/* Tanggal */}
+        <div className="flex justify-between py-2 border-b border-gray-100">
+          <span className="text-gray-600">Tanggal Izin</span>
+          <span className="font-medium">
+            {selectedPermission.start_date}
+            {selectedPermission.end_date ? ` s/d ${selectedPermission.end_date}` : ""}
+          </span>
+        </div>
+
+        {/* Status */}
+        <div className="flex justify-between py-2 border-b border-gray-100">
+          <span className="text-gray-600">Status</span>
+          <div className="flex items-center">
+            {getStatusIcon(selectedPermission.status)}
+            <span className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedPermission.status)}`}>
+              {selectedPermission.status === "approved" && "Disetujui"}
+              {selectedPermission.status === "pending" && "Pending"}
+              {selectedPermission.status === "rejected" && "Ditolak"}
+            </span>
+          </div>
+        </div>
+
+        {/* Departemen */}
+        <div className="flex justify-between py-2 border-b border-gray-100">
+          <span className="text-gray-600">Departemen</span>
+          <div className="flex items-center">
+            {getDepartemenIcon(selectedPermission.user.department)}
+            <span className="ml-2 font-medium">
+              {selectedPermission.user.department}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Alasan & Lampiran */}
+    <div>
+      <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+        <FaFileMedical className="mr-2 text-[#4789A8]" /> Alasan & Lampiran
+      </h4>
+
+      <div className="bg-gray-50 rounded-lg p-4 h-full">
+        {/* Alasan */}
+        <div className="mb-4">
+          <h5 className="font-medium text-gray-700 mb-1">Alasan / Keterangan:</h5>
+          <p className="text-gray-800">
+            {selectedPermission.reason ?? "-"}
+          </p>
+        </div>
+
+        {/* Lampiran */}
+        {selectedPermission.document_path && (
+          <div>
+            <h5 className="font-medium text-gray-700 mb-1">Lampiran:</h5>
+
+            <div className="flex items-center p-3 bg-white rounded-lg border border-gray-200">
+              <div className="h-10 w-10 rounded bg-blue-100 flex items-center justify-center mr-3">
+                <FaFileDownload className="text-blue-500" />
+              </div>
+
+              <div className="flex-1">
+                <div className="font-medium text-gray-800">
+                  {selectedPermission.document_path.split("/").pop()}
                 </div>
 
-                {/* Detail Perizinan */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                      <FaCalendarAlt className="mr-2 text-[#4789A8]" /> Detail Perizinan
-                    </h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Jenis Izin</span>
-                        <div className="flex items-center">
-                          {selectedPermission.jenis === 'Sakit' && <MdSick className="mr-2 text-red-500" />}
-                          {selectedPermission.jenis === 'Cuti' && <FaUmbrellaBeach className="mr-2 text-amber-500" />}
-                          {selectedPermission.jenis === 'Izin' && <FaUserClock className="mr-2 text-blue-500" />}
-                          <span className="font-medium">{selectedPermission.jenis}</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Tanggal Izin</span>
-                        <span className="font-medium">{selectedPermission.tanggal}</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Status</span>
-                        <div className="flex items-center">
-                          {getStatusIcon(selectedPermission.status)}
-                          <span className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedPermission.status)}`}>
-                            {selectedPermission.status}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Departemen</span>
-                        <div className="flex items-center">
-                          {getDepartemenIcon(selectedPermission.departemen)}
-                          <span className="ml-2 font-medium">{selectedPermission.departemen}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Alasan dan Lampiran */}
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                      <FaFileMedical className="mr-2 text-[#4789A8]" /> Alasan & Lampiran
-                    </h4>
-                    <div className="bg-gray-50 rounded-lg p-4 h-full">
-                      <div className="mb-4">
-                        <h5 className="font-medium text-gray-700 mb-1">Alasan / Keterangan:</h5>
-                        <p className="text-gray-800">{selectedPermission.alasan}</p>
-                      </div>
-                      
-                      {selectedPermission.lampiran && (
-                        <div>
-                          <h5 className="font-medium text-gray-700 mb-1">Lampiran:</h5>
-                          <div className="flex items-center p-3 bg-white rounded-lg border border-gray-200">
-                            <div className="h-10 w-10 rounded bg-blue-100 flex items-center justify-center mr-3">
-                              <FaFileDownload className="text-blue-500" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-medium text-gray-800">{selectedPermission.lampiran}</div>
-                              <div className="text-sm text-gray-500">Klik untuk melihat atau mengunduh</div>
-                            </div>
-                            <button className="px-4 py-2 bg-[#4789A8] hover:bg-[#3a7796] text-white rounded-lg text-sm transition-colors">
-                              Lihat
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                <div className="text-sm text-gray-500">
+                  Klik untuk melihat atau mengunduh
                 </div>
+              </div>
 
-                {/* Catatan HR */}
-                {selectedPermission.catatanHR && (
-                  <div className="mb-6">
-                    <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                      <FaClipboardCheck className="mr-2 text-[#4789A8]" /> Catatan HR / Manager
-                    </h4>
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                      <p className="text-gray-800">{selectedPermission.catatanHR}</p>
-                      <div className="mt-2 text-sm text-gray-500">Ditambahkan oleh HR pada {selectedPermission.tanggal}</div>
-                    </div>
-                  </div>
-                )}
+              <a
+                href={`/storage/${selectedPermission.document_path}`}
+                target="_blank"
+                className="px-4 py-2 bg-[#4789A8] hover:bg-[#3a7796] text-white rounded-lg text-sm transition-colors"
+              >
+                Lihat
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+
+  {/* Catatan HR */}
+  {selectedPermission.notes && (
+    <div className="mb-6">
+      <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+        <FaClipboardCheck className="mr-2 text-[#4789A8]" /> Catatan HR / Manager
+      </h4>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <p className="text-gray-800">{selectedPermission.notes}</p>
+        <div className="mt-2 text-sm text-gray-500">
+          Ditambahkan pada {selectedPermission.start_date}
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+
 
                 {/* Tombol Aksi */}
                 <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
@@ -936,7 +1073,6 @@ export default function PermissionPage({
                 </div>
               </div>
             </div>
-          </div>
         </>
       )}
     </div>

@@ -113,10 +113,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/karyawan/update/{id}', [KaryawanController::class, 'update'])->name('karyawan.update');
     Route::get('/detailKaryawan/{id}', [KaryawanController::class, 'detail']);
     Route::get('/mantanKaryawan', [KaryawanController::class, 'mantan']);
-
-    Route::get('/permission', function () {
-      return Inertia::render('admin/permission');
-  })->name('admin.permission');
+    Route::get('/permission', [AdminController::class, 'permission']);
   });
 
 
