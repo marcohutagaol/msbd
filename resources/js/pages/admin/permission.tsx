@@ -935,16 +935,7 @@ export default function PermissionPage({
                   >
                     Tutup
                   </button>
-                  {selectedPermission.status === 'Pending' && (
-                    <>
-                      <button className="px-5 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors">
-                        Setujui
-                      </button>
-                      <button className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
-                        Tolak
-                      </button>
-                    </>
-                  )}
+                  
                 </div>
               </div>
             </div>

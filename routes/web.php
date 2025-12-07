@@ -57,6 +57,17 @@ use App\Http\Controllers\DashboardPurchasingController;
       return Inertia::render('admin/LogAbsensi');
   })->name('admin.LogAbsensi');
 
+       Route::get('/admin/Announcement', function () {
+      return Inertia::render('admin/Announcement');
+  })->name('admin.Announcement');
+
+      Route::get('/admin/Report', function () {
+      return Inertia::render('admin/Report');
+  })->name('admin.Report');
+
+
+
+
 
 
 

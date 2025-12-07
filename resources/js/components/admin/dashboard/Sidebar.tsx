@@ -17,7 +17,11 @@ import {
   Receipt,
   FileBarChart,
   Clock,
-  FileClock
+  FileClock,
+  Bell,
+  BarChart3
+
+  
 } from "lucide-react"
 
 export default function Sidebar() {
@@ -104,6 +108,17 @@ export default function Sidebar() {
       label: "Permission", 
       href: "/admin/permission" 
     },
+     { 
+      icon: <Bell size={18} />, 
+      label: "Announcement", 
+      href: "/admin/Announcement" 
+    },
+     { 
+      icon: <BarChart3 size={18} />, 
+      label: "Report", 
+      href: "/admin/Report" 
+    },
+
   ]
 
   return (
