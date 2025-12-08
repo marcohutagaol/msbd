@@ -78,6 +78,11 @@ const mainNavItems: NavItem[] = [
         href: '/inventory',
         icon: LayoutGrid,
     },
+    {
+        title: 'Announcement',
+        href: '/announcement',
+        icon: LayoutGrid,
+    },
 
     {
         title: 'Manager Dashboard',
