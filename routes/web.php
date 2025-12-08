@@ -138,6 +138,9 @@ Route::get('/api/departemen', [DepartemenItemController::class, 'getDepartemen']
 // =======================
 require __DIR__ . '/settings.php';
 
+Route::get('/announcement', fn() => Inertia::render('announcement/page'))->name('announcement');
+
+
 
 Route::get('/manager', fn() => Inertia::render('manager/page'))->name('manager.page');
 Route::get('/manager-absensi', fn() => Inertia::render('manager/absensi'))->name('manager.absensi');
