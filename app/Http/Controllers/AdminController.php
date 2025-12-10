@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Absen;
 use App\Models\AdminRequestItem;
+use App\Models\Announcement;
 use App\Models\Department;
 use App\Models\Inventory;
 use App\Models\Karyawan;
@@ -469,4 +470,7 @@ class AdminController extends Controller
       'monthly' => $monthly,
     ]);
   }
+
+  
+
 }
