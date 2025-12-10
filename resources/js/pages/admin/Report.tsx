@@ -29,16 +29,59 @@ import {
 } from 'lucide-react';
 import Header from '../../components/admin/dashboard/Header';
 import Sidebar from '../../components/admin/dashboard/Sidebar';
+import { router } from '@inertiajs/react';
 
-export default function ReportsPage() {
+type Report = {
+  id: number;
+  title: string;
+  department: string;
+  isi: string;
+  link_gambar: string;
+  created_by: string;
+  report_date: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type PaginationResponse<T> = {
+  data: T[];
+  current_page: number;
+  last_page: number;
+  prev_page_url: string | null;
+  next_page_url: string | null;
+  links: {
+    url: string | null;
+    label: string;
+    active: boolean;
+  }[];
+};
+
+
+
+export default function ReportsPage(
+  { reports, totalReports, totalDepartments }
+  : {
+      reports: PaginationResponse<Report>;
+      totalReports: number;
+      totalDepartments: number;
+    }
+) {
+const data = reports.data;
+
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [showDateFilter, setShowDateFilter] = useState(false);
   const [showDepartmentDropdown, setShowDepartmentDropdown] = useState(false);
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedPeriod, setSelectedPeriod] = useState('all');
+
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+
+const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
@@ -118,13 +161,15 @@ export default function ReportsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Laporan</p>
-                  <p className="text-2xl font-bold text-gray-800 mt-1">10</p>
-                  <div className="flex items-center gap-1 mt-2 text-sm text-green-600">
-                    <FileCheck className="w-4 h-4" />
-                    <span>10 file aktif</span>
-                  </div>
+                  <p className="text-2xl font-bold text-gray-800 mt-1">{totalReports}</p>
+
+<div className="flex items-center gap-1 mt-2 text-sm text-green-600">
+  <FileCheck className="w-4 h-4" />
+  <span>{totalReports} file aktif</span>
+</div>
+
                 </div>
-                <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                <div className="p-3 bg-linear-to-br from-blue-50 to-blue-100 rounded-lg">
                   <FileText className="w-5 h-5 text-[#4789A8]" />
                 </div>
               </div>
@@ -140,7 +185,7 @@ export default function ReportsPage() {
                     <span>4 departemen aktif</span>
                   </div>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
+                <div className="p-3 bg-linear-to-br from-green-50 to-green-100 rounded-lg">
                   <Building className="w-5 h-5 text-green-600" />
                 </div>
               </div>
@@ -190,7 +235,7 @@ export default function ReportsPage() {
                       
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-2 items-center gap-2">
                             <Calendar className="w-4 h-4" />
                             Dari Tanggal
                           </label>
@@ -204,7 +249,7 @@ export default function ReportsPage() {
                         </div>
                         
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-2 items-center gap-2">
                             <Calendar className="w-4 h-4" />
                             Sampai Tanggal
                           </label>
@@ -339,167 +384,163 @@ export default function ReportsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {/* Baris 1 - Front Office */}
-                  <tr className="hover:bg-gray-50/50 transition-colors duration-150">
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
-                          <Briefcase className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900">Front Office</div>
-                          <div className="text-xs text-gray-500 mt-1">FO Manager</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-gray-100 rounded">
-                          <FileText className="w-4 h-4 text-gray-500" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">Laporan Check-in Harian Maret 2024</div>
-                          <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-2">
-                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">1.8 MB</span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" /> Harian
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-[#4789A8]" />
-                        <span className="text-gray-700 font-medium">1 Apr 2024</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <button className="flex items-center gap-2 text-[#4789A8] hover:text-[#3a7895] font-medium px-4 py-2 rounded-lg bg-gradient-to-r from-[#4789A8]/10 to-[#4789A8]/5 hover:from-[#4789A8]/20 hover:to-[#4789A8]/10 transition-all duration-200 border border-[#4789A8]/20">
-                        <Download className="w-4 h-4" />
-                        <span>Download</span>
-                      </button>
-                    </td>
-                    <td className="px-6 py-5">
+  {data.map((item: Report) => (
+    <tr key={item.id} className="hover:bg-gray-50 transition">
+      
+      {/* Departemen */}
+      <td className="px-6 py-5">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gray-100 rounded-lg">
+            <Building className="w-4 h-4 text-gray-600" />
+          </div>
+          <div>
+            <div className="font-semibold text-gray-900">{item.department}</div>
+            <div className="text-xs text-gray-500 mt-1">{item.created_by}</div>
+          </div>
+        </div>
+      </td>
+
+      {/* Nama Laporan */}
+      <td className="px-6 py-5">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-gray-100 rounded">
+            <FileText className="w-4 h-4 text-gray-500" />
+          </div>
+          <div>
+            <div className="font-medium text-gray-900">{item.title}</div>
+          </div>
+        </div>
+      </td>
+
+      {/* Tanggal Laporan */}
+      <td className="px-6 py-5">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-[#4789A8]" />
+          <span className="text-gray-700 font-medium">
+            {new Date(item.report_date).toLocaleDateString('id-ID')}
+          </span>
+        </div>
+      </td>
+
+      {/* Download */}
+      <td className="px-6 py-5">
+        <a 
+          href={item.link_gambar} 
+          className="flex items-center gap-2 text-[#4789A8] px-4 py-2 rounded-lg bg-[#4789A8]/10"
+        >
+          <Download className="w-4 h-4" />
+          Download
+        </a>
+      </td>
+
+      {/* Action */}
+      <td className="px-6 py-5">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setIsPdfModalOpen(true)}
-                          className="flex items-center gap-1.5 text-[#4789A8] hover:text-[#3a7895] hover:bg-gradient-to-r from-[#4789A8]/10 to-[#4789A8]/5 px-3.5 py-2 rounded-lg transition-all duration-200 border border-[#4789A8]/20"
-                        >
-                          <Eye className="w-4 h-4" />
-                          <span className="font-medium">View</span>
-                        </button>
+  onClick={() => {
+    setSelectedReport(item);
+    setIsPdfModalOpen(true);
+  }}
+  className="flex items-center gap-1.5 text-[#4789A8] hover:text-[#3a7895] hover:bg-linear-to-r from-[#4789A8]/10 to-[#4789A8]/5 px-3.5 py-2 rounded-lg transition-all duration-200 border border-[#4789A8]/20"
+>
+  <Eye className="w-4 h-4" />
+  <span className="font-medium">View</span>
+</button>
+
                         
                         {/* Tombol Edit dihapus */}
                         
                         <button
-                          onClick={() => setIsDeleteModalOpen(true)}
-                          className="flex items-center gap-1.5 text-red-600 hover:text-red-700 hover:bg-gradient-to-r from-red-50 to-red-100 px-3.5 py-2 rounded-lg transition-all duration-200 border border-red-200"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          <span className="font-medium">Delete</span>
-                        </button>
+  onClick={() => {
+  setIsPdfModalOpen(false);
+  setSelectedReport(item);
+  setIsDeleteModalOpen(true);
+}}
+
+  className="flex items-center gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 px-3.5 py-2 rounded-lg border border-red-200"
+>
+  <Trash2 className="w-4 h-4" />
+  <span className="font-medium">Delete</span>
+</button>
+
                       </div>
                     </td>
-                  </tr>
-                  
-                  {/* Baris 2 - Housekeeping */}
-                  <tr className="hover:bg-gray-50/50 transition-colors duration-150">
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
-                          <Home className="w-4 h-4 text-green-600" />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900">Housekeeping</div>
-                          <div className="text-xs text-gray-500 mt-1">HK Supervisor</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-gray-100 rounded">
-                          <FileText className="w-4 h-4 text-gray-500" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">Laporan Kebersihan & Maintenance</div>
-                          <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-2">
-                            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full">2.3 MB</span>
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" /> Mingguan
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-[#4789A8]" />
-                        <span className="text-gray-700 font-medium">2 Apr 2024</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <button className="flex items-center gap-2 text-[#4789A8] hover:text-[#3a7895] font-medium px-4 py-2 rounded-lg bg-gradient-to-r from-[#4789A8]/10 to-[#4789A8]/5 hover:from-[#4789A8]/20 hover:to-[#4789A8]/10 transition-all duration-200 border border-[#4789A8]/20">
-                        <Download className="w-4 h-4" />
-                        <span>Download</span>
-                      </button>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setIsPdfModalOpen(true)}
-                          className="flex items-center gap-1.5 text-[#4789A8] hover:text-[#3a7895] hover:bg-gradient-to-r from-[#4789A8]/10 to-[#4789A8]/5 px-3.5 py-2 rounded-lg transition-all duration-200 border border-[#4789A8]/30"
-                        >
-                          <Eye className="w-4 h-4" />
-                          <span className="font-medium">View</span>
-                        </button>
-                        
-                        {/* Tombol Edit dihapus */}
-                        
-                        <button
-                          onClick={() => setIsDeleteModalOpen(true)}
-                          className="flex items-center gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 px-3.5 py-2 rounded-lg transition-all duration-200 border border-red-200"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          <span className="font-medium">Delete</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
+
+    </tr>
+  ))}
+</tbody>
+
               </table>
             </div>
             
             {/* Pagination */}
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50/50">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-sm text-gray-600">
-                  Menampilkan <span className="font-semibold text-gray-800">1-2</span> dari <span className="font-semibold text-gray-800">10</span> laporan
-                </div>
-                
-                <div className="flex items-center gap-1">
-                  <button className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  
-                  <button className="w-9 h-9 flex items-center justify-center rounded-lg bg-gradient-to-br from-[#4789A8] to-[#5ba3c7] text-white font-medium shadow-sm">
-                    1
-                  </button>
-                  
-                  <button className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 font-medium">
-                    2
-                  </button>
-                  
-                  <button className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 font-medium">
-                    3
-                  </button>
-                  
-                  <button className="p-2 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors">
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+  <div className="flex items-center justify-between">
+    
+    {/* Info */}
+    <div className="text-sm text-gray-600">
+      Halaman {reports.current_page} dari {reports.last_page}
+    </div>
+
+    {/* Navigasi */}
+    <div className="flex items-center gap-1">
+
+      {/* Prev */}
+      <button
+        disabled={!reports.prev_page_url}
+        onClick={() => {
+  if (reports.prev_page_url) {
+    router.visit(reports.prev_page_url);
+  }
+}}
+
+        className={`p-2 rounded-lg ${
+          reports.prev_page_url
+            ? "text-gray-700 hover:bg-gray-100"
+            : "text-gray-300 cursor-not-allowed"
+        }`}
+      >
+        <ChevronLeft className="w-5 h-5" />
+      </button>
+
+      {/* Numbered buttons */}
+      {reports.links
+        .filter((l: any) => !isNaN(Number(l.label)))
+        .map((link: any, index: number) => (
+          <button
+            key={index}
+            onClick={() => router.visit(link.url)}
+            className={`w-9 h-9 flex items-center justify-center rounded-lg font-medium ${
+              link.active
+                ? "bg-[#4789A8] text-white shadow"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            {link.label}
+          </button>
+        ))}
+
+      {/* Next */}
+      <button
+        disabled={!reports.next_page_url}
+        onClick={() => {
+  if (reports.next_page_url) {
+    router.visit(reports.next_page_url);
+  }
+}}
+
+        className={`p-2 rounded-lg ${
+          reports.next_page_url
+            ? "text-gray-700 hover:bg-gray-100"
+            : "text-gray-300 cursor-not-allowed"
+        }`}
+      >
+        <ChevronRight className="w-5 h-5" />
+      </button>
+    </div>
+  </div>
+</div>
+
           </div>
           
           
@@ -507,177 +548,125 @@ export default function ReportsPage() {
       </div>
 
       {/* === MODAL VIEW PDF === */}
-      {isPdfModalOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-          <div 
-            className="backdrop-blur-sm bg-black/60 absolute inset-0"
-            onClick={() => setIsPdfModalOpen(false)}
-          ></div>
-          
-          <div 
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col relative z-10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
-                  <FileText className="w-6 h-6 text-[#4789A8]" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Preview Laporan PDF</h2>
-                  <p className="text-gray-600 text-sm">Front Office - Laporan Check-in Harian Maret 2024</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors">
-                  <Printer className="w-4 h-4" />
-                  Print
-                </button>
-                <button
-                  onClick={() => setIsPdfModalOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200"
-                >
-                  <X className="w-6 h-6 text-gray-500" />
-                </button>
-              </div>
-            </div>
-            
-            {/* PDF Preview Container */}
-            <div className="flex-1 p-8 bg-gray-50 overflow-auto">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Laporan Check-in Harian - Maret 2024</h3>
-                    <p className="text-sm text-gray-600">Front Office Department • Terakhir diupdate: 1 April 2024</p>
-                  </div>
-                  <div className="text-sm text-gray-500">Halaman 1 dari 8</div>
-                </div>
-                
-                {/* Simulasi PDF Preview */}
-                <div className="bg-gray-100 rounded-lg p-8 min-h-[500px] border border-gray-300">
-                  <div className="max-w-3xl mx-auto">
-                    <div className="text-center mb-8">
-                      <h1 className="text-3xl font-bold text-gray-800 mb-2">LAPORAN CHECK-IN HARIAN</h1>
-                      <h2 className="text-xl text-gray-600">Front Office Department</h2>
-                      <p className="text-gray-500 mt-4">Periode: 1 - 31 Maret 2024</p>
-                    </div>
-                    
-                    <div className="mt-8 space-y-6">
-                      <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <h3 className="font-semibold text-gray-800 mb-4">Statistik Check-in</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
-                            <p className="text-sm text-gray-600">Total Tamu</p>
-                            <p className="text-2xl font-bold text-gray-800">1,245</p>
-                          </div>
-                          <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
-                            <p className="text-sm text-gray-600">Occupancy Rate</p>
-                            <p className="text-2xl font-bold text-gray-800">85%</p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <h3 className="font-semibold text-gray-800 mb-4">Distribusi Tamu</h3>
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-600">Domestik</span>
-                            <span className="font-semibold text-gray-800">78%</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-600">Internasional</span>
-                            <span className="font-semibold text-gray-800">22%</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-center text-gray-500 text-sm mt-12">
-                        <p>Ini adalah preview dokumen PDF. Dokumen asli terdiri dari 8 halaman lengkap dengan grafik dan tabel detail.</p>
-                        <p className="mt-2">Gunakan tombol Download untuk mendapatkan file PDF lengkap.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-8 py-6">
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-600">
-                  Ukuran file: 1.8 MB • Format: PDF
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setIsPdfModalOpen(false)}
-                    className="px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-all duration-200"
-                  >
-                    Tutup Preview
-                  </button>
-                  <button className="px-6 py-3 bg-gradient-to-r from-[#4789A8] to-[#5ba3c7] hover:from-[#3a7895] hover:to-[#4789A8] text-white rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow">
-                    <Download className="w-4 h-4 inline-block mr-2" />
-                    Download PDF Lengkap
-                  </button>
-                </div>
-              </div>
-            </div>
+      {isPdfModalOpen && selectedReport && (
+  <div className="fixed inset-0 z-1000 flex items-center justify-center p-4">
+    <div
+      className="backdrop-blur-sm bg-black/60 absolute inset-0"
+      onClick={() => {
+        setSelectedReport(null);
+        setIsPdfModalOpen(false);
+      }}
+    ></div>
+
+    <div
+      className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col relative z-10"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      {/* HEADER */}
+      <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-blue-100 rounded-lg">
+            <FileText className="w-6 h-6 text-[#4789A8]" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Preview PDF</h2>
+            <p className="text-gray-600 text-sm">
+              {selectedReport.department} • {selectedReport.title}
+            </p>
           </div>
         </div>
-      )}
+
+        <button
+          onClick={() => {
+            setSelectedReport(null);
+            setIsPdfModalOpen(false);
+          }}
+          className="p-2 hover:bg-gray-100 rounded-xl"
+        >
+          <X className="w-6 h-6 text-gray-500" />
+        </button>
+      </div>
+
+      {/* BODY PDF */}
+      <div className="flex-1 p-8 bg-gray-50 overflow-auto">
+        <iframe
+          src={selectedReport.link_gambar}
+          className="w-full h-[70vh] rounded-xl border"
+        />
+      </div>
+
+      {/* FOOTER */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 px-8 py-6 flex items-center justify-between">
+        <div className="text-sm text-gray-600">
+          Dibuat oleh {selectedReport.created_by}
+        </div>
+
+        <a
+          href={selectedReport.link_gambar}
+          target="_blank"
+          className="px-6 py-3 bg-[#4789A8] text-white rounded-lg hover:bg-[#3a7895] transition"
+        >
+          Download PDF
+        </a>
+      </div>
+
+    </div>
+  </div>
+)}
+
 
       {/* === MODAL UPLOAD LAPORAN DIHAPUS === */}
 
       {/* === MODAL KONFIRMASI DELETE === */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
-          <div 
-            className="backdrop-blur-sm bg-black/60 absolute inset-0"
-            onClick={() => setIsDeleteModalOpen(false)}
-          ></div>
-          
-          <div 
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative z-10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-red-50 to-red-100 rounded-full flex items-center justify-center">
-                <Trash2 className="w-8 h-8 text-red-600" />
-              </div>
-              
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Hapus Laporan</h3>
-              
-              <p className="text-gray-600 mb-2">
-                Anda akan menghapus laporan:
-              </p>
-              <p className="text-lg font-semibold text-gray-800 mb-4">
-                "Laporan Check-in Harian Maret 2024"
-              </p>
-              <p className="text-sm text-gray-500 mb-2 flex items-center justify-center gap-2">
-                <Briefcase className="w-4 h-4 text-blue-600" />
-                Front Office • 1.8 MB
-              </p>
-              
-              <p className="text-sm text-gray-500 mb-8 bg-gray-50 p-4 rounded-lg">
-                Tindakan ini akan menghapus laporan secara permanen dari sistem. File PDF tidak dapat dipulihkan setelah dihapus.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => setIsDeleteModalOpen(false)}
-                  className="px-6 py-3.5 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-all duration-200 flex-1"
-                >
-                  Batalkan
-                </button>
-                <button
-                  onClick={() => setIsDeleteModalOpen(false)}
-                  className="px-6 py-3.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow flex-1"
-                >
-                  Ya, Hapus Laporan
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {isDeleteModalOpen && selectedReport && (
+  <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/50 p-4">
+    
+    <div
+      className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h2 className="text-xl font-bold text-gray-800 mb-2">Hapus Laporan</h2>
+
+      <p className="text-gray-700">
+        Kamu yakin ingin menghapus laporan:
+      </p>
+
+      <p className="font-semibold text-gray-900 mt-2">
+        {selectedReport.title}
+      </p>
+
+      <div className="flex justify-end gap-3 mt-6">
+        <button
+          onClick={() => {
+            setIsDeleteModalOpen(false);
+            setSelectedReport(null);
+          }}
+          className="px-4 py-2 border rounded-lg text-gray-700"
+        >
+          Batal
+        </button>
+
+        <button
+  onClick={() => {
+    router.delete(`/admin/Report/${selectedReport.id}`, {
+      onSuccess: () => {
+        setIsDeleteModalOpen(false);
+        setSelectedReport(null);
+      }
+    });
+  }}
+  className="px-4 py-2 bg-red-600 text-white rounded-lg"
+>
+  Hapus
+</button>
+
+      </div>
+    </div>
+
+  </div>
+)}
+
     </div>
   );
 }

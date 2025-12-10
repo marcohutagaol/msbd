@@ -68,7 +68,6 @@ export default function AnnouncementPage({
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [showDateFilter, setShowDateFilter] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showModalCategoryDropdown, setShowModalCategoryDropdown] = useState(false);
@@ -91,10 +90,49 @@ export default function AnnouncementPage({
   isi: "",
 });
 
+const [isEditMode, setIsEditMode] = useState(false);
+
+const [formEdit, setFormEdit] = useState({
+  title: "",
+  kategori: "",
+  isi: "",
+  tanggal: "",
+  waktu: "",
+});
+
+const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+const [deleteTarget, setDeleteTarget] = useState<Announcement | null>(null);
+
+
+
 
 const submitCreate = () => {
   router.post("/admin/Announcement", formCreate, {
     onSuccess: () => setIsEditModalOpen(false),
+  });
+};
+
+const submitEdit = () => {
+  if (!selectedAnnouncement) return;  // <-- cegah error
+
+  router.put(`/admin/Announcement/${selectedAnnouncement.id}`, formEdit, {
+    onSuccess: () => {
+      setIsEditModalOpen(false);
+      setIsEditMode(false);
+      setSelectedAnnouncement(null);
+    },
+  });
+};
+
+const submitDelete = () => {
+  if (!deleteTarget) return;
+
+  router.delete(`/admin/Announcement/${deleteTarget.id}`, {
+    onSuccess: () => {
+      setIsDeleteModalOpen(false);
+      setDeleteTarget(null);
+    }
   });
 };
 
@@ -191,7 +229,7 @@ const submitCreate = () => {
     setSelectedAnnouncement(null);
     setIsEditModalOpen(true);
   }}
-  className="flex items-center gap-2 bg-gradient-to-r from-[#4789A8] to-[#5ba3c7] hover:from-[#3a7895] hover:to-[#4789A8] text-white font-medium py-3 px-5 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
+  className="flex items-center gap-2 bg-linear-to-r from-[#4789A8] to-[#5ba3c7] hover:from-[#3a7895] hover:to-[#4789A8] text-white font-medium py-3 px-5 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
 >
   <Plus size={20} />
   <span className="font-semibold">Buat Pengumuman</span>
@@ -211,7 +249,7 @@ const submitCreate = () => {
                     <span>Aktif bulan ini</span>
                   </div>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                <div className="p-3 bg-linear-to-r from-blue-50 to-blue-100 rounded-lg">
                   <FileText className="w-5 h-5 text-[#4789A8]" />
                 </div>
               </div>
@@ -227,7 +265,7 @@ const submitCreate = () => {
                     <span>6 kategori tersedia</span>
                   </div>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg">
+                <div className="p-3 bg-linear-to-r from-amber-50 to-amber-100 rounded-lg">
                   <Hash className="w-5 h-5 text-amber-600" />
                 </div>
               </div>
@@ -277,7 +315,7 @@ const submitCreate = () => {
                       
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-2 items-center gap-2">
                             <Calendar className="w-4 h-4" />
                             Dari Tanggal
                           </label>
@@ -294,7 +332,7 @@ const submitCreate = () => {
                         </div>
                         
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-2 items-center gap-2">
                             <Calendar className="w-4 h-4" />
                             Sampai Tanggal
                           </label>
@@ -394,7 +432,7 @@ const submitCreate = () => {
             {/* Tampilkan Filter Aktif */}
             {(dateRange.startDate || dateRange.endDate) && (
               <div className="mt-4 flex items-center gap-2">
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 text-sm px-3 py-1.5 rounded-lg border border-blue-200">
+                <div className="inline-flex items-center gap-2 bg-linear-to-r from-blue-50 to-blue-100 text-blue-700 text-sm px-3 py-1.5 rounded-lg border border-blue-200">
                   <CalendarDays size={14} />
                   <span className="font-medium">
                     {dateRange.startDate && `Dari: ${dateRange.startDate}`}
@@ -486,10 +524,27 @@ const submitCreate = () => {
  className="text-[#4789A8] border px-3.5 py-2 rounded-lg">
             <Eye className="w-4 h-4" /> Detail
           </button>
-          <button className="text-amber-600 border px-3.5 py-2 rounded-lg">
+          <button onClick={() => {
+  setIsEditMode(true);
+  setSelectedAnnouncement(item);
+
+  setFormEdit({
+    title: item.title,
+    kategori: item.kategori,
+    isi: item.isi,
+    tanggal: item.created_at?.split(" ")[0] ?? "",
+    waktu: item.created_at?.split(" ")[1]?.slice(0, 5) ?? "",
+  });
+
+  setIsEditModalOpen(true);
+}}
+className="text-amber-600 border px-3.5 py-2 rounded-lg">
             <Edit2 className="w-4 h-4" /> Edit
           </button>
-          <button className="text-red-600 border px-3.5 py-2 rounded-lg">
+          <button onClick={() => {
+    setDeleteTarget(item);
+    setIsDeleteModalOpen(true);
+  }} className="text-red-600 border px-3.5 py-2 rounded-lg">
             <Trash2 className="w-4 h-4" /> Hapus
           </button>
         </div>
@@ -529,7 +584,7 @@ const submitCreate = () => {
           </div>
           
           {/* Info */}
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5">
+          <div className="bg-linear-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5">
             <div className="flex items-start gap-3">
               <div className="mt-1 p-2 bg-white rounded-lg">
                 <Megaphone className="w-5 h-5 text-[#4789A8]" />
@@ -548,7 +603,7 @@ const submitCreate = () => {
 
       {/* === MODAL DETAIL PENGUMUMAN === */}
       {isDetailModalOpen && selectedAnnouncement && (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-1000 flex items-center justify-center p-4">
       <div 
         className="backdrop-blur-sm bg-black/60 absolute inset-0"
         onClick={() => setIsDetailModalOpen(false)}
@@ -561,7 +616,7 @@ const submitCreate = () => {
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+            <div className="p-2.5 bg-linear-to-r from-blue-50 to-blue-100 rounded-lg">
               <Megaphone className="w-6 h-6 text-[#4789A8]" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Detail Pengumuman</h2>
@@ -653,226 +708,180 @@ const submitCreate = () => {
 
 
       {/* === MODAL CREATE PENGUMUMAN === */}
+{/* === MODAL CREATE / EDIT === */}
 {isEditModalOpen && (
-  <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+  <div className="fixed inset-0 z-1000 flex items-center justify-center p-4">
     <div
       className="backdrop-blur-sm bg-black/60 absolute inset-0"
-      onClick={() => setIsEditModalOpen(false)}
+      onClick={() => {
+        setIsEditModalOpen(false);
+        setIsEditMode(false);
+      }}
     ></div>
 
     <div
       className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col relative z-10"
       onClick={(e) => e.stopPropagation()}
     >
+
+      {/* Header */}
       <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-[#4789A8]/10 to-[#5ba3c7]/10 rounded-lg">
+          <div className="p-2.5 bg-linear-to-br from-[#4789A8]/10 to-[#5ba3c7]/10 rounded-lg">
             <Plus className="w-6 h-6 text-[#4789A8]" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Buat Pengumuman Baru</h2>
+
+          <h2 className="text-2xl font-bold text-gray-900">
+            {isEditMode ? "Edit Pengumuman" : "Buat Pengumuman Baru"}
+          </h2>
         </div>
+
         <button
-          onClick={() => setIsEditModalOpen(false)}
+          onClick={() => {
+            setIsEditModalOpen(false);
+            setIsEditMode(false);
+          }}
           className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200"
         >
           <X className="w-6 h-6 text-gray-500" />
         </button>
       </div>
 
+      {/* Body */}
       <div className="p-8 overflow-y-auto">
         <form className="space-y-6">
 
-          {/* JUDUL */}
+          {/* Title */}
           <div>
             <label className="block text-sm font-semibold text-gray-800 mb-2.5">
-              Judul Pengumuman <span className="text-red-500">*</span>
+              Judul Pengumuman
             </label>
             <input
               type="text"
-              value={formCreate.title}
+              value={isEditMode ? formEdit.title : formCreate.title}
               onChange={(e) =>
-                setFormCreate({ ...formCreate, title: e.target.value })
+                isEditMode
+                  ? setFormEdit({ ...formEdit, title: e.target.value })
+                  : setFormCreate({ ...formCreate, title: e.target.value })
               }
-              placeholder="Contoh: Libur Hari Raya Idul Fitri 2024"
-              className="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4789A8]/30 focus:border-[#4789A8] outline-none transition-all text-gray-800 placeholder-gray-400"
+              className="w-full px-4 py-3.5 border border-gray-300 rounded-xl"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* TANGGAL */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2.5">
-                Tanggal Pengumuman <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="date"
-                  value={formCreate.tanggal}
-                  onChange={(e) =>
-                    setFormCreate({ ...formCreate, tanggal: e.target.value })
-                  }
-                  className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4789A8]/30 focus:border-[#4789A8] outline-none transition-all text-gray-800"
-                />
-              </div>
-            </div>
-
-            {/* WAKTU */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2.5">
-                Waktu Pengumuman <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="time"
-                  value={formCreate.waktu}
-                  onChange={(e) =>
-                    setFormCreate({ ...formCreate, waktu: e.target.value })
-                  }
-                  className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4789A8]/30 focus:border-[#4789A8] outline-none transition-all text-gray-800"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* KATEGORI */}
+          {/* Kategori */}
           <div>
             <label className="block text-sm font-semibold text-gray-800 mb-2.5">
-              Kategori Pengumuman
+              Kategori
             </label>
-
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowModalCategoryDropdown(!showModalCategoryDropdown)}
-                className="flex items-center justify-between w-full px-4 py-3.5 border border-gray-300 rounded-xl bg-white"
-              >
-                <span className="text-gray-700 font-medium">
-                  {formCreate.kategori || "Pilih Kategori"}
-                </span>
-                <ChevronDown className="w-5 h-5 text-gray-400" />
-              </button>
-
-              {showModalCategoryDropdown && (
-                <div className="absolute top-full left-0 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                  {categories.slice(1).map((category) => (
-                    <button
-                      type="button"
-                      key={category.value}
-                      onClick={() => {
-                        setFormCreate({ ...formCreate, kategori: category.value });
-                        setShowModalCategoryDropdown(false);
-                      }}
-                      className="flex items-center w-full px-4 py-3 hover:bg-gray-50 text-left"
-                    >
-                      {category.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ISI */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2.5">
-              Isi / Konten Pengumuman <span className="text-red-500">*</span>
-            </label>
-
-            <textarea
-              rows={10}
-              value={formCreate.isi}
+            <select
+              value={isEditMode ? formEdit.kategori : formCreate.kategori}
               onChange={(e) =>
-                setFormCreate({ ...formCreate, isi: e.target.value })
+                isEditMode
+                  ? setFormEdit({ ...formEdit, kategori: e.target.value })
+                  : setFormCreate({ ...formCreate, kategori: e.target.value })
               }
-              placeholder="Tulis isi pengumuman di sini..."
-              className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-50 outline-none resize-none"
+              className="w-full px-4 py-3.5 border rounded-xl"
+            >
+              <option value="">Pilih Kategori</option>
+              <option value="liburan">Liburan</option>
+              <option value="pelatihan">Pelatihan</option>
+              <option value="policy">Kebijakan</option>
+            </select>
+          </div>
+
+          {/* Isi */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2.5">
+              Isi Pengumuman
+            </label>
+            <textarea
+              rows={8}
+              value={isEditMode ? formEdit.isi : formCreate.isi}
+              onChange={(e) =>
+                isEditMode
+                  ? setFormEdit({ ...formEdit, isi: e.target.value })
+                  : setFormCreate({ ...formCreate, isi: e.target.value })
+              }
+              className="w-full px-4 py-4 border rounded-xl bg-gray-50"
             />
           </div>
 
         </form>
       </div>
 
-      <div className="sticky bottom-0 bg-white border-t border-gray-200 px-8 py-6">
-        <div className="flex flex-col sm:flex-row items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => setIsEditModalOpen(false)}
-            className="px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-all duration-200 w-full sm:w-auto"
-          >
-            Batalkan
-          </button>
+      {/* Footer */}
+      <div className="sticky bottom-0 bg-white border-t px-8 py-6 flex justify-end gap-3">
 
-          <button
-            type="button"
-            onClick={submitCreate}
-            className="px-6 py-3 bg-gradient-to-r from-[#4789A8] to-[#5ba3c7] hover:from-[#3a7895] hover:to-[#4789A8] text-white rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow w-full sm:w-auto"
-          >
-            Publikasikan Pengumuman
-          </button>
-        </div>
+        <button
+          className="px-6 py-3 border border-gray-300 rounded-xl"
+          onClick={() => {
+            setIsEditModalOpen(false);
+            setIsEditMode(false);
+          }}
+        >
+          Batalkan
+        </button>
+
+        <button
+          className="px-6 py-3 bg-linear-to-r from-[#4789A8] to-[#5ba3c7] text-white rounded-xl"
+          onClick={() => {
+            isEditMode ? submitEdit() : submitCreate();
+          }}
+        >
+          {isEditMode ? "Simpan Perubahan" : "Publikasikan"}
+        </button>
+
       </div>
+
     </div>
   </div>
 )}
 
 
-      {/* === MODAL KONFIRMASI DELETE === */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
-          <div 
-            className="backdrop-blur-sm bg-black/60 absolute inset-0"
-            onClick={() => setIsDeleteModalOpen(false)}
-          ></div>
-          
-          <div 
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative z-10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-red-50 to-red-100 rounded-full flex items-center justify-center">
-                <Trash2 className="w-8 h-8 text-red-600" />
-              </div>
-              
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Hapus Pengumuman</h3>
-              
-              <p className="text-gray-600 mb-2">
-                Anda akan menghapus pengumuman:
-              </p>
-              <p className="text-lg font-semibold text-gray-800 mb-4">
-                "Libur Hari Raya Idul Fitri 2024"
-              </p>
-              <p className="text-sm text-gray-500 mb-2 flex items-center justify-center gap-2">
-                <PartyPopper className="w-4 h-4 text-blue-600" />
-                Liburan • 5 April 2024
-              </p>
-              
-              <p className="text-sm text-gray-500 mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                Tindakan ini akan menghapus pengumuman secara permanen dari sistem. Semua karyawan tidak akan dapat melihat pengumuman ini lagi.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsDeleteModalOpen(false)}
-                  className="px-6 py-3.5 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-all duration-200 flex-1"
-                >
-                  Batalkan
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsDeleteModalOpen(false)}
-                  className="px-6 py-3.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow flex-1"
-                >
-                  Ya, Hapus Pengumuman
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+
+      {/* === MODAL DELETE === */}
+{isDeleteModalOpen && (
+  <div className="fixed inset-0 z-1000 flex items-center justify-center p-4">
+    <div
+      className="absolute inset-0 bg-black/50"
+      onClick={() => setIsDeleteModalOpen(false)}
+    ></div>
+
+    <div
+      className="bg-white rounded-xl shadow-xl p-8 relative z-10 w-full max-w-md"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h2 className="text-xl font-bold text-gray-900 mb-4">
+        Hapus Pengumuman?
+      </h2>
+
+      <p className="text-gray-600 mb-6 leading-relaxed">
+        Apakah kamu yakin ingin menghapus pengumuman  
+        <span className="font-semibold">
+          “{deleteTarget?.title}”
+        </span>?  
+        Tindakan ini tidak dapat dibatalkan.
+      </p>
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => setIsDeleteModalOpen(false)}
+          className="px-5 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-700"
+        >
+          Batal
+        </button>
+
+        <button
+          onClick={submitDelete}
+          className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow"
+        >
+          Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
