@@ -14,15 +14,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { CheckCircle2, ShoppingCart, RotateCcw } from "lucide-react";
+import { CheckCircle2, ShoppingCart, RotateCcw, FileText, Download, Calendar, Package, Building2, Hash, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import InvoiceSummary from "@/components/ui/invoice";
 
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: "Input Price",
-    href: "#",
-  },
-];
+
 
 interface OrderItem {
   id: number;
@@ -45,13 +41,30 @@ interface OrderItem {
 
 interface InputPricePageProps {
   orders: OrderItem[];
+  hasInvoice: boolean;
 }
 
-function InputPricePage({ orders: initialOrders = [] }: InputPricePageProps) {
+
+function InputPricePage({
+  orders: initialOrders = [],
+  hasInvoice
+}: InputPricePageProps) {
   const [open, setOpen] = useState(false);
   const [success, setSuccess] = useState(false);
   const [arrived, setArrived] = useState(false);
-  
+  const [showInvoice, setShowInvoice] = useState(false);
+  const requestNumber = initialOrders[0]?.request?.request_number;
+
+  const breadcrumbs: BreadcrumbItem[] = [
+    { title: "Purchasing", href: "/dashboard-purchasing" },
+    {
+      title: "Detail Request",
+      href: requestNumber ? `/purchasing/${requestNumber}` : "#"
+    },
+    { title: "Input Price", href: "#" },
+  ];
+
+
   // State untuk menyimpan harga temporary
   const [tempPrices, setTempPrices] = useState<{ [key: number]: number }>({});
 
@@ -83,7 +96,7 @@ function InputPricePage({ orders: initialOrders = [] }: InputPricePageProps) {
     enhancedOrders.forEach(order => {
       const harga = tempPrices[order.id] || order.harga || 0;
       const jumlah = order.jumlah_disetujui || order.jumlah_diajukan;
-      
+
       if (harga && harga > 0) {
         totalHarga += harga * jumlah;
         itemsWithPrice.push(order);
@@ -98,6 +111,7 @@ function InputPricePage({ orders: initialOrders = [] }: InputPricePageProps) {
       itemsWithPrice,
       itemsWithoutPrice,
       departemen: enhancedOrders[0]?.request?.department || "N/A",
+      requestDate: enhancedOrders[0]?.request?.request_date || new Date().toISOString(), // ✅ TAMBAHAN
       allItemsHavePrice: itemsWithoutPrice.length === 0 && enhancedOrders.length > 0,
       progress: enhancedOrders.length > 0 ? (itemsWithPrice.length / enhancedOrders.length) * 100 : 0
     };
@@ -131,7 +145,6 @@ function InputPricePage({ orders: initialOrders = [] }: InputPricePageProps) {
   };
 
   const handleConfirm = () => {
-    // Validasi: minimal ada satu item dengan harga
     const itemsWithValidPrice = Object.entries(tempPrices)
       .filter(([_, harga]) => harga > 0)
       .map(([itemId, harga]) => ({
@@ -139,28 +152,39 @@ function InputPricePage({ orders: initialOrders = [] }: InputPricePageProps) {
         harga: harga
       }));
 
-    if (itemsWithValidPrice.length === 0) {
-      alert("Minimal satu item harus memiliki harga sebelum konfirmasi preorder!");
+    const requestId = initialOrders[0]?.request?.id;
+
+    if (!requestId) {
+      alert("Request ID tidak ditemukan!");
       return;
     }
 
-    router.post('/input-price/confirm-preorder', {
-      price_data: itemsWithValidPrice
-    }, {
-      onSuccess: () => {
-        setOpen(false);
-        setSuccess(true);
-        setTimeout(() => {
-          setSuccess(false);
-          router.reload();
-        }, 1500);
+    router.post(
+      "/input-price/confirm-preorder",
+      {
+        request_id: requestId,
+        price_data: itemsWithValidPrice
       },
-      onError: (errors) => {
-        console.error("Error confirming preorder:", errors);
-        alert("Gagal membuat preorder. Silakan coba lagi.");
+      {
+        onSuccess: () => {
+          // ✅ INI KUNCI UTAMANYA
+          setOpen(false);
+          setSuccess(true);
+          setShowInvoice(true);   // ⬅️ INVOICE MUNCUL DI HALAMAN INI
+
+          setTimeout(() => {
+            setSuccess(false);
+          }, 2000);
+        },
+        onError: (err) => {
+          console.error("Gagal:", err);
+          alert("Gagal membuat invoice!");
+        }
       }
-    });
+    );
   };
+
+
 
   const resetAllPrices = () => {
     setTempPrices({});
@@ -175,8 +199,100 @@ function InputPricePage({ orders: initialOrders = [] }: InputPricePageProps) {
     }).format(amount);
   };
 
+  // ✅ TAMBAHAN: Format tanggal
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  // ✅ TAMBAHAN: Generate invoice number
+  const generateInvoiceNumber = () => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const random = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+    return `INV/${year}/${month}/${random}`;
+  };
+
+  const invoiceNumber = useMemo(() => generateInvoiceNumber(), [showInvoice]);
+
+  // ✅ TAMBAHAN: Download PDF function
+  const downloadPDF = async () => {
+    try {
+      const { default: jsPDF } = await import('jspdf');
+      await import('jspdf-autotable');
+
+      const doc = new jsPDF();
+
+      // Header
+      doc.setFontSize(20);
+      doc.setTextColor(37, 99, 235);
+      doc.text('INVOICE', 105, 20, { align: 'center' });
+
+      // Invoice Info
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Invoice Number: ${invoiceNumber}`, 20, 35);
+      doc.text(`Request Number: ${requestNumber || 'N/A'}`, 20, 42);
+      doc.text(`Department: ${summary.departemen}`, 20, 49);
+      doc.text(`Date: ${formatDate(summary.requestDate)}`, 20, 56);
+
+      // Divider
+      doc.setDrawColor(37, 99, 235);
+      doc.setLineWidth(0.5);
+      doc.line(20, 62, 190, 62);
+
+      // Table
+      const tableData = summary.itemsWithPrice.map((order, index) => [
+        index + 1,
+        order.nama_barang,
+        order.kode_barang || '-',
+        `${order.jumlah_disetujui || order.jumlah_diajukan} ${order.satuan}`,
+        formatRupiah(order.harga || 0),
+        formatRupiah((order.harga || 0) * (order.jumlah_disetujui || order.jumlah_diajukan))
+      ]);
+
+      (doc as any).autoTable({
+        startY: 70,
+        head: [['No', 'Item Name', 'Code', 'Qty', 'Unit Price', 'Total']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [37, 99, 235], textColor: 255 },
+        styles: { fontSize: 9 },
+        columnStyles: {
+          0: { cellWidth: 15 },
+          1: { cellWidth: 50 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 25 },
+          4: { cellWidth: 35 },
+          5: { cellWidth: 35 }
+        }
+      });
+
+      // Total
+      const finalY = (doc as any).lastAutoTable.finalY + 10;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold')
+      doc.text(`TOTAL: ${formatRupiah(summary.totalHarga)}`, 190, finalY, { align: 'right' });
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text('Generated by Purchasing System', 105, 280, { align: 'center' });
+
+      doc.save(`Invoice-${invoiceNumber}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Gagal membuat PDF. Pastikan library jsPDF sudah terinstall.');
+    }
+  };
+
   return (
-    <>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Input Price" />
       <main className="min-h-screen bg-white p-6 font-[Poppins]">
         <div className="mx-auto max-w-7xl space-y-6">
@@ -220,7 +336,7 @@ function InputPricePage({ orders: initialOrders = [] }: InputPricePageProps) {
                     <p className="text-sm font-medium text-slate-700">Total Item</p>
                     <p className="text-lg font-bold text-blue-700">{summary.totalBarang}</p>
                   </div>
-                  
+
                   <div className="p-4 rounded-lg border border-green-200 bg-green-50">
                     <p className="text-sm font-medium text-slate-700">Item dengan Harga</p>
                     <p className="text-lg font-bold text-green-700">{summary.itemsWithPrice.length}</p>
@@ -246,15 +362,17 @@ function InputPricePage({ orders: initialOrders = [] }: InputPricePageProps) {
                     Klik pensil untuk input harga, klik kotak untuk tandai sampai
                   </div>
                 </div>
-                
-                <OrdersList 
-                  mode="price" 
+
+                <OrdersList
+                  mode="price"
                   orders={enhancedOrders}
                   onPriceUpdate={updateTempPrice}
                   onMarkArrived={handleMarkArrived}
                 />
+
               </div>
 
+              {/* Action Buttons */}
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row justify-end gap-4">
                 <Button
@@ -266,50 +384,68 @@ function InputPricePage({ orders: initialOrders = [] }: InputPricePageProps) {
                   <RotateCcw className="w-4 h-4" />
                   Reset Semua Harga
                 </Button>
-                
-                <AlertDialog open={open} onOpenChange={setOpen}>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      className={`flex items-center gap-2 ${
-                        summary.itemsWithPrice.length > 0
+
+                {!hasInvoice ? (
+                  // ✅ JIKA BELUM ADA INVOICE → TAMPILKAN "BUAT INVOICE"
+                  <AlertDialog open={open} onOpenChange={setOpen}>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        className={`flex items-center gap-2 ${summary.itemsWithPrice.length > 0
                           ? "bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30"
                           : "bg-gray-400 cursor-not-allowed"
-                      } text-white transition-all duration-300`}
-                      disabled={summary.itemsWithPrice.length === 0}
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      Konfirmasi Preorder ({summary.itemsWithPrice.length} item)
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="max-w-md rounded-2xl border border-blue-100 shadow-xl">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="flex items-center gap-2 text-lg text-slate-900">
-                        <CheckCircle2 className="w-5 h-5 text-blue-600" />
-                        Konfirmasi Preorder
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="text-slate-600 text-sm leading-relaxed">
-                        Konfirmasi preorder untuk {summary.itemsWithPrice.length} item dengan total harga:
-                        <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200 text-center">
-                          <p className="text-xl font-bold text-blue-700">
-                            {formatRupiah(summary.totalHarga)}
-                          </p>
-                        </div>
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="pt-4">
-                      <AlertDialogCancel className="rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-300 transition-all">
-                        Batal
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleConfirm}
-                        className="rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-500/30 transition-all"
+                          } text-white transition-all duration-300`}
+                        disabled={summary.itemsWithPrice.length === 0}
                       >
-                        Konfirmasi
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                        <FileText className="w-4 h-4" />
+                        Buat Invoice ({summary.itemsWithPrice.length} item)
+                      </Button>
+                    </AlertDialogTrigger>
+
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Konfirmasi Invoice</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Total: <b>{formatRupiah(summary.totalHarga)}</b>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+
+                        <Button
+                          type="button"
+                          onClick={handleConfirm}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          Konfirmasi
+                        </Button>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+
+                  </AlertDialog>
+                ) : (
+                  // ✅ JIKA SUDAH ADA INVOICE → TAMPILKAN "VIEW INVOICE"
+                  <Button
+                    onClick={() =>
+                      router.visit(`/invoice/view/${initialOrders[0]?.request?.id}`)
+                    }
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg"
+                  >
+                    <FileText className="w-4 h-4" />
+                    View Invoice
+                  </Button>
+                )}
               </div>
+              <InvoiceSummary
+                show={showInvoice}
+                invoiceNumber={invoiceNumber}
+                requestNumber={requestNumber}
+                summary={summary}
+                formatDate={formatDate}
+                formatRupiah={formatRupiah}
+                downloadPDF={downloadPDF}
+              />
+
             </>
           )}
         </div>
@@ -321,7 +457,7 @@ function InputPricePage({ orders: initialOrders = [] }: InputPricePageProps) {
           <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-3 shadow-lg shadow-green-100/60">
             <CheckCircle2 className="w-5 h-5 text-green-600" />
             <p className="text-sm font-medium text-green-800">
-              Preorder berhasil dikonfirmasi!
+              Invoice berhasil dibuat!
             </p>
           </div>
         </div>
@@ -337,12 +473,11 @@ function InputPricePage({ orders: initialOrders = [] }: InputPricePageProps) {
           </div>
         </div>
       )}
-    </>
+    </AppLayout>
   );
 }
 
-InputPricePage.layout = (page: React.ReactNode) => (
-  <AppLayout breadcrumbs={breadcrumbs}>{page}</AppLayout>
-);
+
+
 
 export default InputPricePage;

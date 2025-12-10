@@ -42,7 +42,8 @@ export default function OrdersTable({
   onApproveStatusChange?: () => void;
 }) {
   const { props } = usePage();
-  const { orders, department, departmentId, stats } = props as any;
+  const { orders, department, request_number, stats } = props as any;
+
   
   const [currentPage, setCurrentPage] = useState(1);
   const [orderList, setOrderList] = useState<Order[]>(orders || []);
@@ -98,7 +99,8 @@ export default function OrdersTable({
     setIsApproving(true);
     
     try {
-      await router.post(`/purchasing-detail/${departmentId}/approve-all`, {}, {
+    await router.post(`/purchasing-detail/${request_number}/approve-all`, {}, {
+
         preserveScroll: true,
         onSuccess: () => {
           // Update local state
@@ -126,8 +128,12 @@ export default function OrdersTable({
   };
 
   const handleGoToPricePage = () => {
-    router.visit("/input-price");
-  };
+  if (!orderList.length) return;
+
+  const requestNumber = orderList[0].request_number;
+  router.visit(`/input-price/${requestNumber}`);
+};
+
 
   const handleBack = () => {
     router.visit("/dashboard-purchasing");

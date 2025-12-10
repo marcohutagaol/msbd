@@ -16,38 +16,73 @@ class InputPriceController extends Controller
      * Tampilkan halaman input price dengan data request items
      * yang sudah disetujui tapi belum ada purchase-nya
      */
-    public function index()
-    {
-        // Cari request items yang approved dan belum completed/arrived
-        $requestItems = RequestItem::with(['request.user', 'request.purchase'])
-            ->whereIn('status', ['Approved', 'Completed', 'Arrived'])
-            ->whereDoesntHave('request.purchase') // Hanya yang belum ada purchase
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'kode_barang' => $item->kode_barang,
-                    'nama_barang' => $item->nama_barang,
-                    'jumlah_diajukan' => $item->jumlah_diajukan,
-                    'jumlah_disetujui' => $item->jumlah_disetujui,
-                    'satuan' => $item->satuan,
-                    'catatan' => $item->catatan,
-                    'status' => $item->status,
-                    'harga' => $item->harga,
-                    'request' => [
-                        'id' => $item->request->id,
-                        'request_number' => $item->request->request_number,
-                        'department' => $item->request->department,
-                        'request_date' => $item->request->request_date,
-                        'notes' => $item->request->notes,
-                    ],
-                ];
-            });
+  public function index($request_number)
+{
+  
+    $request = RequestModel::where('request_number', $request_number)->firstOrFail();
 
-        return Inertia::render('table/input-price', [
-            'orders' => $requestItems
+
+$requestItems = RequestItem::with(['request.user', 'purchase'])
+    ->where('request_id', $request->id)
+    ->whereIn('status', ['Approved', 'Completed'])
+    ->get()
+   ->map(function ($item) {
+    return [
+        'id' => $item->id,
+        'kode_barang' => $item->kode_barang,
+        'nama_barang' => $item->nama_barang,
+        'jumlah_diajukan' => $item->jumlah_diajukan,
+        'jumlah_disetujui' => $item->jumlah_disetujui,
+        'satuan' => $item->satuan,
+        'catatan' => $item->catatan,
+        'status' => $item->status,
+        'harga' => $item->purchase?->harga_item,
+        'total_harga' => $item->purchase?->total_harga,
+
+        'request' => [
+            'id' => $item->request->id,
+            'request_number' => $item->request->request_number,
+            'department' => $item->request->department,
+            'request_date' => $item->request->request_date,
+            'notes' => $item->request->notes,
+        ],
+    ];
+});
+
+
+    return Inertia::render('table/input-price', [
+        'orders' => $requestItems,
+        'requestNumber' => $request_number, 
+    ]);
+}
+
+public function saveInvoice(Request $request)
+{
+    $request->validate([
+        'item_id' => 'required|exists:request_items,id',
+        'harga' => 'required|numeric|min:1',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        DB::statement("CALL make_purchase_from_item(?, ?)", [
+            $request->item_id,
+            $request->harga
+        ]);
+
+        DB::commit();
+
+        return redirect()->back()->with('success', 'Invoice berhasil dibuat!');
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        return back()->withErrors([
+            'error' => $e->getMessage()
         ]);
     }
+}
+
+
 
     /**
      * Konfirmasi preorder - simpan harga dan update status jadi Completed

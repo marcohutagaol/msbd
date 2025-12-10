@@ -7,6 +7,7 @@ type StatusType = "not-checked" | "complete" | "on-process" | "late"
 interface Department {
   id: string
   name: string
+  nama_department: string
   total_requests: number
   total_items: number // PASTIKAN INI ADA
   pending_count: number
@@ -20,7 +21,7 @@ interface DepartmentListProps {
 }
 
 export function DepartmentList({ departments, onSelectDepartment }: DepartmentListProps) {
-  
+
   const getStatus = (dept: Department): StatusType => {
     // PERBAIKAN: Gunakan total_items untuk menentukan status completion
     if (dept.completed_count === dept.total_items && dept.total_items > 0) {
@@ -67,49 +68,13 @@ export function DepartmentList({ departments, onSelectDepartment }: DepartmentLi
     minute: "2-digit",
   })
 
-  const displayDepartments = departments && departments.length > 0 ? departments : [
-    {
-      id: "food-beverage",
-      name: "Food and Beverage",
-      total_requests: 15,
-      total_items: 23, // Jumlah ITEMS, bukan requests
-      pending_count: 0,
-      approved_count: 0,
-      completed_count: 0,
-    },
-    {
-      id: "housekeeping",
-      name: "House keeping",
-      total_requests: 8,
-      total_items: 23, // Jumlah ITEMS, bukan requests
-      pending_count: 0,
-      approved_count: 0,
-      completed_count: 23,
-    },
-    {
-      id: "security",
-      name: "Security",
-      total_requests: 12,
-      total_items: 23, // Jumlah ITEMS, bukan requests
-      pending_count: 10,
-      approved_count: 13,
-      completed_count: 0,
-    },
-    {
-      id: "finance",
-      name: "Finance",
-      total_requests: 7,
-      total_items: 23, // Jumlah ITEMS, bukan requests
-      pending_count: 0,
-      approved_count: 0,
-      completed_count: 0,
-    },
-  ]
-
+  const displayDepartments = departments ?? []
   // Navigasi ke halaman purchasing dengan department ID
-  const handleDepartmentClick = (dept: Department) => {
-    router.visit(`/purchasing/${dept.id}`)
-  }
+ const handleDepartmentClick = (dept: Department) => {
+router.visit(`/purchasing/${dept.name}`)
+
+}
+
 
   return (
     <div className="space-y-3">
@@ -120,9 +85,14 @@ export function DepartmentList({ departments, onSelectDepartment }: DepartmentLi
           className="flex items-center justify-between p-4 bg-white border-2 border-blue-300 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors"
         >
           <div className="flex-1">
-            <h3 className="font-semibold text-slate-900">{dept.name}</h3>
-            {/* PERBAIKAN: Tampilkan total_items bukan total_requests */}
-            <p className="text-sm text-slate-500">{dept.total_items} items</p>
+            <h3 className="font-semibold text-slate-900">
+                {dept.nama_department}   {/* request_number */}
+            </h3>
+
+            <p className="text-sm text-slate-500">
+           • {dept.total_items} items
+            </p>
+
           </div>
           <div className="flex items-center gap-4">
             {getStatusBadge(getStatus(dept))}

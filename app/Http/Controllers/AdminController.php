@@ -12,7 +12,7 @@ use App\Models\Permission;
 use App\Models\RequestDetail;
 use App\Models\RequestItem;
 use Carbon\Carbon;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB as FacadesDB;
