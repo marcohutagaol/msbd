@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\ReportController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
@@ -119,6 +120,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/Announcement', [AnnouncementController::class, 'store'])->name('announcement.store');
     Route::put('/Announcement/{id}', [AnnouncementController::class, 'update'])->name('announcement.update');
     Route::delete('/Announcement/{id}', [AnnouncementController::class, 'destroy'])->name('announcement.destroy');
+    Route::get('/Report', [ReportController::class, 'index'])->name('report.index');
+    Route::delete('/Report/{id}', [ReportController::class, 'destroy'])->name('report.destroy');
 
 
     Route::get('/RequestItem', function () {
@@ -136,10 +139,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/ReportItem', function () {
       return Inertia::render('admin/ReportItem');
   })->name('admin.ReportItem');
-
-      Route::get('/Report', function () {
-      return Inertia::render('admin/Report');
-  })->name('admin.Report');
   });
 
 
