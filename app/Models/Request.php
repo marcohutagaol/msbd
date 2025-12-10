@@ -48,4 +48,10 @@ class Request extends Model
     {
         return $this->hasOne(Purchase::class);
     }
+
+    public function invoice()
+{
+    return $this->hasOne(Invoice::class, 'request_id');
+}
+
 }

@@ -12,9 +12,10 @@ class Purchase extends Model
 
     protected $fillable = [
         'request_id',
+        'request_item_id',
         'tanggal_beli',
+        'harga_item',
         'total_harga',
-        'status',
     ];
 
     protected $casts = [
@@ -29,4 +30,16 @@ class Purchase extends Model
     {
         return $this->belongsTo(Request::class);
     }
+
+    public function requestItem()
+{
+    return $this->belongsTo(RequestItem::class, 'request_item_id');
+}
+
+public function invoice()
+{
+    return $this->belongsTo(Invoice::class, 'request_id', 'request_id');
+}
+
+
 }

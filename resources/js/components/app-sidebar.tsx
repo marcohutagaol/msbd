@@ -74,14 +74,9 @@ const mainNavItems: NavItem[] = [
                 href: '/dashboard-purchasing',
                 icon: ShoppingCart,
             },
-       
-            {
-                title: 'Input Harga',
-                href: '/input-price',
-                icon: DollarSign,
-            },
-            {
-                title: 'Toko',
+
+                {
+                title: 'Toko ',
                 href: '/toko',
                 icon: Store,
             },
