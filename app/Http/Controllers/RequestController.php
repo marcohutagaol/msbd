@@ -80,19 +80,20 @@ class RequestController extends Controller
             ]);
 
             // ✅ SIMPAN KODE DEPARTMENT KE REQUEST ITEMS
-            foreach ($validated['items'] as $item) {
-                RequestItem::create([
-                    'request_id' => $requestModel->id,
-                    'kode_barang' => $item['kode_barang'] ?? null,
-                    'nama_barang' => $item['nama_barang'],
-                    'jumlah_diajukan' => $item['jumlah'],
-                    'satuan' => $item['satuan'],
-                    'catatan' => $item['catatan'] ?? null,
-                    'status' => 'Pending',
-                    'departemen' => $department->nama_department, 
-                    'jumlah_disetujui' => 0,
-                ]);
-            }
+       foreach ($validated['items'] as $item) {
+    RequestItem::create([
+        'request_id' => $requestModel->id,   // ✅ INI YANG PALING PENTING
+        'kode_barang' => $item['kode_barang'] ?? null,
+        'nama_barang' => $item['nama_barang'],
+        'jumlah_diajukan' => $item['jumlah'],
+        'satuan' => $item['satuan'],
+        'catatan' => $item['catatan'] ?? null,
+        'status' => 'Pending',
+        'departemen' => $department->nama_department, 
+        'jumlah_disetujui' => 0,
+    ]);
+}
+
 
             DB::commit();
 

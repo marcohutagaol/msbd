@@ -17,7 +17,7 @@ class RequestItem extends Model
         'jumlah_diajukan',
         'jumlah_disetujui',
         'status',
-        'departemen', // Tambahkan departemen ke fillable
+        'departemen', 
         'catatan',
         'satuan'
     ];
@@ -30,6 +30,17 @@ class RequestItem extends Model
     public function purchase()
 {
     return $this->hasOne(Purchase::class, 'request_item_id');
+}
+
+protected static function booted()
+{
+    static::deleted(function ($item) {
+
+        if ($item->request && $item->request->items()->count() === 0) {
+            $item->request->delete(); 
+        }
+
+    });
 }
 
 }

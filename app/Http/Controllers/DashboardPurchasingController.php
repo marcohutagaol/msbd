@@ -8,146 +8,149 @@ use Inertia\Inertia;
 
 class DashboardPurchasingController extends Controller
 {
-    public function index()
-    {
-        // ✅ Statistik utama (Cards)
-        $stats = [
-            'total_requests' => Request::count(),
-            'pending_requests' => Request::where('status', 'Pending')->count(),
-            'approved_requests' => Request::where('status', 'Approved')->count(),
-            'completed_requests' => Request::where('status', 'Completed')->count(),
-            'rejected_requests' => Request::where('status', 'Rejected')->count(),
-            'total_items' => RequestItem::count(),
-        ];
+   public function index()
+{
+    // Statistik utama boleh tetap seperti ini dulu (opsional nanti dibenahi)
+    $stats = [
+        'total_requests'      => Request::whereHas('items')->count(),
+        'pending_requests'    => Request::whereHas('items')->where('status', 'Pending')->count(),
+        'approved_requests'   => Request::whereHas('items')->where('status', 'Approved')->count(),
+        'completed_requests'  => Request::whereHas('items')->where('status', 'Completed')->count(),
+        'rejected_requests'   => Request::whereHas('items')->where('status', 'Rejected')->count(),
+        'total_items'         => RequestItem::count(),
+    ];
 
-        // ✅ ✅ ✅ DASHBOARD LIST = PER REQUEST (BUKAN PER DEPARTEMEN)
-        $departmentStats = Request::select(
-                'id',
-                'request_number',
-                'department',
-                'status',
-                'created_at'
-            )
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($request) {
+    // ✅ LIST CARD DI "Request Departemen" – HITUNG DARI ITEMS, BUKAN DARI REQUEST.STATUS
+    $departmentStats = Request::whereHas('items')
+        ->with('items') // penting, supaya gak N+1
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(function ($request) {
+            $pendingItems   = $request->items->where('status', 'Pending')->count();
+            $approvedItems  = $request->items->where('status', 'Approved')->count();
+            $completedItems = $request->items
+                                ->whereIn('status', ['Completed', 'Arrived'])
+                                ->count();
 
-                $totalItems = RequestItem::where('request_id', $request->id)->count();
+            return [
+                'id'              => $request->request_number,   // dipakai ke URL
+                'name'            => $request->request_number,   // tulisan besar di card
+                'nama_department' => $request->department,
+                'total_items'     => $request->items->count(),
+                'total_requests'  => 1,
 
-                return [
-                    'id' => $request->request_number,        // ✅ dipakai untuk URL
-                    'name' => $request->request_number,     // ✅ tampilan utama
-                    'nama_department' => $request->department,
-                    'total_items' => $totalItems,
-                    'total_requests' => 1,
-                    'pending_count' => $request->status === 'Pending' ? 1 : 0,
-                    'approved_count' => $request->status === 'Approved' ? 1 : 0,
-                    'completed_count' => $request->status === 'Completed' ? 1 : 0,
-                ];
-            });
+                // 👉 ini yang dipakai DepartmentList buat nentuin chip:
+                'pending_count'   => $pendingItems,
+                'approved_count'  => $approvedItems,
+                'completed_count' => $completedItems,
+            ];
+        });
 
-        // ✅ Recent Requests (5 terbaru)
-        $recentRequests = Request::with(['user', 'items'])
-            ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get()
-            ->map(function ($request) {
-                return [
-                    'id' => $request->id,
-                    'request_number' => $request->request_number,
-                    'department' => $request->department,
-                    'user_name' => $request->user->name ?? 'Unknown',
-                    'status' => $request->status,
-                    'request_date' => $request->request_date->format('d M Y'),
-                    'items_count' => $request->items->count(),
-                    'created_at' => $request->created_at->diffForHumans(),
-                ];
-            });
+    // Recent requests biarin saja
+    $recentRequests = Request::with(['user', 'items'])
+        ->whereHas('items')
+        ->orderBy('created_at', 'desc')
+        ->take(5)
+        ->get()
+        ->map(function ($request) {
+            return [
+                'id'            => $request->id,
+                'request_number'=> $request->request_number,
+                'department'    => $request->department,
+                'user_name'     => $request->user->name ?? 'Unknown',
+                'status'        => $request->status,
+                'request_date'  => $request->request_date->format('d M Y'),
+                'items_count'   => $request->items->count(),
+                'created_at'    => $request->created_at->diffForHumans(),
+            ];
+        });
 
-        return Inertia::render('table/dashboard-purchasing', [
-            'stats' => $stats,
-            'departments' => $departmentStats,
-            'recentRequests' => $recentRequests,
-        ]);
-    }
+    return Inertia::render('table/dashboard-purchasing', [
+        'stats'          => $stats,
+        'departments'    => $departmentStats,
+        'recentRequests' => $recentRequests,
+    ]);
+}
 
+public function getDepartmentDetails($departmentId)
+{
+    // ✅ Convert slug jadi nama asli departemen
+    $departmentName = ucwords(str_replace('-', ' ', $departmentId));
 
-    public function getDepartmentDetails($departmentId)
-    {
-        $departmentName = ucwords(str_replace('-', ' ', $departmentId));
-        
-        // PERBAIKAN: Ambil data dari request_items dengan relasi request
-        $requestItems = RequestItem::where('departemen', $departmentName)
-            ->with(['request.user'])
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'request_id' => $item->request_id,
-                    'request_number' => $item->request->request_number ?? 'Unknown',
-                    'user_name' => $item->request->user->name ?? 'Unknown',
-                    'nama_barang' => $item->nama_barang,
-                    'jumlah_diajukan' => $item->jumlah_diajukan,
-                    'satuan' => $item->satuan,
-                    'status' => $item->status,
-                    'departemen' => $item->departemen,
-                    'catatan' => $item->catatan,
-                    'request_date' => $item->request->request_date->format('d M Y') ?? 'Unknown',
-                    'created_at' => $item->created_at->diffForHumans(),
-                ];
-            });
+    // ✅ HANYA ambil item yang BENAR-BENAR punya request
+    $requestItems = RequestItem::whereHas('request') // ✅ FILTER AMAN
+        ->where('departemen', $departmentName)
+        ->with(['request.user'])
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'request_id' => $item->request_id,
+                'request_number' => $item->request->request_number ?? 'Unknown',
+                'user_name' => $item->request->user->name ?? 'Unknown',
+                'nama_barang' => $item->nama_barang,
+                'jumlah_diajukan' => $item->jumlah_diajukan,
+                'satuan' => $item->satuan,
+                'status' => $item->status,
+                'departemen' => $item->departemen,
+                'catatan' => $item->catatan,
+                'request_date' => optional($item->request->request_date)->format('d M Y') ?? 'Unknown',
+                'created_at' => $item->created_at->diffForHumans(),
+            ];
+        });
 
-        return response()->json([
-            'department' => $departmentName,
-            'items' => $requestItems,
-            'total_items' => $requestItems->count(),
-        ]);
-    }
+    return response()->json([
+        'department' => $departmentName,
+        'items' => $requestItems,
+        'total_items' => $requestItems->count(),
+    ]);
+}
+
 
     // Method untuk mendapatkan statistik real-time
-    public function getDashboardStats()
-    {
-        $totalRequests = Request::count();
-        $totalItems = RequestItem::count();
-        
-        $pendingRequests = Request::where('status', 'Pending')->count();
-        $approvedRequests = Request::where('status', 'Approved')->count();
-        $completedRequests = Request::where('status', 'Completed')->count();
-        $rejectedRequests = Request::where('status', 'Rejected')->count();
+   public function getDashboardStats()
+{
+    $totalRequests = Request::whereHas('items')->count();
+    $totalItems = RequestItem::count();
 
-        // Department stats dengan items
-        $departmentStats = RequestItem::select('departemen')
-            ->selectRaw('count(*) as total_items')
-            ->selectRaw('count(distinct request_id) as total_requests')
-            ->selectRaw('sum(case when status = "Pending" then 1 else 0 end) as pending_count')
-            ->selectRaw('sum(case when status = "Approved" then 1 else 0 end) as approved_count')
-            ->selectRaw('sum(case when status = "Completed" then 1 else 0 end) as completed_count')
-            ->whereNotNull('departemen')
-            ->groupBy('departemen')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => strtolower(str_replace(' ', '-', $item->departemen)),
-                    'name' => $item->departemen,
-                    'total_requests' => $item->total_requests,
-                    'total_items' => $item->total_items,
-                    'pending_count' => $item->pending_count,
-                    'approved_count' => $item->approved_count,
-                    'completed_count' => $item->completed_count,
-                ];
-            });
+    $pendingRequests = Request::whereHas('items')->where('status', 'Pending')->count();
+    $approvedRequests = Request::whereHas('items')->where('status', 'Approved')->count();
+    $completedRequests = Request::whereHas('items')->where('status', 'Completed')->count();
+    $rejectedRequests = Request::whereHas('items')->where('status', 'Rejected')->count();
 
-        return response()->json([
-            'stats' => [
-                'total_requests' => $totalRequests,
-                'total_items' => $totalItems,
-                'pending_requests' => $pendingRequests,
-                'approved_requests' => $approvedRequests,
-                'completed_requests' => $completedRequests,
-                'rejected_requests' => $rejectedRequests,
-            ],
-            'departments' => $departmentStats
-        ]);
-    }
+    $departmentStats = RequestItem::select('departemen')
+        ->selectRaw('count(*) as total_items')
+        ->selectRaw('count(distinct request_id) as total_requests')
+        ->selectRaw('sum(case when status = "Pending" then 1 else 0 end) as pending_count')
+        ->selectRaw('sum(case when status = "Approved" then 1 else 0 end) as approved_count')
+        ->selectRaw('sum(case when status = "Completed" then 1 else 0 end) as completed_count')
+        ->whereNotNull('departemen')
+        ->groupBy('departemen')
+        ->get()
+        ->map(function ($item) {
+            return [
+                'id' => strtolower(str_replace(' ', '-', $item->departemen)),
+                'name' => $item->departemen,
+                'total_requests' => $item->total_requests,
+                'total_items' => $item->total_items,
+                'pending_count' => $item->pending_count,
+                'approved_count' => $item->approved_count,
+                'completed_count' => $item->completed_count,
+            ];
+        });
+
+    return response()->json([
+        'stats' => [
+            'total_requests' => $totalRequests,
+            'total_items' => $totalItems,
+            'pending_requests' => $pendingRequests,
+            'approved_requests' => $approvedRequests,
+            'completed_requests' => $completedRequests,
+            'rejected_requests' => $rejectedRequests,
+        ],
+        'departments' => $departmentStats
+    ]);
+}
+
 }
