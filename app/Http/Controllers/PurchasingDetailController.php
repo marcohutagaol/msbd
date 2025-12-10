@@ -6,61 +6,45 @@ use Inertia\Inertia;
 use App\Models\Request;
 use App\Models\RequestItem;
 use Illuminate\Http\Request as HttpRequest;
-
+use Illuminate\Support\Facades\DB;
 class PurchasingDetailController extends Controller
 {
-    public function show($departmentId)
-    {
-        // Convert department ID to proper name
-        $departmentName = $this->getDepartmentName($departmentId);
+ public function show($requestNumber)
+{
+    $request = Request::where('request_number', $requestNumber)
+        ->with('items')
+        ->firstOrFail();
 
-        // PERBAIKAN: Ambil data dari request_items dengan relasi request
-        $requestItems = RequestItem::where('departemen', $departmentName)
-            ->with(['request']) // Load relasi request untuk mendapatkan request_number
-            ->orderBy('created_at', 'desc')
-            ->get();
+    $orders = $request->items->map(function ($item) {
+        return [
+            'id' => $item->id,
+            'request_id' => $item->request_id,
+            'request_number' => $item->request->request_number,
+            'namaBarang' => $item->nama_barang,
+            'departemen' => $item->departemen,
+            'jumlahBarang' => $item->jumlah_diajukan,
+            'satuan' => $item->satuan,
+            'catatan' => $item->catatan,
+            'status' => $item->status,
+            'created_at' => $item->created_at,
+        ];
+    });
 
-        // Transform data untuk frontend
-        $orders = [];
-        foreach ($requestItems as $item) {
-            $orders[] = [
-                'id' => $item->id,
-                'request_id' => $item->request_id,
-                'request_number' => $item->request->request_number,
-                'namaBarang' => $item->nama_barang,
-                'departemen' => $item->departemen,
-                'jumlahBarang' => $item->jumlah_diajukan,
-                'satuan' => $item->satuan,
-                'catatan' => $item->catatan,
-                'status' => $this->mapStatus($item->status),
-                'created_at' => $item->created_at->format('Y-m-d H:i:s'),
-            ];
-        }
+    return Inertia::render('table/purchasing', [
+        'requestNumber' => $request->request_number,
+        'department' => $request->department,
+        'orders' => $orders,
+        'stats' => [
+            'total_items' => $orders->count(),
+            'pending_count' => $orders->where('status', 'Pending')->count(),
+            'approved_count' => $orders->where('status', 'Approved')->count(),
+            'completed_count' => $orders->where('status', 'Completed')->count(),
+            'rejected_count' => $orders->where('status', 'Rejected')->count(),
+        ]
+    ]);
+}
 
-        // Hitung statistics berdasarkan request_items
-        $totalItems = $requestItems->count();
-        $pendingCount = $requestItems->where('status', 'Pending')->count();
-        $approvedCount = $requestItems->where('status', 'Approved')->count();
-        $completedCount = $requestItems->where('status', 'Completed')->count();
-        $rejectedCount = $requestItems->where('status', 'Rejected')->count();
 
-        // Hitung total requests (unik) untuk department ini
-        $totalRequests = Request::where('department', $departmentName)->count();
-
-        return Inertia::render('table/purchasing', [
-            'department' => $departmentName,
-            'departmentId' => $departmentId,
-            'orders' => $orders,
-            'stats' => [
-                'total_requests' => $totalRequests,
-                'total_items' => $totalItems,
-                'pending_count' => $pendingCount,
-                'approved_count' => $approvedCount,
-                'completed_count' => $completedCount,
-                'rejected_count' => $rejectedCount,
-            ]
-        ]);
-    }
 
     /**
      * Approve semua items untuk department tertentu
@@ -75,7 +59,7 @@ class PurchasingDetailController extends Controller
                 ->where('status', 'Pending')
                 ->update([
                     'status' => 'Approved',
-                    'jumlah_disetujui' => \DB::raw('jumlah_diajukan') // Set jumlah disetujui = jumlah diajukan
+                    'jumlah_disetujui' => DB::raw('jumlah_diajukan') // Set jumlah disetujui = jumlah diajukan
                 ]);
 
             return redirect()->back()->with('success', "Berhasil menyetujui {$updated} item untuk departemen {$departmentName}");

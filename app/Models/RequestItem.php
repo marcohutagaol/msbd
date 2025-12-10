@@ -26,4 +26,10 @@ class RequestItem extends Model
     {
         return $this->belongsTo(Request::class);
     }
+
+    public function purchase()
+{
+    return $this->hasOne(Purchase::class, 'request_item_id');
+}
+
 }

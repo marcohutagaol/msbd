@@ -13,7 +13,22 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { 
+    BookOpen, 
+    Folder, 
+    LayoutGrid, 
+    Calendar,
+    FileCheck,
+    Package,
+    ShoppingCart,
+    DollarSign,
+    Store,
+    Warehouse,
+    Megaphone,
+    BarChart3,
+    Users,
+    ClipboardList
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -25,50 +40,45 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Absensi',
         href: '/absensi/1',
-        icon: LayoutGrid,
+        icon: Calendar,
     },
     {
         title: 'Izin',
         href: '/permission',
-        icon: LayoutGrid,
+        icon: FileCheck,
     },
     {
         title: 'Barang',
         href: '#',
-        icon: LayoutGrid,
+        icon: Package,
         items: [
             {
                 title: 'Permintaan',
                 href: '/request',
-                icon: LayoutGrid,
+                icon: ClipboardList,
             },
             {
                 title: 'Pemantauan Item',
                 href: '/monitoring-item',
-                icon: LayoutGrid,
+                icon: Package,
             },
         ],
     },
     {
         title: 'Pembelian',
         href: '#',
-        icon: LayoutGrid,
+        icon: ShoppingCart,
         items: [
             {
                 title: 'Pembelian',
                 href: '/dashboard-purchasing',
-                icon: LayoutGrid,
+                icon: ShoppingCart,
             },
-       
-            {
-                title: 'Input Harga',
-                href: '/input-price',
-                icon: LayoutGrid,
-            },
+
                 {
                 title: 'Toko ',
                 href: '/toko',
-                icon: LayoutGrid,
+                icon: Store,
             },
         ],
     },
@@ -76,29 +86,34 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Inventory',
         href: '/inventory',
-        icon: LayoutGrid,
+        icon: Warehouse,
+    },
+    {
+        title: 'Announcement',
+        href: '/announcement',
+        icon: Megaphone,
     },
 
     {
         title: 'Manager Dashboard',
         href: '/manager',
-        icon: LayoutGrid,
+        icon: BarChart3,
     },
     
     {
         title: 'Manager Absensi',
         href: '/manager-absensi',
-        icon: LayoutGrid,
+        icon: Calendar,
     },
     {
         title: 'Manager Karyawan',
         href: '/manager-karyawan',
-        icon: LayoutGrid,
+        icon: Users,
     },
     {
         title: 'Report',
         href: '/report',
-        icon: LayoutGrid,
+        icon: BarChart3,
     },
 ];
 

@@ -1,6 +1,6 @@
 <?php
-
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\DashboardPurchasingController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\ReportController;
 use Inertia\Inertia;
@@ -17,7 +17,8 @@ use App\Http\Controllers\DepartemenItemController;
 use App\Http\Controllers\TransferBarangController;
 use App\Http\Controllers\PurchasingDetailController;
 use App\Http\Controllers\RequestManagementController;
-use App\Http\Controllers\DashboardPurchasingController;
+use App\Http\Controllers\InvoiceController;
+
 
 // =======================
 // AUTH | HOME
@@ -43,9 +44,15 @@ Route::middleware(['auth'])->group(function () {
   // =======================
   // PURCHASING & REQUEST
   // =======================
-  Route::get('/dashboard-purchasing', [DashboardPurchasingController::class, 'index'])->name('dashboard-purchasing');
-  Route::get('/dashboard-purchasing/department/{id}', [DashboardPurchasingController::class, 'getDepartmentDetails'])->name('dashboard-purchasing.department');
-  Route::get('/purchasing/{departmentId}', [PurchasingDetailController::class, 'show'])->name('purchasing.detail');
+  Route::get('/dashboard-purchasing', [DashboardPurchasingController::class, 'index'])
+    ->name('dashboard-purchasing');
+
+Route::get('/purchasing/{request_number}', [PurchasingDetailController::class, 'show'])
+    ->name('purchasing.show');
+
+  Route::get('/purchasing/{request_number}', [PurchasingDetailController::class, 'show'])
+    ->name('purchasing.show');
+
   Route::post('/purchasing-detail/{departmentId}/approve-all', [PurchasingDetailController::class, 'approveAll'])->name('purchasing.approve-all');
   Route::post('/purchasing-detail/item/{itemId}/update-status', [PurchasingDetailController::class, 'updateStatus'])->name('purchasing.update-status');
 
@@ -78,10 +85,24 @@ Route::middleware(['auth'])->group(function () {
   // =======================
   // INPUT PRICE
   // =======================
-  Route::get('/input-price', [InputPriceController::class, 'index'])->name('input-price');
-  Route::post('/input-price/confirm-preorder', [InputPriceController::class, 'confirmPreorder'])->name('input-price.confirm');
-  Route::post('/input-price/mark-arrived', [InputPriceController::class, 'markAsArrived'])->name('input-price.mark-arrived');
-  Route::post('/input-price/mark-all-arrived', [InputPriceController::class, 'markAllArrived'])->name('input-price.mark-all-arrived');
+  Route::get('/input-price/{request_number}', [InputPriceController::class, 'index'])
+    ->name('input-price.show');
+
+Route::post('/input-price/save-invoice', [InputPriceController::class, 'saveInvoice']);
+
+Route::post('/input-price/confirm-preorder', [InputPriceController::class, 'confirmPreorder'])
+    ->name('input-price.confirm-preorder');
+
+Route::post('/input-price/mark-arrived', [InputPriceController::class, 'markAsArrived'])
+    ->name('input-price.mark-arrived');
+
+Route::post('/input-price/mark-all-arrived', [InputPriceController::class, 'markAllArrived'])
+    ->name('input-price.mark-all-arrived');
+
+ Route::post('/input-price/confirm-preorder', [InvoiceController::class, 'confirmPreorder']);
+ Route::get('/invoice/view/{request_id}', [InvoiceController::class, 'show']);
+
+
 
   // =======================
   // TRANSFER
@@ -162,6 +183,9 @@ Route::get('/api/departemen', [DepartemenItemController::class, 'getDepartemen']
 // SETTINGS
 // =======================
 require __DIR__ . '/settings.php';
+
+Route::get('/announcement', fn() => Inertia::render('announcement/page'))->name('announcement');
+
 
 
 Route::get('/manager', fn() => Inertia::render('manager/page'))->name('manager.page');

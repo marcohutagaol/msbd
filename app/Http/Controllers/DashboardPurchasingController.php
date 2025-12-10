@@ -4,15 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Request;
 use App\Models\RequestItem;
-use Illuminate\Http\Request as HttpRequest;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
 
 class DashboardPurchasingController extends Controller
 {
     public function index()
     {
-        // Statistik Cards
+        // ✅ Statistik utama (Cards)
         $stats = [
             'total_requests' => Request::count(),
             'pending_requests' => Request::where('status', 'Pending')->count(),
@@ -22,56 +20,33 @@ class DashboardPurchasingController extends Controller
             'total_items' => RequestItem::count(),
         ];
 
-        // PERBAIKAN: Department Stats dengan menghitung ITEMS bukan REQUESTS
-        $departmentStats = RequestItem::select('departemen')
-            ->selectRaw('count(*) as total_items') // Hitung jumlah items
-            ->selectRaw('count(distinct request_id) as total_requests') // Hitung jumlah requests unik
-            ->selectRaw('sum(case when status = "Pending" then 1 else 0 end) as pending_count')
-            ->selectRaw('sum(case when status = "Approved" then 1 else 0 end) as approved_count')
-            ->selectRaw('sum(case when status = "Completed" then 1 else 0 end) as completed_count')
-            ->whereNotNull('departemen')
-            ->groupBy('departemen')
+        // ✅ ✅ ✅ DASHBOARD LIST = PER REQUEST (BUKAN PER DEPARTEMEN)
+        $departmentStats = Request::select(
+                'id',
+                'request_number',
+                'department',
+                'status',
+                'created_at'
+            )
+            ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function ($item) {
+            ->map(function ($request) {
+
+                $totalItems = RequestItem::where('request_id', $request->id)->count();
+
                 return [
-                    'id' => strtolower(str_replace(' ', '-', $item->departemen)),
-                    'name' => $item->departemen,
-                    'total_requests' => $item->total_requests,
-                    'total_items' => $item->total_items, // Kirim total_items ke frontend
-                    'pending_count' => $item->pending_count,
-                    'approved_count' => $item->approved_count,
-                    'completed_count' => $item->completed_count,
+                    'id' => $request->request_number,        // ✅ dipakai untuk URL
+                    'name' => $request->request_number,     // ✅ tampilan utama
+                    'nama_department' => $request->department,
+                    'total_items' => $totalItems,
+                    'total_requests' => 1,
+                    'pending_count' => $request->status === 'Pending' ? 1 : 0,
+                    'approved_count' => $request->status === 'Approved' ? 1 : 0,
+                    'completed_count' => $request->status === 'Completed' ? 1 : 0,
                 ];
             });
 
-        // Jika tidak ada data di request_items, fallback ke data dari requests
-        if ($departmentStats->isEmpty()) {
-            $departmentStats = Request::select('department')
-                ->selectRaw('count(*) as total_requests')
-                ->selectRaw('sum(case when status = "Pending" then 1 else 0 end) as pending_count')
-                ->selectRaw('sum(case when status = "Approved" then 1 else 0 end) as approved_count')
-                ->selectRaw('sum(case when status = "Completed" then 1 else 0 end) as completed_count')
-                ->groupBy('department')
-                ->get()
-                ->map(function ($item) {
-                    // Hitung total items untuk department ini
-                    $totalItems = RequestItem::whereHas('request', function($query) use ($item) {
-                        $query->where('department', $item->department);
-                    })->count();
-                    
-                    return [
-                        'id' => strtolower(str_replace(' ', '-', $item->department)),
-                        'name' => $item->department,
-                        'total_requests' => $item->total_requests,
-                        'total_items' => $totalItems, // Hitung items dari request_items
-                        'pending_count' => $item->pending_count,
-                        'approved_count' => $item->approved_count,
-                        'completed_count' => $item->completed_count,
-                    ];
-                });
-        }
-
-        // Recent Requests (5 terbaru)
+        // ✅ Recent Requests (5 terbaru)
         $recentRequests = Request::with(['user', 'items'])
             ->orderBy('created_at', 'desc')
             ->take(5)
@@ -95,6 +70,7 @@ class DashboardPurchasingController extends Controller
             'recentRequests' => $recentRequests,
         ]);
     }
+
 
     public function getDepartmentDetails($departmentId)
     {

@@ -180,9 +180,11 @@ export default function CatatKehadiran() {
   ipAddress,
 })
 
-      const response = await axios.post("http://127.0.0.1:8000/absensi/store", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
+     const response = await axios.post(
+  "http://127.0.0.1:8000/absensi/store",
+  formData
+)
+
 
       console.log("Cloudinary URL:", response.data.url)
       setIsClockInSuccess(true)

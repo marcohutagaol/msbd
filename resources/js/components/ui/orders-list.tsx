@@ -34,17 +34,18 @@ interface OrdersListProps {
   mode?: "default" | "monitoring" | "price"
   disabled?: boolean
   orders?: OrderItem[]
-  onPriceUpdate?: (itemId: number, harga: number) => void
   onMarkArrived?: (itemId: number) => void
+  onPriceUpdate?: (itemId: number, harga: number) => void // ✅ TAMBAHKAN INI
   showArrivedButton?: boolean
 }
+
 
 export function OrdersList({
   mode = "default",
   disabled = false,
   orders = [],
-  onPriceUpdate,
   onMarkArrived,
+  onPriceUpdate,   
   showArrivedButton = false
 }: OrdersListProps) {
   const [isMobile, setIsMobile] = useState(false)
@@ -75,7 +76,7 @@ export function OrdersList({
 
   const StatusBadge = ({ status }: { status: OrderItem["status"] }) => {
     const base = "inline-flex justify-center items-center min-w-[90px] h-7 px-3 text-xs font-semibold rounded-full border uppercase tracking-wide"
-    
+
     const statusConfig = {
       "Pending": { color: "bg-yellow-100 text-yellow-700 border-yellow-300", label: "Menunggu" },
       "Approved": { color: "bg-green-100 text-green-700 border-green-300", label: "Disetujui" },
@@ -85,7 +86,7 @@ export function OrdersList({
     }
 
     const config = statusConfig[status] || statusConfig.Pending
-    
+
     return <span className={`${base} ${config.color}`}>{config.label}</span>
   }
 
@@ -136,19 +137,19 @@ export function OrdersList({
     if (onMarkArrived) {
       onMarkArrived(selectedOrder.id)
     }
-    
+
     // Update local state
     setLocalOrders((prev) =>
       prev.map((o) =>
         o.id === selectedOrder.id
           ? {
-              ...o,
-              status: "Arrived",
-            }
+            ...o,
+            status: "Arrived",
+          }
           : o
       )
     )
-    
+
     setIsArrivedOpen(false)
   }
 
@@ -164,10 +165,10 @@ export function OrdersList({
           prev.map((o) =>
             o.id === selectedOrder.id
               ? {
-                  ...o,
-                  jumlah_diajukan: editValues.jumlah_diajukan,
-                  catatan: editValues.catatan,
-                }
+                ...o,
+                jumlah_diajukan: editValues.jumlah_diajukan,
+                catatan: editValues.catatan,
+              }
               : o
           )
         )
@@ -196,39 +197,37 @@ export function OrdersList({
   }
 
   const handlePriceSave = () => {
-    if (!selectedOrder) return
+    if (!selectedOrder) return;
 
-    const numericPrice = parseInt(priceValue) || 0
-    
+    const numericPrice = parseInt(priceValue) || 0;
+
     if (numericPrice <= 0) {
-      alert("Harga harus lebih besar dari 0")
-      return
+      alert("Harga harus lebih besar dari 0");
+      return;
     }
-    
-    // Panggil callback untuk update harga temporary
-    if (onPriceUpdate) {
-      onPriceUpdate(selectedOrder.id, numericPrice)
-    }
-    
-    // Update local state juga
-    setLocalOrders((prev) =>
-      prev.map((o) =>
-        o.id === selectedOrder.id
-          ? {
-              ...o,
-              harga: numericPrice,
-            }
-          : o
-      )
-    )
-    
-    setIsPriceOpen(false)
-  }
+
+    router.post(
+      "/input-price/save-invoice",
+      {
+        item_id: selectedOrder.id,
+        harga: numericPrice,
+      },
+      {
+        onSuccess: () => {
+          setIsPriceOpen(false);
+
+          // ✅ AMBIL ULANG DATA DARI DATABASE
+          router.reload({ only: ["orders"] });
+        },
+      }
+    );
+  };
+
 
   const handlePriceChange = (value: string) => {
     const numericValue = value.replace(/\D/g, '')
     setPriceValue(numericValue)
-    
+
     if (numericValue) {
       setDisplayPrice(formatRupiah(parseInt(numericValue)))
     } else {
@@ -251,17 +250,16 @@ export function OrdersList({
           <Package className="w-4 h-4" />
         </Button>
       )}
-      
+
       {/* Tombol Pencil untuk input harga (hanya untuk status Approved) */}
       {mode === "price" && order.status === "Approved" && (
         <Button
           variant="ghost"
           size="icon"
-          className={`text-green-600 hover:scale-110 transition-all duration-300 ${
-            order.harga && order.harga > 0 
-              ? "bg-green-50 hover:bg-green-100 border border-green-200" 
-              : "bg-yellow-50 hover:bg-yellow-100 border border-yellow-200"
-          }`}
+          className={`text-green-600 hover:scale-110 transition-all duration-300 ${order.harga && order.harga > 0
+            ? "bg-green-50 hover:bg-green-100 border border-green-200"
+            : "bg-yellow-50 hover:bg-yellow-100 border border-yellow-200"
+            }`}
           onClick={() => handlePriceClick(order)}
           disabled={disabled}
           title={order.harga && order.harga > 0 ? "Edit Harga" : "Input Harga"}
@@ -269,7 +267,7 @@ export function OrdersList({
           <Pencil className="w-4 h-4" />
         </Button>
       )}
-      
+
       {/* Tombol untuk mode selain price dan monitoring */}
       {mode !== "price" && mode !== "monitoring" && (
         <>
@@ -283,7 +281,7 @@ export function OrdersList({
           >
             <Pencil className="w-4 h-4" />
           </Button>
-          
+
           <Button
             variant="ghost"
             size="icon"
@@ -341,33 +339,32 @@ export function OrdersList({
                 {(mode === "monitoring" || mode === "price") && (
                   <div className="flex justify-between">
                     <span className="font-medium">Harga Satuan:</span>
-                    {isFinalStatus(order.status) ? (
-                      <span className="flex items-center justify-center text-green-600 bg-green-50 px-2 py-1 rounded">
-                        <CheckCircle2 className="w-5 h-5" />
-                      </span>
-                    ) : order.harga && order.harga > 0 ? (
-                      <span className="font-semibold text-green-700">
+                    {order.harga && order.harga > 0 ? (
+                      <span className="text-green-700 font-semibold">
                         {formatRupiah(order.harga)}
                       </span>
                     ) : (
-                      <span className="text-red-500 text-xs">Belum diisi</span>
+                      <span className="text-red-500 text-xs bg-red-50 px-2 py-1 rounded">
+                        Belum diisi
+                      </span>
                     )}
+
                   </div>
                 )}
                 {(mode === "monitoring" || mode === "price") && (
                   <div className="flex justify-between">
                     <span className="font-medium">Total:</span>
-                    {isFinalStatus(order.status) ? (
-                      <span className="flex items-center justify-center text-green-600 bg-green-50 px-2 py-1 rounded">
-                        <CheckCircle2 className="w-5 h-5" />
-                      </span>
-                    ) : order.harga && order.harga > 0 ? (
-                      <span className="font-bold text-green-700">
-                        {formatRupiah(order.harga * (order.jumlah_disetujui || order.jumlah_diajukan))}
+                    {order.harga && order.harga > 0 ? (
+                      <span className="text-blue-700 font-bold">
+                        {formatRupiah(
+                          order.harga *
+                          (order.jumlah_disetujui || order.jumlah_diajukan)
+                        )}
                       </span>
                     ) : (
                       <span className="text-gray-400 text-xs">-</span>
                     )}
+
                   </div>
                 )}
                 <div>
@@ -456,11 +453,11 @@ export function OrdersList({
           <tbody>
             {localOrders.length === 0 ? (
               <tr>
-                <td 
+                <td
                   colSpan={
-                    mode === "monitoring" ? 11 : 
-                    mode === "price" ? 9 : 6
-                  } 
+                    mode === "monitoring" ? 11 :
+                      mode === "price" ? 9 : 6
+                  }
                   className="py-8 text-center text-gray-500"
                 >
                   Belum ada data request items
@@ -470,9 +467,8 @@ export function OrdersList({
               localOrders.map((order, index) => (
                 <tr
                   key={order.id}
-                  className={`border-b border-blue-100 ${
-                    index % 2 === 0 ? "bg-white" : "bg-slate-50"
-                  } hover:bg-blue-50 transition-colors`}
+                  className={`border-b border-blue-100 ${index % 2 === 0 ? "bg-white" : "bg-slate-50"
+                    } hover:bg-blue-50 transition-colors`}
                 >
                   <td className="py-4 px-4">
                     <p className="font-medium text-slate-900">{order.nama_barang}</p>
@@ -498,30 +494,31 @@ export function OrdersList({
                   </td>
                   {(mode === "monitoring" || mode === "price") && (
                     <td className="py-4 px-4 text-center font-medium">
-                      {isFinalStatus(order.status) ? (
-                        <span className="flex items-center justify-center text-green-600 ">
-                          <CheckCircle2 className="w-5 h-5" />
+                      {order.harga && order.harga > 0 ? (
+                        <span className="text-green-700 font-semibold">
+                          {formatRupiah(order.harga)}
                         </span>
-                      ) : order.harga && order.harga > 0 ? (
-                        <span className="text-green-700">{formatRupiah(order.harga)}</span>
                       ) : (
-                        <span className="text-red-500 text-xs bg-red-50 px-2 py-1 rounded">Belum diisi</span>
+                        <span className="text-red-500 text-xs bg-red-50 px-2 py-1 rounded">
+                          Belum diisi
+                        </span>
                       )}
+
                     </td>
                   )}
                   {(mode === "monitoring" || mode === "price") && (
                     <td className="py-4 px-4 text-center font-bold">
-                      {isFinalStatus(order.status) ? (
-                        <span className="flex items-center justify-center text-green-600 ">
-                          <CheckCircle2 className="w-5 h-5" />
-                        </span>
-                      ) : order.harga && order.harga > 0 ? (
-                        <span className="text-blue-700">
-                          {formatRupiah(order.harga * (order.jumlah_disetujui || order.jumlah_diajukan))}
+                      {order.harga && order.harga > 0 ? (
+                        <span className="text-blue-700 font-bold">
+                          {formatRupiah(
+                            order.harga *
+                            (order.jumlah_disetujui || order.jumlah_diajukan)
+                          )}
                         </span>
                       ) : (
                         <span className="text-gray-400 text-xs">-</span>
                       )}
+
                     </td>
                   )}
                   <td className="py-4 px-4 text-slate-700 max-w-xs">
@@ -597,12 +594,6 @@ export function OrdersList({
             >
               Batal
             </Button>
-            <Button
-              onClick={handleEditSave}
-              className="bg-blue-600 text-white hover:bg-blue-700"
-            >
-              Simpan
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -658,11 +649,12 @@ export function OrdersList({
               </div>
             )}
 
-            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
-              <p className="text-xs text-yellow-800">
-                💡 Harga akan disimpan sementara. Klik "Konfirmasi Preorder" untuk menyimpan ke database.
+            <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+              <p className="text-xs text-green-800">
+                ✅ Harga akan langsung disimpan ke database dan invoice otomatis dibuat.
               </p>
             </div>
+
           </div>
 
           <DialogFooter className="flex justify-end gap-3 mt-4">

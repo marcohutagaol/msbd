@@ -27,7 +27,8 @@ interface Department {
   id: string
   name: string
   total_requests: number
-  total_items: number // TAMBAHKAN INI
+  total_items: number
+  nama_department: string  
   pending_count: number
   approved_count: number
   completed_count: number
@@ -48,47 +49,6 @@ function Home({ stats, departments }: DashboardProps) {
     rejected_requests: 0,
     total_items: 0,
   }
-
-  // Default departments jika tidak ada data
-  const defaultDepartments: Department[] = [
-    {
-      id: "food-beverage",
-      name: "Food and Beverage",
-      total_requests: 15,
-      total_items: 23,
-      pending_count: 0,
-      approved_count: 0,
-      completed_count: 0,
-    },
-    {
-      id: "housekeeping",
-      name: "House keeping",
-      total_requests: 8,
-      total_items: 23,
-      pending_count: 0,
-      approved_count: 0,
-      completed_count: 23,
-    },
-    {
-      id: "security",
-      name: "Security",
-      total_requests: 12,
-      total_items: 23,
-      pending_count: 10,
-      approved_count: 13,
-      completed_count: 0,
-    },
-    {
-      id: "finance",
-      name: "Finance",
-      total_requests: 7,
-      total_items: 23,
-      pending_count: 0,
-      approved_count: 0,
-      completed_count: 0,
-    },
-  ]
-
   return (
     <>
       <Head title="Dashboard" />
@@ -106,7 +66,7 @@ function Home({ stats, departments }: DashboardProps) {
               Request Departemen
             </h2>
             <DepartmentList
-              departments={departments || defaultDepartments}
+              departments={departments || []}
               onSelectDepartment={(id) =>
                 console.log("Selected department:", id)
               }
