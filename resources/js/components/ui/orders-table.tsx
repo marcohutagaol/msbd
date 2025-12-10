@@ -105,7 +105,7 @@ export default function OrdersTable({
         onSuccess: () => {
           // Update local state
           setOrderList((prev) =>
-            prev.map((order) => ({ ...order, status: "diterima" }))
+            prev.map((order) => ({ ...order, status: "Approved" }))
           );
           onApproveStatusChange?.();
           
