@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\DashboardPurchasingController;
 use App\Http\Controllers\KaryawanController;
 use Inertia\Inertia;
@@ -135,6 +136,31 @@ Route::post('/input-price/mark-all-arrived', [InputPriceController::class, 'mark
     Route::get('/detailKaryawan/{id}', [KaryawanController::class, 'detail']);
     Route::get('/mantanKaryawan', [KaryawanController::class, 'mantan']);
     Route::get('/permission', [AdminController::class, 'permission']);
+    Route::get('/Announcement', [AnnouncementController::class, 'index'])->name('announcement.index');
+    Route::post('/Announcement', [AnnouncementController::class, 'store'])->name('announcement.store');
+    Route::put('/Announcement/{id}', [AnnouncementController::class, 'update'])->name('announcement.update');
+    Route::delete('/Announcement/{id}', [AnnouncementController::class, 'destroy'])->name('announcement.destroy');
+
+
+    Route::get('/RequestItem', function () {
+      return Inertia::render('admin/RequestItem');
+  })->name('admin.RequestItem');
+
+  Route::get('/invoice', function () {
+      return Inertia::render('admin/invoice');
+  })->name('admin.invoice');
+  
+    Route::get('/LogRequest', function () {
+      return Inertia::render('admin/LogRequest');
+  })->name('admin.LogRequest');
+
+    Route::get('/ReportItem', function () {
+      return Inertia::render('admin/ReportItem');
+  })->name('admin.ReportItem');
+
+      Route::get('/Report', function () {
+      return Inertia::render('admin/Report');
+  })->name('admin.Report');
   });
 
 
