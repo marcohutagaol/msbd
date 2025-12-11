@@ -1,7 +1,12 @@
 "use client"
 
-import type { Permission } from "./permission-dashboard"
 import { Heart, Clock, Calendar } from "lucide-react"
+
+interface Permission {
+  id: string
+  type: string
+  status: string
+}
 
 interface PermissionCardsProps {
   permissions: Permission[]
@@ -15,61 +20,137 @@ export default function PermissionCards({ permissions, onCardClick }: Permission
 
   return (
     <div className="px-8 py-6">
-      <h2 className="mb-6 text-lg font-semibold text-gray-900">Buat Perizinan Baru</h2>
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Buat Perizinan Baru</h2>
+        <p className="text-gray-600">Pilih jenis perizinan yang ingin Anda ajukan</p>
+      </div>
+      
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {/* Sick Leave Card */}
+        {/* Sick Leave Card - Red Theme */}
         <button
           onClick={() => onCardClick("sick")}
-          className="group relative overflow-hidden rounded-lg border-2 border-blue-300 bg-gradient-to-br from-white via-white to-red-50 p-6 transition-all hover:shadow-lg hover:border-blue-500"
+          className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 to-red-600 p-[2px] transition-all hover:scale-105 hover:shadow-2xl hover:shadow-red-200"
         >
-          {/* Background accent */}
-          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-red-100 opacity-40 group-hover:opacity-60 transition-opacity" />
+          <div className="relative h-full rounded-2xl bg-white p-6 transition-all group-hover:bg-gradient-to-br group-hover:from-red-50 group-hover:to-white">
+            {/* Decorative circles */}
+            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-red-400/20 to-red-500/20 blur-2xl" />
+            <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-gradient-to-br from-red-400/10 to-red-500/10 blur-xl" />
+            
+            <div className="relative flex flex-col gap-6 min-h-[180px]">
+              {/* Icon section */}
+              <div className="flex items-start justify-between">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-200 transition-transform group-hover:scale-110">
+                  <Heart className="h-7 w-7 text-white" fill="white" />
+                </div>
+                {sickCount > 0 && (
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-red-100 border-2 border-red-500">
+                    <span className="text-xs font-bold text-red-700">{sickCount}</span>
+                  </div>
+                )}
+              </div>
 
-          <div className="relative flex flex-col items-center justify-center gap-4 min-h-[140px]">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-              <Heart className="h-8 w-8 text-red-500" />
-            </div>
-            <div className="text-center">
-              <p className="font-semibold text-gray-900">Sakit</p>
-              <p className="text-sm text-gray-600">{sickCount} menunggu</p>
+              {/* Content */}
+              <div className="flex flex-col gap-2 text-left">
+                <h3 className="text-xl font-bold text-gray-900">Sakit</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Ajukan izin sakit dengan surat keterangan dokter
+                </p>
+              </div>
+
+              {/* Footer status */}
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <span className="text-xs text-gray-500 font-medium">Status</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-xs font-semibold text-red-600">{sickCount} menunggu</span>
+                </div>
+              </div>
             </div>
           </div>
         </button>
 
-        {/* Permission Card */}
+        {/* Permission Card - Blue Theme */}
         <button
           onClick={() => onCardClick("permission")}
-          className="group relative overflow-hidden rounded-lg border-2 border-blue-300 bg-gradient-to-br from-white via-white to-green-50 p-6 transition-all hover:shadow-lg hover:border-blue-500"
+          className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-[2px] transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-200"
         >
-          {/* Background accent */}
-          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-green-100 opacity-40 group-hover:opacity-60 transition-opacity" />
+          <div className="relative h-full rounded-2xl bg-white p-6 transition-all group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:to-white">
+            {/* Decorative circles */}
+            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-blue-400/20 to-blue-500/20 blur-2xl" />
+            <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-gradient-to-br from-blue-400/10 to-blue-500/10 blur-xl" />
+            
+            <div className="relative flex flex-col gap-6 min-h-[180px]">
+              {/* Icon section */}
+              <div className="flex items-start justify-between">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-200 transition-transform group-hover:scale-110">
+                  <Clock className="h-7 w-7 text-white" />
+                </div>
+                {permissionCount > 0 && (
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 border-2 border-blue-500">
+                    <span className="text-xs font-bold text-blue-700">{permissionCount}</span>
+                  </div>
+                )}
+              </div>
 
-          <div className="relative flex flex-col items-center justify-center gap-4 min-h-[140px]">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <Clock className="h-8 w-8 text-green-500" />
-            </div>
-            <div className="text-center">
-              <p className="font-semibold text-gray-900">Izin</p>
-              <p className="text-sm text-gray-600">{permissionCount} menunggu</p>
+              {/* Content */}
+              <div className="flex flex-col gap-2 text-left">
+                <h3 className="text-xl font-bold text-gray-900">Izin</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Ajukan izin untuk keperluan pribadi atau keluarga
+                </p>
+              </div>
+
+              {/* Footer status */}
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <span className="text-xs text-gray-500 font-medium">Status</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                  <span className="text-xs font-semibold text-blue-600">{permissionCount} menunggu</span>
+                </div>
+              </div>
             </div>
           </div>
         </button>
 
-        {/* Vacation Card */}
+        {/* Vacation Card - Green Theme */}
         <button
           onClick={() => onCardClick("vacation")}
-          className="group relative overflow-hidden rounded-lg border-2 border-blue-300 bg-gradient-to-br from-white via-white to-blue-50 p-6 transition-all hover:shadow-lg hover:border-blue-500"
+          className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-500 to-green-600 p-[2px] transition-all hover:scale-105 hover:shadow-2xl hover:shadow-green-200"
         >
-          {/* Background accent */}
-          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-blue-100 opacity-40 group-hover:opacity-60 transition-opacity" />
+          <div className="relative h-full rounded-2xl bg-white p-6 transition-all group-hover:bg-gradient-to-br group-hover:from-green-50 group-hover:to-white">
+            {/* Decorative circles */}
+            <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-green-400/20 to-green-500/20 blur-2xl" />
+            <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-gradient-to-br from-green-400/10 to-green-500/10 blur-xl" />
+            
+            <div className="relative flex flex-col gap-6 min-h-[180px]">
+              {/* Icon section */}
+              <div className="flex items-start justify-between">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-200 transition-transform group-hover:scale-110">
+                  <Calendar className="h-7 w-7 text-white" />
+                </div>
+                {vacationCount > 0 && (
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-green-100 border-2 border-green-500">
+                    <span className="text-xs font-bold text-green-700">{vacationCount}</span>
+                  </div>
+                )}
+              </div>
 
-          <div className="relative flex flex-col items-center justify-center gap-4 min-h-[140px]">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-              <Calendar className="h-8 w-8 text-blue-500" />
-            </div>
-            <div className="text-center">
-              <p className="font-semibold text-gray-900">Cuti</p>
-              <p className="text-sm text-gray-600">{vacationCount} menunggu</p>
+              {/* Content */}
+              <div className="flex flex-col gap-2 text-left">
+                <h3 className="text-xl font-bold text-gray-900">Cuti</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Ajukan cuti tahunan atau cuti bersama
+                </p>
+              </div>
+
+              {/* Footer status */}
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <span className="text-xs text-gray-500 font-medium">Status</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-xs font-semibold text-green-600">{vacationCount} menunggu</span>
+                </div>
+              </div>
             </div>
           </div>
         </button>
