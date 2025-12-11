@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
 import Header from '../../components/admin/dashboard/Header';
 import Sidebar from '../../components/admin/dashboard/Sidebar';
 import { 
@@ -35,51 +36,60 @@ import {
   Cell
 } from 'recharts';
 
-// Data contoh untuk laporan
-const sampleOrderData = [
-  { month: 'Jan', totalOrders: 45, totalItems: 230 },
-  { month: 'Feb', totalOrders: 52, totalItems: 280 },
-  { month: 'Mar', totalOrders: 48, totalItems: 250 },
-  { month: 'Apr', totalOrders: 60, totalItems: 320 },
-  { month: 'Mei', totalOrders: 65, totalItems: 350 },
-  { month: 'Jun', totalOrders: 70, totalItems: 380 },
-  { month: 'Jul', totalOrders: 68, totalItems: 365 },
-  { month: 'Agu', totalOrders: 72, totalItems: 395 },
-  { month: 'Sep', totalOrders: 75, totalItems: 410 },
-  { month: 'Okt', totalOrders: 80, totalItems: 440 },
-  { month: 'Nov', totalOrders: 85, totalItems: 470 },
-  { month: 'Des', totalOrders: 90, totalItems: 500 },
-];
 
-// Data barang paling sering dipesan
-const popularItemsData = [
-  { id: 1, name: 'Laptop Dell XPS 13', category: 'Elektronik', totalOrders: 85, avgMonthly: 7.1, lastOrder: '15 Des 2024' },
-  { id: 2, name: 'Printer HP LaserJet Pro', category: 'Elektronik', totalOrders: 72, avgMonthly: 6.0, lastOrder: '12 Des 2024' },
-  { id: 3, name: 'Monitor LED 24" Samsung', category: 'Elektronik', totalOrders: 68, avgMonthly: 5.7, lastOrder: '10 Des 2024' },
-  { id: 4, name: 'Keyboard Mechanical RGB', category: 'Elektronik', totalOrders: 52, avgMonthly: 4.3, lastOrder: '08 Des 2024' },
-  { id: 5, name: 'Mouse Wireless Logitech', category: 'Elektronik', totalOrders: 48, avgMonthly: 4.0, lastOrder: '05 Des 2024' },
-  { id: 6, name: 'Kertas A4 80gsm', category: 'ATK', totalOrders: 42, avgMonthly: 3.5, lastOrder: '03 Des 2024' },
-  { id: 7, name: 'Tinta Printer Warna', category: 'ATK', totalOrders: 38, avgMonthly: 3.2, lastOrder: '01 Des 2024' },
-  { id: 8, name: 'Stapler Max HD-10', category: 'ATK', totalOrders: 35, avgMonthly: 2.9, lastOrder: '30 Nov 2024' },
-];
 
-// Data departemen dengan nama baru
-const departmentData = [
-  { id: 1, name: 'Front Office', manager: 'Budi Santoso', totalOrders: 145, pending: 12, completed: 133, color: '#4789A8' },
-  { id: 2, name: 'Housekeeping', manager: 'Siti Rahayu', totalOrders: 128, pending: 8, completed: 120, color: '#5CA1C0' },
-  { id: 3, name: 'Food & Beverage', manager: 'Andi Wijaya', totalOrders: 165, pending: 15, completed: 150, color: '#70B9D8' },
-  { id: 4, name: 'Accounting & Administration', manager: 'Dewi Lestari', totalOrders: 98, pending: 5, completed: 93, color: '#84D1F0' },
-];
+
+
 
 interface OrderReportProps {
   startDate?: string;
   endDate?: string;
 }
 
-export default function OrderReport({
-  startDate,
-  endDate,
-}: OrderReportProps) {
+export default function OrderReport() {
+  const { monthly, popularItems, departments, stats, startDate, endDate, lastUpdate } = usePage().props as unknown as {
+  monthly: any[];
+  popularItems: any[];
+  departments: any[];
+  stats: any;
+  startDate: string;
+  endDate: string;
+  lastUpdate: string | null;
+};
+
+const formatMonthYear = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
+};
+
+const formatFullDateTime = (dateStr: string | null) => {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+
+  return date.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }) + ", " + 
+  date.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }) + " WIB";
+};
+
+
+// Data contoh untuk laporan
+const sampleOrderData = monthly;
+
+
+// Data barang paling sering dipesan
+const popularItemsData = popularItems;
+
+
+// Data departemen dengan nama baru
+const departmentData = departments;
+
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [timeRange, setTimeRange] = useState('monthly');
   const [isLoading, setIsLoading] = useState(true);
@@ -89,15 +99,7 @@ export default function OrderReport({
   
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
   
-  // Data statistik
-  const stats = {
-    totalOrders: 850,
-    totalItems: 4790,
-    avgMonthlyGrowth: 12.5,
-    topDepartment: 'Food & Beverage',
-    mostOrderedItem: 'Laptop Dell XPS 13',
-    orderIncrease: 15.3,
-  };
+
 
   useEffect(() => {
     // Simulasi loading data
@@ -485,12 +487,12 @@ export default function OrderReport({
               <Calendar className="w-5 h-5 text-[#4789A8] mr-3" />
               <div>
                 <p className="text-sm text-gray-500">Periode Laporan</p>
-                <p className="font-medium text-gray-800">Januari 2024 - Desember 2024</p>
+                <p className="font-medium text-gray-800">{formatMonthYear(startDate)} - {formatMonthYear(endDate)}</p>
               </div>
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-500">Update terakhir</p>
-              <p className="font-medium text-gray-800">15 Desember 2024, 10:30 WIB</p>
+              <p className="font-medium text-gray-800">{formatFullDateTime(lastUpdate)}</p>
             </div>
           </div>
 
