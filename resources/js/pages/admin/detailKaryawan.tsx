@@ -43,8 +43,15 @@ const DetailKaryawan = () => {
   tanggal_lahir: string;
   no_telepon: string;
   alamat: string;
-  masaKerja: any;
+  masaKerja: string;
+
+  // Informasi akun:
+  username: string;
+  email: string;
+  role: string;
+  tanggalAkun: string;
 }
+
 
   interface PageProps {
   karyawan: Karyawan;
@@ -262,22 +269,22 @@ const DetailKaryawan = () => {
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <div className="text-sm text-gray-500">Username</div>
-                    <div className="font-medium bg-gray-50 px-4 py-3 rounded-lg border border-gray-100 min-h-12 flex items-center text-gray-800">ahmad.budiman</div>
+                    <div className="font-medium bg-gray-50 px-4 py-3 rounded-lg border border-gray-100 min-h-12 flex items-center text-gray-800">{karyawan.username}</div>
                   </div>
                   
                   <div className="space-y-2">
                     <div className="text-sm text-gray-500">Email Akun</div>
-                    <div className="font-medium bg-gray-50 px-4 py-3 rounded-lg border border-gray-100 min-h-12 flex items-center text-gray-800">ahmad.budiman@perusahaan.com</div>
+                    <div className="font-medium bg-gray-50 px-4 py-3 rounded-lg border border-gray-100 min-h-12 flex items-center text-gray-800">{karyawan.email}</div>
                   </div>
                   
                   <div className="space-y-2">
                     <div className="text-sm text-gray-500">Role</div>
-                    <div className="font-medium text-[#4789A8] bg-blue-50 px-4 py-3 rounded-lg border border-blue-100 min-h-12 flex items-center">Supervisor</div>
+                    <div className="font-medium text-[#4789A8] bg-blue-50 px-4 py-3 rounded-lg border border-blue-100 min-h-12 flex items-center">{karyawan.role}</div>
                   </div>
                   
                   <div className="space-y-2">
                     <div className="text-sm text-gray-500">Tanggal Bergabung</div>
-                    <div className="font-medium bg-gray-50 px-4 py-3 rounded-lg border border-gray-100 min-h-12 flex items-center text-gray-800">10 Maret 2020</div>
+                    <div className="font-medium bg-gray-50 px-4 py-3 rounded-lg border border-gray-100 min-h-12 flex items-center text-gray-800">{karyawan.tanggalAkun}</div>
                   </div>
                 </div>
               </div>
