@@ -13,6 +13,8 @@ interface Department {
   pending_count: number
   approved_count: number
   completed_count: number
+  created_at: string
+  request_date?: string
 }
 
 interface DepartmentListProps {
@@ -22,7 +24,7 @@ interface DepartmentListProps {
 
 export function DepartmentList({ departments, onSelectDepartment }: DepartmentListProps) {
 
-  const getStatus = (dept: Department): StatusType => { 
+  const getStatus = (dept: Department): StatusType => {
     if (dept.completed_count === dept.total_items && dept.total_items > 0) {
       return "complete"
     }
@@ -56,23 +58,44 @@ export function DepartmentList({ departments, onSelectDepartment }: DepartmentLi
     )
   }
 
-  const today = new Date()
-  const formattedDate = today.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  })
-  const formattedTime = today.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })
+  const formatDateTime = (datetime?: string | null) => {
+    if (!datetime) {
+      return {
+        formattedDate: "-",
+        formattedTime: "-"
+      }
+    }
+
+    const date = new Date(datetime)
+
+    if (isNaN(date.getTime())) {
+      return {
+        formattedDate: "-",
+        formattedTime: "-"
+      }
+    }
+
+    const formattedDate = date.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
+
+    const formattedTime = date.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+
+    return { formattedDate, formattedTime }
+  }
+
 
   const displayDepartments = departments ?? []
   // Navigasi ke halaman purchasing dengan department ID
- const handleDepartmentClick = (dept: Department) => {
-router.visit(`/purchasing/${dept.name}`)
+  const handleDepartmentClick = (dept: Department) => {
+    router.visit(`/purchasing/${dept.name}`)
 
-}
+  }
 
 
   return (
@@ -85,19 +108,30 @@ router.visit(`/purchasing/${dept.name}`)
         >
           <div className="flex-1">
             <h3 className="font-semibold text-slate-900">
-                {dept.nama_department}   {/* request_number */}
+              {dept.nama_department}   {/* request_number */}
             </h3>
 
             <p className="text-sm text-slate-500">
-           • {dept.total_items} items
+              • {dept.total_items} items
             </p>
 
           </div>
           <div className="flex items-center gap-4">
+
             {getStatusBadge(getStatus(dept))}
             <div className="text-right text-sm">
-              <p className="text-slate-600">{formattedDate}</p>
-              <p className="text-slate-500">{formattedTime}</p>
+              {(() => {
+                const { formattedDate } = formatDateTime(dept.request_date)
+const { formattedTime } = formatDateTime(dept.created_at)
+
+
+                return (
+                  <>
+                    <p className="text-slate-600">{formattedDate}</p>
+                    <p className="text-slate-500">{formattedTime}</p>
+                  </>
+                )
+              })()}
             </div>
           </div>
         </div>

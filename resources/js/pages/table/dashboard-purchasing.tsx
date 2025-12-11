@@ -23,20 +23,22 @@ interface Stats {
   total_items: number
 }
 
-interface Department {
+interface DashboardDepartment {
   id: string
   name: string
+  nama_department: string
   total_requests: number
   total_items: number
-  nama_department: string  
   pending_count: number
   approved_count: number
   completed_count: number
+  created_at: string  // 🔥 DITAMBAHKAN
 }
+
 
 interface DashboardProps {
   stats?: Stats
-  departments?: Department[]
+  departments?: DashboardDepartment[]
 }
 
 function Home({ stats, departments }: DashboardProps) {
@@ -65,12 +67,11 @@ function Home({ stats, departments }: DashboardProps) {
             <h2 className="text-xl font-semibold text-slate-900 mb-4">
               Request Departemen
             </h2>
-            <DepartmentList
-              departments={departments || []}
-              onSelectDepartment={(id) =>
-                console.log("Selected department:", id)
-              }
-            />
+           <DepartmentList
+  departments={departments || []}
+  onSelectDepartment={(id) => console.log(id)}
+/>
+
           </div>
         </div>
       </main>

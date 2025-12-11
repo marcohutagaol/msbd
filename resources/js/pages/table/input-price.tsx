@@ -41,14 +41,23 @@ interface OrderItem {
 
 interface InputPricePageProps {
   orders: OrderItem[];
-  hasInvoice: boolean;
+  invoice_count: number;
+  invoice_number: string | null;
+  request_id: number;
 }
+
+
+
 
 
 function InputPricePage({
   orders: initialOrders = [],
-  hasInvoice
+  invoice_count,
+  invoice_number,
+  request_id
 }: InputPricePageProps) {
+
+
   const [open, setOpen] = useState(false);
   const [success, setSuccess] = useState(false);
   const [arrived, setArrived] = useState(false);
@@ -125,7 +134,7 @@ function InputPricePage({
     }));
   };
 
-  // Mark item as arrived
+
   const handleMarkArrived = (itemId: number) => {
     router.post('/input-price/mark-arrived', {
       item_ids: [itemId]
@@ -385,22 +394,33 @@ function InputPricePage({
                   Reset Semua Harga
                 </Button>
 
-                {!hasInvoice ? (
-                  // ✅ JIKA BELUM ADA INVOICE → TAMPILKAN "BUAT INVOICE"
+                {invoice_count > 0 ? (
                   <AlertDialog open={open} onOpenChange={setOpen}>
-                    <AlertDialogTrigger asChild>
+                    {invoice_count > 0 ? (
                       <Button
-                        className={`flex items-center gap-2 ${summary.itemsWithPrice.length > 0
-                          ? "bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30"
-                          : "bg-gray-400 cursor-not-allowed"
-                          } text-white transition-all duration-300`}
-                        disabled={summary.itemsWithPrice.length === 0}
+                      onClick={() => router.visit(`/invoice/${invoice_number}`)
+}
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/30"
                       >
                         <FileText className="w-4 h-4" />
-                        Buat Invoice ({summary.itemsWithPrice.length} item)
+                        Lihat Invoice
                       </Button>
-                    </AlertDialogTrigger>
 
+                    ) : (
+                      // 🟦 Jika invoice BELUM ADA → Tombol Buat Invoice
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          className={`flex items-center gap-2 ${summary.itemsWithPrice.length > 0
+                            ? "bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30"
+                            : "bg-gray-400 cursor-not-allowed"
+                            } text-white transition-all duration-300`}
+                          disabled={summary.itemsWithPrice.length === 0}
+                        >
+                          <FileText className="w-4 h-4" />
+                          Buat Invoice ({summary.itemsWithPrice.length} item)
+                        </Button>
+                      </AlertDialogTrigger>
+                    )}
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Konfirmasi Invoice</AlertDialogTitle>

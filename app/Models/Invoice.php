@@ -29,8 +29,9 @@ class Invoice extends Model
      * ✅ RELASI: INVOICE MEMILIKI BANYAK PURCHASES
      * (melalui request_id)
      */
-    public function purchases()
-    {
-        return $this->hasMany(Purchase::class, 'request_id', 'request_id');
-    }
+   public function purchases()
+{
+    return $this->hasMany(\App\Models\Purchase::class, 'request_id', 'request_id');
+}
+
 }

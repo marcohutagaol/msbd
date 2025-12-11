@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\RequestItem;
 use App\Models\Request as RequestModel;
 use App\Models\Purchase;
+use App\Models\Invoice;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -50,10 +51,16 @@ $requestItems = RequestItem::with(['request.user', 'purchase'])
 });
 
 
-    return Inertia::render('table/input-price', [
-        'orders' => $requestItems,
-        'requestNumber' => $request_number, 
-    ]);
+
+return Inertia::render('table/input-price', [
+    'orders' => $requestItems,
+    'requestNumber' => $request_number, 
+
+    'invoice_count' => Invoice::where('request_id', $request->id)->count(),
+    'invoice_number' => Invoice::where('request_id', $request->id)->value('invoice_number'),
+    'request_id' => $request->id,
+]);
+
 }
 
 public function saveInvoice(Request $request)
