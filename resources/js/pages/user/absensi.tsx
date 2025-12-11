@@ -251,7 +251,7 @@ export default function CatatKehadiran() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="bg-purple-50 p-3 rounded-lg">
-                    <Calendar className="w-6 h-6 text-purple-600" />
+                    <Calendar className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Tanggal</p>
@@ -301,7 +301,7 @@ export default function CatatKehadiran() {
               </div>
 
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-4 text-white flex items-center gap-3">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white flex items-center gap-3">
                   <MapPin className="w-5 h-5" />
                   <h3 className="font-semibold">Lokasi Absensi</h3>
                 </div>

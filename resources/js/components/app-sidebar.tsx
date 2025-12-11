@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+
 import { 
     BookOpen, 
     Folder, 
@@ -21,7 +22,6 @@ import {
     FileCheck,
     Package,
     ShoppingCart,
-    DollarSign,
     Store,
     Warehouse,
     Megaphone,
@@ -29,9 +29,13 @@ import {
     Users,
     ClipboardList
 } from 'lucide-react';
+
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
+/* -------------------------------------------------------
+   NAV UNTUK USER
+------------------------------------------------------- */
+const userNavItems: NavItem[] = [
     {
         title: 'Beranda',
         href: dashboard(),
@@ -74,41 +78,43 @@ const mainNavItems: NavItem[] = [
                 href: '/dashboard-purchasing',
                 icon: ShoppingCart,
             },
-
-                {
-                title: 'Toko ',
+            {
+                title: 'Toko',
                 href: '/toko',
                 icon: Store,
             },
         ],
     },
-
     {
         title: 'Inventory',
         href: '/inventory',
         icon: Warehouse,
     },
-    {
-        title: 'Announcement',
-        href: '/announcement',
-        icon: Megaphone,
-    },
+];
 
+/* -------------------------------------------------------
+   NAV UNTUK MANAGER
+------------------------------------------------------- */
+const managerNavItems: NavItem[] = [
     {
         title: 'Manager Dashboard',
         href: '/manager',
         icon: BarChart3,
     },
-    
+    {
+        title: 'Manager Karyawan',
+        href: '/manager-karyawan',
+        icon: Users,
+    },
     {
         title: 'Manager Absensi',
         href: '/manager-absensi',
         icon: Calendar,
     },
     {
-        title: 'Manager Karyawan',
-        href: '/manager-karyawan',
-        icon: Users,
+        title: 'Announcement',
+        href: '/announcement',
+        icon: Megaphone,
     },
     {
         title: 'Report',
@@ -117,6 +123,9 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
+/* -------------------------------------------------------
+   FOOTER NAV
+------------------------------------------------------- */
 const footerNavItems: NavItem[] = [
     {
         title: 'Repository',
@@ -130,7 +139,19 @@ const footerNavItems: NavItem[] = [
     },
 ];
 
+/* -------------------------------------------------------
+   SIDEBAR UTAMA
+------------------------------------------------------- */
 export function AppSidebar() {
+    const { auth } = usePage().props;
+
+    const role = auth?.user?.role;
+
+    const navItems =
+        role === 'manager'
+            ? managerNavItems
+            : userNavItems;
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -146,7 +167,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={navItems} />
             </SidebarContent>
 
             <SidebarFooter>
