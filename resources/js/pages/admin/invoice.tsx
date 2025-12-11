@@ -1,10 +1,9 @@
-
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Header from '../../components/admin/dashboard/Header';
 import Sidebar from '../../components/admin/dashboard/Sidebar';
-import { 
+import {
   Search,
   Filter,
   Download,
@@ -36,8 +35,6 @@ import {
   ArrowRight,
   FileBarChart,
   PackageCheck,
-  PackageX,
-  ClipboardCheck,
   Calculator,
   Hotel,
   UtensilsCrossed,
@@ -45,8 +42,11 @@ import {
   UserCog,
   Bell,
   FileSignature,
-  ShieldCheck
+  ShieldCheck,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
 
 // Type definitions
 interface InvoiceItem {
@@ -97,52 +97,53 @@ export default function InvoicePage() {
   const [filterDepartemen, setFilterDepartemen] = useState<string>('Semua Departemen');
   const [filterStatus, setFilterStatus] = useState<string>('Semua Status');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortConfig, setSortConfig] = useState<{key: string; direction: 'asc' | 'desc'} | null>(null);
-  
+  // sortConfig: null means no sorting; key + direction for sorting
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Invoice; direction: 'asc' | 'desc' } | null>(null);
+
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
-  // Generate sample data with all departments
+  // Generate sample data with all departments (fallback)
   const generateInvoices = (): Invoice[] => {
     const invoices: Invoice[] = [];
     const departments = ['Front Office', 'Housekeeping', 'Food & Beverage', 'Accounting & Administration'];
     const statuses: Array<'Pending' | 'Disetujui' | 'Ditolak' | 'Selesai'> = ['Pending', 'Disetujui', 'Ditolak', 'Selesai'];
     const names = ['Budi Santoso', 'Sari Dewi', 'Ahmad Rizki', 'Dewi Lestari', 'Rudi Hartono', 'Lisa Wijaya', 'Hendra Pratama', 'Maya Sari'];
-    
+
     for (let i = 1; i <= 20; i++) {
       const dept = departments[Math.floor(Math.random() * departments.length)];
       const status = statuses[Math.floor(Math.random() * statuses.length)];
       const nama = names[Math.floor(Math.random() * names.length)];
       const date = new Date(2024, 0, Math.floor(Math.random() * 30) + 1);
-      
+
       const items: InvoiceItem[] = [];
       const itemCount = Math.floor(Math.random() * 3) + 2;
       let totalPesanan = 0;
-      
+
       for (let j = 1; j <= itemCount; j++) {
         const harga = Math.floor(Math.random() * 500000) + 50000;
         const jumlah = Math.floor(Math.random() * 50) + 5;
         const subtotal = harga * jumlah;
         totalPesanan += subtotal;
-        
+
         const itemNames = {
           'Front Office': ['Kertas Letterhead', 'Stempel Hotel', 'Map Plastik', 'Pulpen Premium', 'Buku Tamu'],
           'Housekeeping': ['Sabun Mandi', 'Shampoo', 'Handuk', 'Sprei', 'Pembersih Lantai'],
           'Food & Beverage': ['Gula Pasir', 'Kopi Arabica', 'Teh Celup', 'Susu UHT', 'Garam'],
           'Accounting & Administration': ['Kertas HVS A4', 'Amplop Coklat', 'Buku Kas', 'Kalkulator', 'Stapler']
-        };
-        
+        } as Record<string, string[]>;
+
         const satuanOptions = ['Dus', 'Pack', 'Liter', 'Kg', 'Buah', 'Rim'];
-        
+
         items.push({
           id: j,
-          namaBarang: itemNames[dept as keyof typeof itemNames][Math.floor(Math.random() * itemNames[dept as keyof typeof itemNames].length)],
+          namaBarang: itemNames[dept][Math.floor(Math.random() * itemNames[dept].length)],
           harga,
           jumlah,
           satuan: satuanOptions[Math.floor(Math.random() * satuanOptions.length)],
           subtotal
         });
       }
-      
+
       invoices.push({
         id: `INV-2024-${i.toString().padStart(3, '0')}`,
         departemen: dept,
@@ -153,15 +154,12 @@ export default function InvoicePage() {
         items
       });
     }
-    
+
     return invoices.sort((a, b) => new Date(b.tanggalRequest).getTime() - new Date(a.tanggalRequest).getTime());
   };
 
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-
-  useEffect(() => {
-    setInvoices(generateInvoices());
-  }, []);
+  const pageProps = usePage().props as unknown as { invoices?: Invoice[] };
+  const invoicesSource = pageProps.invoices && pageProps.invoices.length ? pageProps.invoices : generateInvoices();
 
   const getDepartmentIcon = (department: string) => {
     switch (department) {
@@ -188,12 +186,22 @@ export default function InvoicePage() {
     setSelectedInvoice(null);
   };
 
-  const handleSort = (key: string) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+  // Sorting behavior requested: A = single sort with 3rd click reset
+  const handleSort = (key: keyof Invoice) => {
+    // if no sort -> asc
+    if (!sortConfig || sortConfig.key !== key) {
+      setSortConfig({ key, direction: 'asc' });
+      return;
     }
-    setSortConfig({ key, direction });
+
+    // if same key and asc -> switch to desc
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      setSortConfig({ key, direction: 'desc' });
+      return;
+    }
+
+    // if same key and desc -> reset (null)
+    setSortConfig(null);
   };
 
   const formatCurrency = (amount: number) => {
@@ -243,46 +251,83 @@ export default function InvoicePage() {
     }
   };
 
-  // Filter invoices based on all filters
-  const filteredInvoices = invoices.filter(invoice => {
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      if (!invoice.id.toLowerCase().includes(query) && 
-          !invoice.namaPemohon.toLowerCase().includes(query) &&
-          !invoice.departemen.toLowerCase().includes(query)) {
+  // Apply filters + search + sorting using useMemo for performance
+  const filteredInvoices = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+
+    let result = invoicesSource.filter((invoice) => {
+      // Search filter (simple as requested)
+      if (q) {
+        if (
+          !invoice.id.toLowerCase().includes(q) &&
+          !invoice.namaPemohon.toLowerCase().includes(q) &&
+          !invoice.departemen.toLowerCase().includes(q)
+        ) {
+          return false;
+        }
+      }
+
+      // Department filter
+      if (filterDepartemen !== 'Semua Departemen' && invoice.departemen !== filterDepartemen) {
         return false;
       }
-    }
 
-    // Department filter
-    if (filterDepartemen !== 'Semua Departemen' && invoice.departemen !== filterDepartemen) {
-      return false;
-    }
-
-    // Status filter
-    if (filterStatus !== 'Semua Status' && invoice.status !== filterStatus) {
-      return false;
-    }
-
-    // Date filter
-    const invoiceDate = new Date(invoice.tanggalRequest);
-    
-    if (filterType === 'single' && filterDate) {
-      const filterDateObj = new Date(filterDate);
-      if (invoiceDate.toDateString() !== filterDateObj.toDateString()) {
+      // Status filter
+      if (filterStatus !== 'Semua Status' && invoice.status !== filterStatus) {
         return false;
       }
-    } else if (filterType === 'range' && filterStartDate && filterEndDate) {
-      const startDate = new Date(filterStartDate);
-      const endDate = new Date(filterEndDate);
-      if (invoiceDate < startDate || invoiceDate > endDate) {
-        return false;
+
+      // Date filter
+      const invoiceDate = new Date(invoice.tanggalRequest);
+
+      if (filterType === 'single' && filterDate) {
+        const filterDateObj = new Date(filterDate);
+        if (invoiceDate.toDateString() !== filterDateObj.toDateString()) {
+          return false;
+        }
+      } else if (filterType === 'range' && filterStartDate && filterEndDate) {
+        let startDate = new Date(filterStartDate);
+        let endDate = new Date(filterEndDate);
+        // allow swap if user picked inversely
+        if (endDate < startDate) {
+          const tmp = startDate; startDate = endDate; endDate = tmp;
+        }
+        if (invoiceDate < startDate || invoiceDate > endDate) {
+          return false;
+        }
       }
+
+      return true;
+    });
+
+    // Apply sorting if any
+    if (sortConfig) {
+      const { key, direction } = sortConfig;
+      result = [...result].sort((a, b) => {
+        let valA: any = a[key];
+        let valB: any = b[key];
+
+        // Normalize for date
+        if (key === 'tanggalRequest') {
+          valA = new Date(valA).getTime();
+          valB = new Date(valB).getTime();
+        }
+
+        // Strings -> lowercase
+        if (typeof valA === 'string') valA = valA.toLowerCase();
+        if (typeof valB === 'string') valB = valB.toLowerCase();
+
+        if (valA < valB) return direction === 'asc' ? -1 : 1;
+        if (valA > valB) return direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    } else {
+      // Default sort by tanggalRequest desc
+      result = [...result].sort((a, b) => new Date(b.tanggalRequest).getTime() - new Date(a.tanggalRequest).getTime());
     }
 
-    return true;
-  });
+    return result;
+  }, [invoicesSource, searchQuery, filterDepartemen, filterStatus, filterType, filterDate, filterStartDate, filterEndDate, sortConfig]);
 
   // Reset all filters
   const handleResetFilters = () => {
@@ -293,6 +338,56 @@ export default function InvoicePage() {
     setFilterStatus('Semua Status');
     setSearchQuery('');
     setSortConfig(null);
+    setFilterType('single');
+  };
+
+  // Quick select: Today and This Week
+  const quickSelectToday = () => {
+    const today = new Date();
+    const iso = today.toISOString().split('T')[0];
+    setFilterType('single');
+    setFilterDate(iso);
+  };
+
+  const quickSelectThisWeek = () => {
+    const today = new Date();
+    const day = today.getDay(); // 0 (Sun) - 6 (Sat)
+    const diffToMonday = (day + 6) % 7; // monday as start
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - diffToMonday);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    setFilterType('range');
+    setFilterStartDate(monday.toISOString().split('T')[0]);
+    setFilterEndDate(sunday.toISOString().split('T')[0]);
+  };
+
+  // Export as CSV (Excel can open CSV). If you want .xlsx integration later, we can add SheetJS.
+  const exportToCSV = () => {
+    if (!filteredInvoices || filteredInvoices.length === 0) return;
+
+    const headers = ['ID Invoice', 'Departemen', 'Tanggal Request', 'Pemohon', 'Status', 'Total Pesanan'];
+    const rows = filteredInvoices.map(inv => [
+      inv.id,
+      inv.departemen,
+      inv.tanggalRequest,
+      inv.namaPemohon,
+      inv.status,
+      inv.totalPesanan.toString()
+    ]);
+
+    const csvContent = [headers, ...rows].map(e => e.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `invoices_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -336,14 +431,14 @@ export default function InvoicePage() {
               <p className="text-gray-600 mt-1">Kelola dan pantau seluruh invoice pemesanan barang</p>
             </div>
             <div className="flex items-center gap-3">
-              <button className="px-4 py-2 bg-[#4789A8] text-white rounded-lg hover:bg-[#3a7691] transition-colors flex items-center gap-2">
+              <button onClick={exportToCSV} className="px-4 py-2 bg-[#4789A8] text-white rounded-lg hover:bg-[#3a7691] transition-colors flex items-center gap-2">
                 <Download className="w-4 h-4" />
                 Export Excel
               </button>
-              <button className="px-4 py-2 border border-[#4789A8] text-[#4789A8] rounded-lg hover:bg-[#4789A8]/5 transition-colors flex items-center gap-2">
+              {/* <button className="px-4 py-2 border border-[#4789A8] text-[#4789A8] rounded-lg hover:bg-[#4789A8]/5 transition-colors flex items-center gap-2">
                 <Printer className="w-4 h-4" />
                 Print Report
-              </button>
+              </button> */}
             </div>
           </div>
 
@@ -354,7 +449,7 @@ export default function InvoicePage() {
                 <div>
                   <p className="text-sm text-gray-600">Total Invoice</p>
                   <p className="text-2xl font-bold text-gray-800 mt-1">{filteredInvoices.length}</p>
-                  <p className="text-xs text-gray-500 mt-1">Dari {invoices.length} total</p>
+                  <p className="text-xs text-gray-500 mt-1">Dari {invoicesSource.length} total</p>
                 </div>
                 <div className="p-3 bg-blue-50 rounded-lg">
                   <Receipt className="w-6 h-6 text-blue-600" />
@@ -382,8 +477,8 @@ export default function InvoicePage() {
                     {filteredInvoices.filter(inv => inv.status === 'Selesai').length}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {filteredInvoices.length > 0 
-                      ? `${Math.round((filteredInvoices.filter(inv => inv.status === 'Selesai').length / filteredInvoices.length) * 100)}%` 
+                    {filteredInvoices.length > 0
+                      ? `${Math.round((filteredInvoices.filter(inv => inv.status === 'Selesai').length / filteredInvoices.length) * 100)}%`
                       : '0%'}
                   </p>
                 </div>
@@ -416,7 +511,7 @@ export default function InvoicePage() {
                 <h2 className="text-lg font-semibold text-gray-800">Filter & Pencarian</h2>
               </div>
               <div className="flex items-center gap-3">
-                <button 
+                <button
                   onClick={handleResetFilters}
                   className="px-3 py-1.5 text-gray-600 hover:text-gray-800 flex items-center gap-2"
                 >
@@ -429,7 +524,7 @@ export default function InvoicePage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               {/* Department Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2 items-center gap-2">
                   <Building2 className="w-4 h-4" />
                   Departemen
                 </label>
@@ -449,8 +544,8 @@ export default function InvoicePage() {
 
               {/* Status Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <ClipboardCheck className="w-4 h-4" />
+                <label className="block text-sm font-medium text-gray-700 mb-2 items-center gap-2">
+                  <CheckSquare className="w-4 h-4" />
                   Status
                 </label>
                 <div className="relative">
@@ -469,7 +564,7 @@ export default function InvoicePage() {
 
               {/* Search */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2 items-center gap-2">
                   <Search className="w-4 h-4" />
                   Cari Invoice
                 </label>
@@ -494,14 +589,14 @@ export default function InvoicePage() {
               </div>
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                 <div className="flex items-center gap-3">
-                  <button 
+                  <button
                     onClick={() => setFilterType('single')}
                     className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${filterType === 'single' ? 'bg-[#4789A8] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                   >
                     <Calendar className="w-4 h-4" />
                     Tanggal Tertentu
                   </button>
-                  <button 
+                  <button
                     onClick={() => setFilterType('range')}
                     className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${filterType === 'range' ? 'bg-[#4789A8] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                   >
@@ -509,7 +604,7 @@ export default function InvoicePage() {
                     Rentang Tanggal
                   </button>
                 </div>
-                
+
                 <div className="flex-1">
                   {filterType === 'single' ? (
                     <div className="flex items-center gap-4">
@@ -521,11 +616,15 @@ export default function InvoicePage() {
                           className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4789A8] focus:border-transparent"
                         />
                       </div>
+                      <div className="flex gap-2">
+                        <button onClick={quickSelectToday} className="px-3 py-2 bg-gray-100 rounded hover:bg-gray-200">Today</button>
+                        <button onClick={quickSelectThisWeek} className="px-3 py-2 bg-gray-100 rounded hover:bg-gray-200">This Week</button>
+                      </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2 items-center gap-2">
                           <CalendarRange className="w-4 h-4" />
                           Dari Tanggal
                         </label>
@@ -540,7 +639,7 @@ export default function InvoicePage() {
                         <ArrowRight className="w-5 h-5 text-gray-400 mt-6" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2 items-center gap-2">
                           <CalendarRange className="w-4 h-4" />
                           Sampai Tanggal
                         </label>
@@ -575,12 +674,12 @@ export default function InvoicePage() {
                 <span>Filter: {filterDepartemen} • {filterStatus}</span>
               </div>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort('id')}
                     >
@@ -588,11 +687,11 @@ export default function InvoicePage() {
                         <FileText className="w-4 h-4" />
                         ID Invoice
                         {sortConfig?.key === 'id' && (
-                          <ArrowUpDown className="w-3 h-3" />
+                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort('departemen')}
                     >
@@ -600,11 +699,11 @@ export default function InvoicePage() {
                         <Building className="w-4 h-4" />
                         Departemen
                         {sortConfig?.key === 'departemen' && (
-                          <ArrowUpDown className="w-3 h-3" />
+                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort('tanggalRequest')}
                     >
@@ -612,19 +711,19 @@ export default function InvoicePage() {
                         <Calendar className="w-4 h-4" />
                         Tanggal Request
                         {sortConfig?.key === 'tanggalRequest' && (
-                          <ArrowUpDown className="w-3 h-3" />
+                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
                         )}
                       </div>
                     </th>
-                    <th 
-                      className="px6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    <th
+                      className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort('namaPemohon')}
                     >
                       <div className="flex items-center gap-1">
                         <UserCircle className="w-4 h-4" />
                         Pemohon
                         {sortConfig?.key === 'namaPemohon' && (
-                          <ArrowUpDown className="w-3 h-3" />
+                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
                         )}
                       </div>
                     </th>
@@ -634,7 +733,7 @@ export default function InvoicePage() {
                         Status
                       </div>
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort('totalPesanan')}
                     >
@@ -642,7 +741,7 @@ export default function InvoicePage() {
                         <DollarSign className="w-4 h-4" />
                         Total Pesanan
                         {sortConfig?.key === 'totalPesanan' && (
-                          <ArrowUpDown className="w-3 h-3" />
+                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
                         )}
                       </div>
                     </th>
@@ -804,7 +903,7 @@ export default function InvoicePage() {
                     Status: {selectedInvoice.status}
                   </div>
                 </div>
-                
+
                 <div className="overflow-x-auto border border-gray-200 rounded-lg">
                   <table className="w-full">
                     <thead className="bg-gray-50">
