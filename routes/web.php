@@ -30,8 +30,8 @@ use App\Http\Controllers\DashboardController;
 // AUTH | HOME
 // =======================
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('home');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+  Route::get('/', [DashboardController::class, 'index'])->name('home');
+  Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 // =======================
@@ -71,9 +71,9 @@ Route::middleware(['auth'])->group(function () {
   // MONITORING
   // =======================
   Route::get(
-  '/monitoring-item/{request_number}',
-  [MonitoringController::class, 'index']
-)->name('monitoring-item');
+    '/monitoring-item/{request_number}',
+    [MonitoringController::class, 'index']
+  )->name('monitoring-item');
 
   Route::patch('/request-items/{id}', [MonitoringController::class, 'update'])->name('request-items.update');
   Route::delete('/request-items/{id}', [MonitoringController::class, 'destroy'])->name('request-items.destroy');
@@ -161,6 +161,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/karyawan/update/{id}', [KaryawanController::class, 'update'])->name('karyawan.update');
     Route::get('/detailKaryawan/{id}', [KaryawanController::class, 'detail']);
     Route::get('/mantanKaryawan', [KaryawanController::class, 'mantan']);
+    Route::delete('/karyawan/delete/{id}', [KaryawanController::class, 'destroy'])->name('karyawan.destroy');
+
 
     Route::get('/permission', [AdminController::class, 'permission']);
 
@@ -176,7 +178,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/RequestItem', function () {
       return Inertia::render('admin/RequestItem');
     })->name('admin.RequestItem');
+
+
   });
+  Route::post('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+
+    return redirect('/login');
+  })->name('logout');
 
 
   // =======================
