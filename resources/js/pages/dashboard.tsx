@@ -100,23 +100,51 @@ export default function Dashboard() {
                                         <p className="text-sm text-gray-600 sm:text-base">
                                             {user.departemen}
                                         </p>
-                                        <p className="mt-1 text-sm font-medium text-blue-600">
-                                            Kawaland
-                                        </p>
+                                        <div className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 px-3 py-1 shadow-sm">
+                                            <svg
+                                                className="h-3.5 w-3.5 text-white"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            <span className="text-xs font-semibold text-white">
+                                                Kawaland
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="text-left sm:text-right">
-                                    <p className="text-sm text-gray-500">
-                                        {new Date().toLocaleDateString(
-                                            'id-ID',
-                                            {
-                                                weekday: 'long',
-                                                day: 'numeric',
-                                                month: 'short',
-                                                year: 'numeric',
-                                            },
-                                        )}
-                                    </p>
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <svg
+                                            className="h-4 w-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                            />
+                                        </svg>
+                                        <span className="font-medium">
+                                            {new Date().toLocaleDateString(
+                                                'id-ID',
+                                                {
+                                                    weekday: 'long',
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric',
+                                                },
+                                            )}
+                                        </span>
+                                    </div>
                                     <p className="text-lg font-semibold text-blue-600">
                                         {currentTime} WIB
                                     </p>
@@ -127,40 +155,125 @@ export default function Dashboard() {
                         {/* Attendance Section */}
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                             <div className="space-y-6 lg:col-span-2">
-                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                    <div className="rounded-2xl border border-blue-100 bg-linear-to-br from-blue-50 to-white p-8 text-center shadow-sm transition hover:shadow-md">
-                                        <p className="mb-3 text-sm font-medium text-gray-500">
-                                            Absen Masuk
-                                        </p>
-                                        <p className="font-mono text-4xl font-bold text-blue-700 sm:text-5xl">
-                                            {currentTime}
-                                        </p>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    {/* Clock In Card */}
+                                    <div className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 bg-gradient-to-br from-blue-50 via-blue-100/50 to-white p-6 shadow-lg shadow-blue-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30">
+                                        {/* Decorative Elements */}
+                                        <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-blue-400/20 blur-2xl" />
+                                        <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-blue-500/10 blur-xl" />
+
+                                        {/* Icon & Label */}
+                                        <div className="relative mb-3 flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
+                                                    <Clock className="h-5 w-5 text-white" />
+                                                </div>
+                                                <span className="text-sm font-bold tracking-wide text-blue-700 uppercase">
+                                                    Clock In
+                                                </span>
+                                            </div>
+                                            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                                        </div>
+
+                                        {/* Time Display */}
+                                        <div className="relative">
+                                            <p className="mb-1 text-xs font-semibold tracking-wider text-slate-600 uppercase">
+                                                Absen Masuk
+                                            </p>
+                                            <p className="font-mono text-4xl font-black tracking-tight text-blue-700 sm:text-5xl">
+                                                {currentTime}
+                                            </p>
+                                            <p className="mt-1 text-xs font-medium text-blue-600">
+                                                WIB
+                                            </p>
+                                        </div>
                                     </div>
 
-                                    <div className="rounded-2xl border border-pink-100 bg-linear-to-br from-pink-50 to-white p-8 text-center shadow-sm transition hover:shadow-md">
-                                        <p className="mb-3 text-sm font-medium text-gray-500">
-                                            Absen Keluar
-                                        </p>
-                                        <p className="font-mono text-4xl font-bold text-pink-500 sm:text-5xl">
-                                            {currentTime}
-                                        </p>
+                                    {/* Clock Out Card */}
+                                    <div className="group relative overflow-hidden rounded-2xl border-2 border-rose-500 bg-gradient-to-br from-rose-50 via-rose-100/50 to-white p-6 shadow-lg shadow-rose-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-rose-500/30">
+                                        {/* Decorative Elements */}
+                                        <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-rose-400/20 blur-2xl" />
+                                        <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-rose-500/10 blur-xl" />
+
+                                        {/* Icon & Label */}
+                                        <div className="relative mb-3 flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 shadow-md">
+                                                    <Clock className="h-5 w-5 text-white" />
+                                                </div>
+                                                <span className="text-sm font-bold tracking-wide text-rose-700 uppercase">
+                                                    Clock Out
+                                                </span>
+                                            </div>
+                                            <div className="h-2 w-2 animate-pulse rounded-full bg-rose-500" />
+                                        </div>
+
+                                        {/* Time Display */}
+                                        <div className="relative">
+                                            <p className="mb-1 text-xs font-semibold tracking-wider text-slate-600 uppercase">
+                                                Absen Keluar
+                                            </p>
+                                            <p className="font-mono text-4xl font-black tracking-tight text-rose-700 sm:text-5xl">
+                                                {currentTime}
+                                            </p>
+                                            <p className="mt-1 text-xs font-medium text-rose-600">
+                                                WIB
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                {/* ACTION BUTTONS */}
+                                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    {/* Clock In Button */}
                                     <button
                                         onClick={() =>
                                             router.visit(`/absensi/${user.id}`)
                                         }
-                                        className="relative flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-blue-600 to-blue-500 py-4 text-base font-semibold text-white shadow-md transition-all hover:from-blue-700 hover:to-blue-600 hover:shadow-lg active:scale-95 sm:py-5"
+                                        className="group relative overflow-hidden rounded-xl border-2 border-blue-500 bg-gradient-to-r from-blue-500 to-blue-600 p-5 shadow-lg shadow-blue-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-600/40 active:scale-95"
                                     >
-                                        <Clock className="h-5 w-5" />
-                                        <span>Clock In</span>
+                                        {/* Shine */}
+                                        <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+
+                                        <div className="relative flex items-center justify-center gap-3">
+                                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
+                                                <Clock
+                                                    className="h-6 w-6 text-white"
+                                                    strokeWidth={2.5}
+                                                />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-lg font-black tracking-wide text-white uppercase">
+                                                    Clock In
+                                                </p>
+                                                <p className="text-xs font-medium text-blue-100">
+                                                    Tap untuk absen masuk
+                                                </p>
+                                            </div>
+                                        </div>
                                     </button>
 
-                                    <button className="relative flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-pink-500 to-pink-400 py-4 text-base font-semibold text-white shadow-md transition-all hover:from-pink-600 hover:to-pink-500 hover:shadow-lg active:scale-95 sm:py-5">
-                                        <Clock className="h-5 w-5" />
-                                        <span>Clock Out</span>
+                                    {/* Clock Out Button */}
+                                    <button className="group relative overflow-hidden rounded-xl border-2 border-rose-500 bg-gradient-to-r from-rose-500 to-rose-600 p-5 shadow-lg shadow-rose-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-rose-600/40 active:scale-95">
+                                        {/* Shine */}
+                                        <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+
+                                        <div className="relative flex items-center justify-center gap-3">
+                                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
+                                                <Clock
+                                                    className="h-6 w-6 text-white"
+                                                    strokeWidth={2.5}
+                                                />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-lg font-black tracking-wide text-white uppercase">
+                                                    Clock Out
+                                                </p>
+                                                <p className="text-xs font-medium text-rose-100">
+                                                    Tap untuk absen keluar
+                                                </p>
+                                            </div>
+                                        </div>
                                     </button>
                                 </div>
                             </div>

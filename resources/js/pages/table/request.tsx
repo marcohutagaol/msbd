@@ -101,7 +101,7 @@ function OrdersPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-blue-600 shadow-md shadow-blue-400/50"></div>
+                  {/* <div className="h-3 w-3 rounded-full bg-blue-600 shadow-md shadow-blue-400/50"></div> */}
                   <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                     Request Item
                   </h2>

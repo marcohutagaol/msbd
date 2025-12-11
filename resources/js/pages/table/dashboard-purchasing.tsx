@@ -55,7 +55,7 @@ function Home({ stats, departments }: DashboardProps) {
       <main className="min-h-screen bg-white p-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+            {/* <div className="w-3 h-3 rounded-full bg-blue-600"></div> */}
             <h1 className="text-3xl font-bold text-slate-900">Dashboard Purchasing</h1>
           </div>
 
