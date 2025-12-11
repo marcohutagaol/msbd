@@ -21,14 +21,17 @@ use App\Http\Controllers\TransferBarangController;
 use App\Http\Controllers\PurchasingDetailController;
 use App\Http\Controllers\RequestManagementController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MonitoringRequestController;
+use App\Http\Controllers\DashboardController;
+
 
 
 // =======================
 // AUTH | HOME
 // =======================
 Route::middleware(['auth', 'verified'])->group(function () {
-  Route::get('/', fn() => Inertia::render('dashboard'))->name('home');
-  Route::get('/dashboard', fn() => Inertia::render('dashboard'))->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('home');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 // =======================
@@ -67,9 +70,16 @@ Route::middleware(['auth'])->group(function () {
   // =======================
   // MONITORING
   // =======================
-  Route::get('/monitoring-item', [MonitoringController::class, 'index'])->name('monitoring-item');
+  Route::get(
+  '/monitoring-item/{request_number}',
+  [MonitoringController::class, 'index']
+)->name('monitoring-item');
+
   Route::patch('/request-items/{id}', [MonitoringController::class, 'update'])->name('request-items.update');
   Route::delete('/request-items/{id}', [MonitoringController::class, 'destroy'])->name('request-items.destroy');
+
+  Route::get('/monitoring-request', [MonitoringRequestController::class, 'index'])
+    ->name('monitoring-request');
 
   // =======================
   // PERMISSION

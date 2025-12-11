@@ -59,7 +59,7 @@ const mainNavItems: NavItem[] = [
             },
             {
                 title: 'Pemantauan Item',
-                href: '/monitoring-item',
+                href: '/monitoring-request',
                 icon: Package,
             },
         ],

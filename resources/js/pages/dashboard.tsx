@@ -26,11 +26,18 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ]
 
+// const { props }: any = usePage()
+// const user = props.user
+
+
 export default function Dashboard() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [currentTime, setCurrentTime] = useState("00:00:00")
   const { props }: any = usePage()
-  const user = props.auth.user
+  console.log("ALL PROPS =", props)
+
+  const user = props.user
+
+
+  const [currentTime, setCurrentTime] = useState("00:00:00")
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -40,8 +47,10 @@ export default function Dashboard() {
       const seconds = String(now.getSeconds()).padStart(2, "0")
       setCurrentTime(`${hours}:${minutes}:${seconds}`)
     }, 1000)
+
     return () => clearInterval(timer)
   }, [])
+
 
   const menuItems = [
     { icon: <User className="h-6 w-6 text-orange-500" />, label: "Absensi" },
@@ -78,13 +87,13 @@ export default function Dashboard() {
                   </Avatar>
                   <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                      Nama Manusia
+                      {user.name}
                     </h2>
                     <p className="text-gray-600 text-sm sm:text-base">
-                      Front End Developer
+                      {user.departemen}
                     </p>
                     <p className="mt-1 text-sm text-blue-600 font-medium">
-                      PT. Kawa Indonesia
+                     Kawaland
                     </p>
                   </div>
                 </div>

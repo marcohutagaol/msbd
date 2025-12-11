@@ -22,8 +22,7 @@ interface DepartmentListProps {
 
 export function DepartmentList({ departments, onSelectDepartment }: DepartmentListProps) {
 
-  const getStatus = (dept: Department): StatusType => {
-    // PERBAIKAN: Gunakan total_items untuk menentukan status completion
+  const getStatus = (dept: Department): StatusType => { 
     if (dept.completed_count === dept.total_items && dept.total_items > 0) {
       return "complete"
     }

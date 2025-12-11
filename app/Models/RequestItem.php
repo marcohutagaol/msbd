@@ -39,4 +39,15 @@ class RequestItem extends Model
     return $this->request->user();
   }
 
+protected static function booted()
+{
+    static::deleted(function ($item) {
+
+        if ($item->request && $item->request->items()->count() === 0) {
+            $item->request->delete(); 
+        }
+
+    });
+}
+
 }
