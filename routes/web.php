@@ -28,9 +28,69 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 
 
+
+
+
+
+  Route::get('/admin/karyawan', function () {
+      return Inertia::render('admin/karyawan');
+  })->name('admin.karyawan');
+
+   Route::get('/admin/detailKaryawan', function () {
+      return Inertia::render('admin/detailKaryawan');
+  })->name('admin.detailKaryawan');
+
+    Route::get('/admin/mantanKaryawan', function () {
+      return Inertia::render('admin/mantanKaryawan');
+  })->name('admin.mantanKaryawan');
+
+      Route::get('/admin/permission', function () {
+      return Inertia::render('admin/permission');
+  })->name('admin.permission');
+
+    Route::get('/admin/RequestItem', function () {
+      return Inertia::render('admin/RequestItem');
+  })->name('admin.RequestItem');
+
+  Route::get('/admin/invoice', function () {
+      return Inertia::render('admin/invoice');
+  })->name('admin.invoice');
+  
+    Route::get('/admin/LogRequest', function () {
+      return Inertia::render('admin/LogRequest');
+  })->name('admin.LogRequest');
+
+    Route::get('/admin/ReportItem', function () {
+      return Inertia::render('admin/ReportItem');
+  })->name('admin.ReportItem');
+
+      Route::get('/admin/LogAbsensi', function () {
+      return Inertia::render('admin/LogAbsensi');
+  })->name('admin.LogAbsensi');
+
+       Route::get('/admin/Announcement', function () {
+      return Inertia::render('admin/Announcement');
+  })->name('admin.Announcement');
+
+      Route::get('/admin/Report', function () {
+      return Inertia::render('admin/Report');
+  })->name('admin.Report');
+
+
+
+
+
+
+
+
+
+
 // =======================
 // AUTH | HOME
 // =======================
+
+
+
 Route::middleware(['auth', 'verified'])->group(function () {
   Route::get('/', [DashboardController::class, 'index'])->name('home');
   Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -234,9 +294,11 @@ Route::get('/announcement', fn() => Inertia::render('announcement/page'))->name(
 
 
 
+
 Route::get('/manager', fn() => Inertia::render('manager/page'))->name('manager.page');
 Route::get('/manager-absensi', fn() => Inertia::render('manager/absensi'))->name('manager.absensi');
 Route::get('/manager-karyawan/{id}', fn($id) => Inertia::render('manager/detail-karyawan', ['id' => $id]))->name('manager.detail-karyawan');
 Route::get('/manager-karyawan', fn() => Inertia::render('manager/karyawan'))->name('manager.karyawan');
+
 
 Route::get('/report', fn() => Inertia::render('report/page'))->name('report');

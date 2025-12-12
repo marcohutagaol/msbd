@@ -2,7 +2,9 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+
 import { Link, usePage } from "@inertiajs/react";
+
 import {
   TrendingUp,
   TrendingDown,
@@ -14,15 +16,18 @@ import {
   Plus,
   Bell,
 } from "lucide-react";
+
 import { useEffect, useState } from "react";
 
 interface Department {
   code: string;
+
   name: string;
   totalRequest: number;
   completed: number;
   pending: number;
   canceled: number;
+
   growth?: number;
   isPositive?: boolean;
   totalCost?: number;
@@ -149,9 +154,11 @@ export default function RequestStats() {
                       {dept.canceled}
                     </p>
                     <span className="text-xs text-slate-500">Canceled</span>
+
                   </div>
                 </div>
               </div>
+
 
               {/* Tombol Detail */}
               <div className="mt-5 flex justify-end">
@@ -169,6 +176,7 @@ export default function RequestStats() {
           Tidak ada data request
         </p>
       )}
+
     </div>
   );
 }
