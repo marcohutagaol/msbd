@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import EmployeeStatus from '../../components/admin/dashboard/AttendanceTable';
 import Header from '../../components/admin/dashboard/Header';
 import Sidebar from '../../components/admin/dashboard/Sidebar';
@@ -23,29 +23,66 @@ export default function Dashboard({
     tanpa_keterangan,
 }: DashboardProps) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
+    
     const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
+    // Deteksi ukuran layar - SAMA seperti di AnnouncementPage
+    useEffect(() => {
+        const checkIfMobile = () => {
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
+            
+            // Pada mobile, sidebar default tertutup
+            if (mobile && isSidebarOpen) {
+                setIsSidebarOpen(false);
+            }
+            // Pada desktop, sidebar default terbuka
+            if (!mobile && !isSidebarOpen) {
+                setIsSidebarOpen(true);
+            }
+        };
+
+        checkIfMobile();
+        window.addEventListener("resize", checkIfMobile);
+        return () => window.removeEventListener("resize", checkIfMobile);
+    }, []);
 
     return (
         <div className="flex min-h-screen bg-[#f5f7fa] font-[Poppins,Segoe_UI,system-ui,sans-serif] transition-all duration-300">
-            {/* === SIDEBAR === */}
+            {/* === SIDEBAR DESKTOP === */}
             <div
-                className={`fixed top-0 left-0 z-150 h-full w-[260px] bg-white shadow-md transition-transform duration-300 ${
+                className={`hidden md:block fixed top-0 left-0 z-50 h-full w-[260px] bg-white shadow-md transition-transform duration-300 ${
                     isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
             >
                 <Sidebar />
             </div>
 
+            {/* === SIDEBAR MOBILE OVERLAY === */}
+            {/* SAMA PERSIS seperti di AnnouncementPage */}
+            {isMobile && isSidebarOpen && (
+                <>
+                    <div
+                        className="fixed inset-0 bg-black/50 z-40"
+                        onClick={toggleSidebar}
+                    ></div>
+                    <div className="fixed top-0 left-0 z-50 h-full w-[260px] bg-white shadow-lg transition-transform duration-300 translate-x-0">
+                        <Sidebar />
+                    </div>
+                </>
+            )}
+
             {/* === MAIN CONTENT === */}
             <div
-                className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ${
-                    isSidebarOpen ? 'ml-[260px]' : 'ml-0'
+                className={`flex min-h-screen flex-1 flex-col transition-all duration-300 w-full ${
+                    isSidebarOpen ? 'md:ml-[260px]' : 'ml-0'
                 }`}
             >
                 {/* === HEADER === */}
                 <div
-                    className={`fixed top-0 right-0 z-200 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 ${
-                        isSidebarOpen ? 'left-[260px]' : 'left-0'
+                    className={`fixed top-0 right-0 z-40 bg-white shadow-sm transition-all duration-300 w-full ${
+                        isSidebarOpen ? 'md:left-[260px] md:w-[calc(100%-260px)]' : 'left-0'
                     }`}
                 >
                     <Header
@@ -55,7 +92,8 @@ export default function Dashboard({
                 </div>
 
                 {/* === ISI HALAMAN === */}
-                <div className="px-40px pb-40px flex flex-1 flex-col gap-[30px] pt-[120px] transition-all duration-300">
+                {/* Padding dan spacing SAMA seperti di AnnouncementPage */}
+                <div className="px-4 sm:px-6 lg:px-8 pb-6 flex flex-1 flex-col gap-4 md:gap-6 pt-20 md:pt-28 transition-all duration-300">
                     <UserDetail />
                     <StatsToday
                         hadir={hadir}

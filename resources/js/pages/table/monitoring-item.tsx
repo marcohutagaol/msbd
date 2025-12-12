@@ -32,7 +32,7 @@
                 </div>
 
                 {/* ✅ KIRIM DATA REQUEST ASLI */}
-                <Monitoring departments={requests} />
+              <Monitoring requests={requests} />
               </div>
             </div>
           </main>

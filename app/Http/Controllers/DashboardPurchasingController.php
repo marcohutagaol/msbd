@@ -32,18 +32,26 @@ class DashboardPurchasingController extends Controller
                                 ->whereIn('status', ['Completed', 'Arrived'])
                                 ->count();
 
-            return [
-                'id'              => $request->request_number,   // dipakai ke URL
-                'name'            => $request->request_number,   // tulisan besar di card
-                'nama_department' => $request->department,
-                'total_items'     => $request->items->count(),
-                'total_requests'  => 1,
+       return [
+    'id' => $request->request_number,
+    'name' => $request->request_number,
+    'nama_department' => $request->department,
+    'total_items' => $request->items->count(),
+    'total_requests' => 1,
+    'pending_count' => $pendingItems,
+    'approved_count' => $approvedItems,
+    'completed_count' => $completedItems,
 
-                // 👉 ini yang dipakai DepartmentList buat nentuin chip:
-                'pending_count'   => $pendingItems,
-                'approved_count'  => $approvedItems,
-                'completed_count' => $completedItems,
-            ];
+    // 🔥 Tambahkan ini!
+    'request_date' => $request->request_date
+        ? $request->request_date->toISOString()
+        : null,
+
+    'created_at' => $request->created_at->toISOString(),
+];
+
+
+
         });
 
     // Recent requests biarin saja
@@ -119,29 +127,39 @@ public function getDepartmentDetails($departmentId)
     $completedRequests = Request::whereHas('items')->where('status', 'Completed')->count();
     $rejectedRequests = Request::whereHas('items')->where('status', 'Rejected')->count();
 
-    $departmentStats = RequestItem::select('departemen')
-        ->selectRaw('count(*) as total_items')
-        ->selectRaw('count(distinct request_id) as total_requests')
-        ->selectRaw('sum(case when status = "Pending" then 1 else 0 end) as pending_count')
-        ->selectRaw('sum(case when status = "Approved" then 1 else 0 end) as approved_count')
-        ->selectRaw('sum(case when status = "Completed" then 1 else 0 end) as completed_count')
-        ->whereNotNull('departemen')
-        ->groupBy('departemen')
-        ->get()
-        ->map(function ($item) {
-            return [
-                'id' => strtolower(str_replace(' ', '-', $item->departemen)),
-                'name' => $item->departemen,
-                'total_requests' => $item->total_requests,
-                'total_items' => $item->total_items,
-                'pending_count' => $item->pending_count,
-                'approved_count' => $item->approved_count,
-                'completed_count' => $item->completed_count,
-            ];
-        });
+   $departmentStats = Request::whereHas('items')
+    ->with('items')
+    ->orderBy('created_at', 'desc')
+    ->get()
+    ->map(function ($request) {
+
+        return [
+            'id'              => $request->request_number,
+            'name'            => $request->request_number,
+            'nama_department' => $request->department,
+
+            'total_items'     => $request->items->count(),
+            'total_requests'  => 1,
+
+            'pending_count'   => $request->items->where('status', 'Pending')->count(),
+            'approved_count'  => $request->items->where('status', 'Approved')->count(),
+            'completed_count' => $request->items->whereIn('status', ['Completed','Arrived'])->count(),
+
+            'request_date' => $request->request_date
+                ? \Carbon\Carbon::parse($request->request_date)->toISOString()
+                : null,
+
+            // 🔥 DAN INI
+            'created_at' => $request->created_at
+                ? \Carbon\Carbon::parse($request->created_at)->toISOString()
+                : null,
+        ];
+    });
 
     return response()->json([
+        
         'stats' => [
+            
             'total_requests' => $totalRequests,
             'total_items' => $totalItems,
             'pending_requests' => $pendingRequests,
@@ -149,7 +167,9 @@ public function getDepartmentDetails($departmentId)
             'completed_requests' => $completedRequests,
             'rejected_requests' => $rejectedRequests,
         ],
-        'departments' => $departmentStats
+ 'departments' => $departmentStats,
+
+
     ]);
 }
 

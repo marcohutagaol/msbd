@@ -1,7 +1,9 @@
 
 "use client"
 
-import { Link, usePage } from "@inertiajs/react"
+
+import { Link, router, usePage } from "@inertiajs/react"
+
 import { useState, useEffect } from "react"
 import {
   LayoutDashboard,
@@ -257,13 +259,16 @@ export default function Sidebar() {
 
       <div className="px-5 py-5 border-t border-white/20">
         <button
-          className="flex items-center gap-3 text-sm font-medium text-white/90 hover:text-white transition-all duration-200 w-full"
-          onClick={() => console.log("Logout clicked")}
-        >
-          <LogOut size={18} className="text-[#B0E0E6]" />
-          Logout
-        </button>
+
+  className="flex items-center gap-3 text-sm font-medium text-white/90 hover:text-white transition-all duration-200 w-full"
+  onClick={() => router.post('/logout')}
+>
+  <LogOut size={18} className="text-[#B0E0E6]" />
+  Logout
+</button>
+
       </div>
     </aside>
   )
 }
+

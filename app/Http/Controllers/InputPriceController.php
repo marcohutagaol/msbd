@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\RequestItem;
 use App\Models\Request as RequestModel;
 use App\Models\Purchase;
+use App\Models\Invoice;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -19,41 +20,46 @@ class InputPriceController extends Controller
   public function index($request_number)
 {
   
-    $request = RequestModel::where('request_number', $request_number)->firstOrFail();
 
+$request = RequestModel::where('request_number', $request_number)->firstOrFail();
 
 $requestItems = RequestItem::with(['request.user', 'purchase'])
     ->where('request_id', $request->id)
-    ->whereIn('status', ['Approved', 'Completed'])
     ->get()
-   ->map(function ($item) {
-    return [
-        'id' => $item->id,
-        'kode_barang' => $item->kode_barang,
-        'nama_barang' => $item->nama_barang,
-        'jumlah_diajukan' => $item->jumlah_diajukan,
-        'jumlah_disetujui' => $item->jumlah_disetujui,
-        'satuan' => $item->satuan,
-        'catatan' => $item->catatan,
-        'status' => $item->status,
-        'harga' => $item->purchase?->harga_item,
-        'total_harga' => $item->purchase?->total_harga,
+    ->map(function ($item) {
+        return [
+            'id' => $item->id,
+            'kode_barang' => $item->kode_barang,
+            'nama_barang' => $item->nama_barang,
+            'jumlah_diajukan' => $item->jumlah_diajukan,
+            'jumlah_disetujui' => $item->jumlah_disetujui,
+            'satuan' => $item->satuan,
+            'catatan' => $item->catatan,
+            'status' => $item->status,
+            'harga' => $item->purchase?->harga_item,
+            'total_harga' => $item->purchase?->total_harga,
 
-        'request' => [
-            'id' => $item->request->id,
-            'request_number' => $item->request->request_number,
-            'department' => $item->request->department,
-            'request_date' => $item->request->request_date,
-            'notes' => $item->request->notes,
-        ],
-    ];
-});
+            'request' => [
+                'id' => $item->request->id,
+                'request_number' => $item->request->request_number,
+                'department' => $item->request->department,
+                'request_date' => $item->request->request_date,
+                'notes' => $item->request->notes,
+            ],
+        ];
+    });
 
+$invoiceCount = Invoice::where('request_id', $request->id)->count();
+$invoiceNumber = Invoice::where('request_id', $request->id)->value('invoice_number');
 
-    return Inertia::render('table/input-price', [
-        'orders' => $requestItems,
-        'requestNumber' => $request_number, 
-    ]);
+return Inertia::render('table/input-price', [
+    'orders' => $requestItems,
+    'requestNumber' => $request_number,
+    'invoice_count' => $invoiceCount,
+'invoice_number' => $invoiceNumber,
+    'request_id' => $request->id,
+]);
+
 }
 
 public function saveInvoice(Request $request)
@@ -88,49 +94,50 @@ public function saveInvoice(Request $request)
      * Konfirmasi preorder - simpan harga dan update status jadi Completed
      */
     public function confirmPreorder(Request $request)
-    {
-        $validated = $request->validate([
-            'price_data' => 'required|array',
-            'price_data.*.item_id' => 'required|exists:request_items,id',
-            'price_data.*.harga' => 'required|numeric|min:1',
-        ]);
+{
+    $validated = $request->validate([
+        'request_id' => 'required',
+        'price_data' => 'required|array'
+    ]);
 
-        try {
-            DB::beginTransaction();
+    $requestModel = \App\Models\Request::findOrFail($validated['request_id']);
 
-            $priceData = $validated['price_data'];
-            $successCount = 0;
-            
-            foreach ($priceData as $data) {
-                $requestItem = RequestItem::find($data['item_id']);
-                
-                // Hanya update item yang berstatus Approved
-                if ($requestItem && $requestItem->status === 'Approved') {
-                    $requestItem->update([
-                        'harga' => $data['harga'],
-                        'status' => 'Completed'
-                    ]);
-                    $successCount++;
-                }
-            }
+    DB::beginTransaction();
+    try {
 
-            DB::commit();
+        foreach ($validated['price_data'] as $item) {
 
-            if ($successCount > 0) {
-                return redirect()->back()->with([
-                    'success' => 'Preorder berhasil dikonfirmasi! ' . $successCount . ' item telah diproses.'
-                ]);
-            } else {
-                return redirect()->back()->with([
-                    'error' => 'Tidak ada item yang dapat diproses. Pastikan item berstatus Approved.'
-                ]);
-            }
+            $purchase = Purchase::where('request_item_id', $item['request_item_id'])->first();
+            if (!$purchase) continue;
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            $jumlah = DB::table('request_items')
+                ->where('id', $purchase->request_item_id)
+                ->value('jumlah_disetujui') ?? 1;
+
+            $purchase->update([
+                'harga_item'  => $item['harga'],
+                'total_harga' => $jumlah * $item['harga'],
+                'request_id'  => $requestModel->id,
+            ]);
         }
+
+        DB::commit(); // COMMIT SEBELUM CALL
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', $e->getMessage());
     }
+
+    // CALL SP DI LUAR TRANSACTION
+    try {
+        DB::unprepared("CALL make_invoice_from_purchases($requestModel->id)");
+    } catch (\Exception $e) {
+        return back()->with('error', $e->getMessage());
+    }
+
+    return back()->with('success', 'Invoice berhasil dibuat!');
+}
+
 
     /**
      * Tandai barang sudah sampai - ubah status dari Completed ke Arrived

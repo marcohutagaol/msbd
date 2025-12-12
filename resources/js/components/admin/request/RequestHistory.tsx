@@ -43,4 +43,6 @@ export default function RequestHistory() {
       </table>
     </Card>
   );
+
 }
+

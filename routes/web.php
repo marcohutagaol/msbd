@@ -24,9 +24,9 @@ use App\Http\Controllers\TransferBarangController;
 use App\Http\Controllers\PurchasingDetailController;
 use App\Http\Controllers\MonitoringRequestController;
 use App\Http\Controllers\RequestManagementController;
-use App\Http\Controllers\DashboardPurchasingController;
 use App\Http\Controllers\ManagerAnnouncementController;
-use App\Http\Controllers\ManagerKaryawanController; // Tambahkan controller baru
+use App\Http\Controllers\ManagerKaryawanController;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 // =======================
 // AUTH | HOME
@@ -40,7 +40,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // AUTHENTICATED ROUTES
 // =======================
 Route::middleware(['auth'])->group(function () {
-
     // =======================
     // ANNOUNCEMENT ROUTES (Untuk User Biasa dan Manager)
     // =======================
@@ -63,33 +62,24 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/absensi/riwayat', [AbsensiController::class, 'getRiwayat'])->name('absensi.riwayat');
 
     // =======================
-    // PURCHASING & REQUEST
+    // REQUEST & PURCHASING
     // =======================
-    Route::get('/dashboard-purchasing', [DashboardPurchasingController::class, 'index'])
-        ->name('dashboard-purchasing');
-
-    Route::get('/purchasing/{request_number}', [PurchasingDetailController::class, 'show'])
-        ->name('purchasing.show');
-
-    Route::post('/purchasing-detail/{departmentId}/approve-all', [PurchasingDetailController::class, 'approveAll'])->name('purchasing.approve-all');
-    Route::post('/purchasing-detail/item/{itemId}/update-status', [PurchasingDetailController::class, 'updateStatus'])->name('purchasing.update-status');
-
     Route::get('/request', fn() => Inertia::render('table/request'))->name('request');
     Route::get('/request-item', [RequestController::class, 'index'])->name('request-item');
     Route::post('/requests', [RequestController::class, 'store'])->name('requests.store');
     Route::get('/requests/history', [RequestController::class, 'getRequestHistory'])->name('requests.history');
+    
+    Route::get('/purchasing/{request_number}', [PurchasingDetailController::class, 'show'])->name('purchasing.show');
+    Route::post('/purchasing-detail/{requestNumber}/approve-all', [PurchasingDetailController::class, 'approveAll']);
+    Route::post('/purchasing-detail/item/{itemId}/update-status', [PurchasingDetailController::class, 'updateStatus'])->name('purchasing.update-status');
 
     // =======================
     // MONITORING
     // =======================
-    Route::get('/monitoring-item/{request_number}', [MonitoringController::class, 'index'])
-        ->name('monitoring-item');
-
+    Route::get('/monitoring-item/{request_number}', [MonitoringController::class, 'index'])->name('monitoring-item');
     Route::patch('/request-items/{id}', [MonitoringController::class, 'update'])->name('request-items.update');
     Route::delete('/request-items/{id}', [MonitoringController::class, 'destroy'])->name('request-items.destroy');
-
-    Route::get('/monitoring-request', [MonitoringRequestController::class, 'index'])
-        ->name('monitoring-request');
+    Route::get('/monitoring-request', [MonitoringRequestController::class, 'index'])->name('monitoring-request');
 
     // =======================
     // PERMISSION
@@ -108,25 +98,14 @@ Route::middleware(['auth'])->group(function () {
     // =======================
     // INPUT PRICE
     // =======================
-    Route::get('/input-price/{request_number}', [InputPriceController::class, 'index'])
-        ->name('input-price.show');
-
+    Route::get('/input-price/{request_number}', [InputPriceController::class, 'index'])->name('input-price.show');
     Route::post('/input-price/save-invoice', [InputPriceController::class, 'saveInvoice']);
-
-    Route::post('/input-price/confirm-preorder', [InputPriceController::class, 'confirmPreorder'])
-        ->name('input-price.confirm-preorder');
-
-    Route::post('/input-price/mark-arrived', [InputPriceController::class, 'markAsArrived'])
-        ->name('input-price.mark-arrived');
-
-    Route::post('/input-price/mark-all-arrived', [InputPriceController::class, 'markAllArrived'])
-        ->name('input-price.mark-all-arrived');
-
-    Route::post('/input-price/confirm-preorder', [InvoiceController::class, 'confirmPreorder']);
-    Route::get('/invoice/view/{request_id}', [InvoiceController::class, 'show']);
+    Route::post('/input-price/confirm-preorder', [InputPriceController::class, 'confirmPreorder'])->name('input-price.confirm-preorder');
+    Route::post('/input-price/mark-arrived', [InputPriceController::class, 'markAsArrived'])->name('input-price.mark-arrived');
+    Route::post('/input-price/mark-all-arrived', [InputPriceController::class, 'markAllArrived'])->name('input-price.mark-all-arrived');
 
     // =======================
-    // TRANSFER
+    // TRANSFER BARANG
     // =======================
     Route::get('/transfer', [TransferBarangController::class, 'index'])->name('transfer.index');
     Route::post('/api/transfer/batch', [TransferBarangController::class, 'transferBatch'])->name('transfer.batch');
@@ -136,82 +115,86 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/inventory/departemen', [TransferBarangController::class, 'getDepartemenItems']);
 
     // =======================
-    // TOKO
+    // INVOICE
     // =======================
-    Route::get('/toko', fn() => Inertia::render('table/searchtoko'))->name('searchtoko');
+    Route::get('/invoice/{invoice_number}', [InvoiceController::class, 'show'])->name('invoice.show');
+    Route::get('/invoice/{id}/download', function ($id) {
+        $invoice = \App\Models\Invoice::with('purchases')->findOrFail($id);
+        $pdf = Pdf::loadView('pdf.struk', ['invoice' => $invoice])
+            ->setPaper([0, 0, 226.77, 600], 'portrait');
+        return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
+    });
+
+    // =======================
+    // REPORT
+    // =======================
+    Route::get('/report', fn() => Inertia::render('report/page'))->name('report');
 
     // =======================
     // MANAGER PAGES (untuk role manager)
     // =======================
-Route::middleware(['role:manager'])->group(function () {
-    Route::get('/manager', fn() => Inertia::render('manager/page'))->name('manager.page');
-    
-    // GET → tampilkan data
-    Route::get('/manager-absensi', [ManagerAbsensiController::class, 'index'])
-        ->name('manager.absensi');
+    Route::middleware(['role:manager'])->group(function () {
+        Route::get('/manager', fn() => Inertia::render('manager/page'))->name('manager.page');
+        
+        // Manager Absensi
+        Route::get('/manager-absensi', [ManagerAbsensiController::class, 'index'])->name('manager.absensi');
+        Route::post('/manager-absensi', [ManagerAbsensiController::class, 'store'])->name('manager.absensi.store');
+        Route::post('/manager-absensi/filter', [ManagerAbsensiController::class, 'filter'])->name('manager.absensi.filter');
+        
+        // Manager Karyawan
+        Route::get('/manager-karyawan', [ManagerKaryawanController::class, 'index'])->name('manager.karyawan');
+        Route::get('/manager-karyawan/{id}', [ManagerKaryawanController::class, 'detail'])->name('manager.detail-karyawan');
+        Route::get('/api/manager-karyawan/filter/{department}', [ManagerKaryawanController::class, 'filterByDepartment']);
+    });
 
-    // POST → simpan data
-    Route::post('/manager-absensi', [ManagerAbsensiController::class, 'store'])
-        ->name('manager.absensi.store');
-    
-    // POST → filter data
-    Route::post('/manager-absensi/filter', [ManagerAbsensiController::class, 'filter'])
-        ->name('manager.absensi.filter');
-    
-    // Manager Karyawan Routes
-    Route::get('/manager-karyawan', [ManagerKaryawanController::class, 'index'])->name('manager.karyawan');
-    Route::get('/manager-karyawan/{id}', [ManagerKaryawanController::class, 'detail'])->name('manager.detail-karyawan');
-    Route::get('/api/manager-karyawan/filter/{department}', [ManagerKaryawanController::class, 'filterByDepartment']);
-});
     // =======================
     // ADMIN ROUTES
     // =======================
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+        // Dashboard
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/dashboard/detail/{status}', fn($status) => Inertia::render('admin/StatusDetail', ['status' => $status]))->name('dashboard.detail');
 
+        // Pages
         Route::get('/absensi', [AdminController::class, 'absensi'])->name('absensi');
-
         Route::get('/inventory', [AdminController::class, 'inventory'])->name('inventory');
+        Route::get('/permission', [AdminController::class, 'permission'])->name('permission');
+        Route::get('/requestitem', fn() => Inertia::render('admin/RequestItem'))->name('requestitem');
+        Route::get('/requestdetail/{kode_department}', fn($kode_department) => Inertia::render('admin/RequestDetailPage', ['kode_department' => $kode_department]))->name('requestdetail');
 
+        // Invoice
         Route::get('/invoice', [AdminInvoiceController::class, 'index'])->name('invoice');
+
+        // Log Request
         Route::get('/LogRequest', [LogRequestController::class, 'index'])->name('log_request');
         Route::get('/LogRequest/export/pdf', [LogRequestController::class, 'exportPDF'])->name('logs.export.pdf');
         Route::get('/LogRequest/export/csv', [LogRequestController::class, 'exportCSV'])->name('logs.export.csv');
         Route::get('/LogRequest/export/all', [LogRequestController::class, 'exportAll'])->name('logs.export.all');
 
+        // Report Item
         Route::get('/ReportItem', [ReportItemController::class, 'index'])->name('report_item');
 
-        Route::get('/requestitem', fn() => Inertia::render('admin/RequestItem'))->name('requestitem');
-        Route::get('/requestdetail/{kode_department}', fn($kode_department) => Inertia::render('admin/RequestDetailPage', ['kode_department' => $kode_department]))->name('requestdetail');
-        Route::get('/dashboard/detail/{status}', fn($status) => Inertia::render('admin/StatusDetail', ['status' => $status]))->name('dashboard.detail');
+        // Request Management
         Route::get('/requests-management', [RequestManagementController::class, 'index'])->name('requests-management');
         Route::get('/requests-detail/{kodeDepartment}', [RequestManagementController::class, 'showDetail'])->name('requests-detail');
 
-        // Admin Karyawan Routes
+        // Karyawan Management
         Route::get('/karyawan', [KaryawanController::class, 'index'])->name('karyawan');
         Route::post('/karyawan/store', [KaryawanController::class, 'store'])->name('karyawan.store');
         Route::put('/karyawan/update/{id}', [KaryawanController::class, 'update'])->name('karyawan.update');
         Route::get('/detailKaryawan/{id}', [KaryawanController::class, 'detail'])->name('karyawan.detail');
         Route::get('/mantanKaryawan', [KaryawanController::class, 'mantan'])->name('karyawan.mantan');
 
-        Route::get('/permission', [AdminController::class, 'permission'])->name('permission');
-
-        // Admin Announcement Routes (gunakan AnnouncementController khusus admin)
+        // Announcement
         Route::get('/Announcement', [AnnouncementController::class, 'index'])->name('announcement.index');
         Route::post('/Announcement', [AnnouncementController::class, 'store'])->name('announcement.store');
         Route::put('/Announcement/{id}', [AnnouncementController::class, 'update'])->name('announcement.update');
         Route::delete('/Announcement/{id}', [AnnouncementController::class, 'destroy'])->name('announcement.destroy');
 
+        // Report
         Route::get('/Report', [ReportController::class, 'index'])->name('report.index');
         Route::delete('/Report/{id}', [ReportController::class, 'destroy'])->name('report.destroy');
-
-        Route::get('/RequestItem', function () {
-            return Inertia::render('admin/RequestItem');
-        })->name('admin.RequestItem');
     });
-
-    Route::get('/report', fn() => Inertia::render('report/page'))->name('report');
-
 });
 
 // =======================

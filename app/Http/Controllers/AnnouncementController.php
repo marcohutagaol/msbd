@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Announcement;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class AnnouncementController extends Controller
 {
@@ -29,7 +30,7 @@ class AnnouncementController extends Controller
       'title' => $request->title,
       'kategori' => $request->kategori,
       'isi' => $request->isi,
-      'created_by' => auth()->user()->id_karyawan,
+      'created_by' => Auth::user()->id_karyawan,
     ]);
 
     return back()->with('success', 'Pengumuman berhasil dibuat.');

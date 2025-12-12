@@ -44,135 +44,137 @@ class PermissionController extends Controller
         return response()->json($permissions);
     }
 
- public function store(Request $request)
-{
-    Log::info('Permission Store Request:', $request->all());
-    Log::info('Files:', $request->file() ? ['has_file' => true] : ['has_file' => false]);
+    public function store(Request $request)
+    {
+        Log::info('Permission Store Request:', $request->all());
+        Log::info('Files:', $request->file() ? ['has_file' => true] : ['has_file' => false]);
 
-    // Validation rules
-    $validated = $request->validate([
-        'type' => 'required|in:sick,permission,vacation',
-        'start_date' => 'nullable|date',
-        'end_date' => 'nullable|date|after_or_equal:start_date',
-        'sick_type' => 'nullable|in:ringan,sedang,berat',
-        'notes' => 'nullable|string',
-        'permission_date' => 'nullable|date',
-        'reason' => 'nullable|string',
-        'permission_type' => 'nullable|in:Tidak hadir,datang terlambat,WFH',
-        'vacation_type' => 'nullable|in:Cuti Tahunan,Cuti Bersama,Cuti Sakit,Cuti Maternity',
-        'vacation_reason' => 'nullable|string',
-        'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-        'time' => 'nullable|string',
-        'location' => 'nullable|string',
-        'days' => 'nullable|integer',
-    ]);
+        // Validation rules
+        $validated = $request->validate([
+            'type' => 'required|in:sick,permission,vacation',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'sick_type' => 'nullable|in:ringan,sedang,berat',
+            'notes' => 'nullable|string',
+            'permission_date' => 'nullable|date',
+            'reason' => 'nullable|string',
+            'permission_type' => 'nullable|in:tidak hadir,datang terlambat,lembur,ambil ph',
+            'vacation_type' => 'nullable|in:Cuti Tahunan,Cuti Bersama,Cuti Sakit,Cuti Maternity',
+            'vacation_reason' => 'nullable|string',
+            'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'time' => 'nullable|string',
+            'location' => 'nullable|string',
+            'days' => 'nullable|integer',
+        ]);
 
-    Log::info('Validated Data:', $validated);
+        Log::info('Validated Data:', $validated);
 
-    // Validasi khusus untuk datang terlambat
-    if ($request->permission_type === 'datang terlambat' && 
-        $request->permission_date === now()->format('Y-m-d')) {
+        // Validasi khusus untuk datang terlambat
+        if (
+            $request->permission_type === 'datang terlambat' &&
+            $request->permission_date === now()->format('Y-m-d')
+        ) {
+            return response()->json([
+                'message' => 'Izin datang terlambat tidak dapat dibuat pada hari yang sama'
+            ], 422);
+        }
+
+        // Calculate days if not provided
+        if ($request->start_date && $request->end_date && !$request->days) {
+            $start = new \DateTime($request->start_date);
+            $end = new \DateTime($request->end_date);
+            $validated['days'] = $end->diff($start)->days + 1;
+        }
+
+        // Handle file upload - SIMPAN FULL PATH
+        $documentPath = null;
+        if ($request->hasFile('document')) {
+            Log::info('File detected:', [
+                'name' => $request->file('document')->getClientOriginalName(),
+                'size' => $request->file('document')->getSize(),
+                'mime' => $request->file('document')->getMimeType()
+            ]);
+
+            $file = $request->file('document');
+
+            // Generate unique filename
+            $fileName = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+
+            // Store file dan dapatkan full path
+            $path = $file->storeAs('permissions', $fileName, 'public');
+            $documentPath = $path;
+
+            Log::info('File stored:', [
+                'fileName' => $fileName,
+                'path' => $path,
+                'full_path' => $documentPath
+            ]);
+
+            // Simpan full path ke database
+            $validated['document_path'] = $documentPath;
+        } else {
+            Log::info('No file uploaded or file validation failed');
+        }
+
+        // Hapus field document dari validated data karena bukan bagian dari model
+        unset($validated['document']);
+
+        Log::info('Data before create:', $validated);
+
+        // Set default values
+        $validated['user_id'] = Auth::id();
+        $validated['status'] = 'pending';
+
+        // Set location based on type if not provided
+        if (!isset($validated['location'])) {
+            $validated['location'] = $request->type === 'vacation' ? 'TBD' : 'Online';
+        }
+
+        // Set time for permission if not provided
+        if ($request->type === 'permission' && !isset($validated['time'])) {
+            $validated['time'] = now()->format('H:00') . ' - ' . now()->addHour()->format('H:00');
+        }
+
+        // Create permission
+        $permission = Permission::create($validated);
+        $permission->load('user');
+
+        Log::info('Permission created:', [
+            'id' => $permission->id,
+            'document_path' => $permission->document_path
+        ]);
+
         return response()->json([
-            'message' => 'Izin datang terlambat tidak dapat dibuat pada hari yang sama'
-        ], 422);
+            'message' => 'Permission berhasil dibuat',
+            'permission' => [
+                'id' => (string) $permission->id,
+                'type' => $permission->type,
+                'status' => $permission->status,
+                'createdBy' => $permission->user->name ?? 'Unknown',
+                'createdDate' => $permission->created_at->format('Y-m-d'),
+                'startDate' => $permission->start_date,
+                'endDate' => $permission->end_date,
+                'days' => $permission->days,
+                'sickType' => $permission->sick_type,
+                'notes' => $permission->notes,
+                'date' => $permission->permission_date,
+                'reason' => $permission->reason,
+                'permissionType' => $permission->permission_type,
+                'time' => $permission->time,
+                'vacationType' => $permission->vacation_type,
+                'location' => $permission->location,
+                'document_path' => $permission->document_path, // Full path
+                'document_url' => $permission->document_path ? Storage::url($permission->document_path) : null, // Full URL
+            ]
+        ], 201);
     }
-
-    // Calculate days if not provided
-    if ($request->start_date && $request->end_date && !$request->days) {
-        $start = new \DateTime($request->start_date);
-        $end = new \DateTime($request->end_date);
-        $validated['days'] = $end->diff($start)->days + 1;
-    }
-
-    // Handle file upload - SIMPAN FULL PATH
-    $documentPath = null;
-    if ($request->hasFile('document')) {
-        Log::info('File detected:', [
-            'name' => $request->file('document')->getClientOriginalName(),
-            'size' => $request->file('document')->getSize(),
-            'mime' => $request->file('document')->getMimeType()
-        ]);
-
-        $file = $request->file('document');
-        
-        // Generate unique filename
-        $fileName = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-        
-        // Store file dan dapatkan full path
-        $path = $file->storeAs('permissions', $fileName, 'public');
-        $documentPath = $path;
-        
-        Log::info('File stored:', [
-            'fileName' => $fileName,
-            'path' => $path,
-            'full_path' => $documentPath
-        ]);
-
-        // Simpan full path ke database
-        $validated['document_path'] = $documentPath;
-    } else {
-        Log::info('No file uploaded or file validation failed');
-    }
-
-    // Hapus field document dari validated data karena bukan bagian dari model
-    unset($validated['document']);
-
-    Log::info('Data before create:', $validated);
-
-    // Set default values
-    $validated['user_id'] = Auth::id();
-    $validated['status'] = 'pending';
-    
-    // Set location based on type if not provided
-    if (!isset($validated['location'])) {
-        $validated['location'] = $request->type === 'vacation' ? 'TBD' : 'Online';
-    }
-    
-    // Set time for permission if not provided
-    if ($request->type === 'permission' && !isset($validated['time'])) {
-        $validated['time'] = now()->format('H:00') . ' - ' . now()->addHour()->format('H:00');
-    }
-
-    // Create permission
-    $permission = Permission::create($validated);
-    $permission->load('user');
-
-    Log::info('Permission created:', [
-        'id' => $permission->id,
-        'document_path' => $permission->document_path
-    ]);
-
-    return response()->json([
-        'message' => 'Permission berhasil dibuat',
-        'permission' => [
-            'id' => (string) $permission->id,
-            'type' => $permission->type,
-            'status' => $permission->status,
-            'createdBy' => $permission->user->name ?? 'Unknown',
-            'createdDate' => $permission->created_at->format('Y-m-d'),
-            'startDate' => $permission->start_date,
-            'endDate' => $permission->end_date,
-            'days' => $permission->days,
-            'sickType' => $permission->sick_type,
-            'notes' => $permission->notes,
-            'date' => $permission->permission_date,
-            'reason' => $permission->reason,
-            'permissionType' => $permission->permission_type,
-            'time' => $permission->time,
-            'vacationType' => $permission->vacation_type,
-            'location' => $permission->location,
-            'document_path' => $permission->document_path, // Full path
-            'document_url' => $permission->document_path ? Storage::url($permission->document_path) : null, // Full URL
-        ]
-    ], 201);
-}
 
     public function update(Request $request, $id)
     {
         try {
             // Cari permission milik user yang login
             $permission = Permission::where('user_id', Auth::id())->findOrFail($id);
-            
+
             // Validasi input
             $validated = $request->validate([
                 'type' => 'required|in:sick,permission,vacation',
@@ -180,7 +182,7 @@ class PermissionController extends Controller
                 'end_date' => 'nullable|date|after_or_equal:start_date',
                 'sick_type' => 'nullable|in:ringan,sedang,berat',
                 'notes' => 'nullable|string',
-                'permission_type' => 'nullable|in:Tidak hadir,datang terlambat,WFH',
+                'permission_type' => 'nullable|in:tidak hadir,datang terlambat,lembur,ambil ph',
                 'time' => 'nullable|string',
                 'vacation_type' => 'nullable|in:Cuti Tahunan,Cuti Bersama,Cuti Sakit,Cuti Maternity',
                 'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -240,7 +242,6 @@ class PermissionController extends Controller
                     'document_url' => $permission->document_path ? Storage::url($permission->document_path) : null,
                 ]
             ], 200);
-
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'Permission tidak ditemukan'
@@ -260,12 +261,12 @@ class PermissionController extends Controller
     public function destroy($id)
     {
         $permission = Permission::where('user_id', Auth::id())->findOrFail($id);
-        
+
         // Hapus file dari storage jika ada
         if ($permission->document_path) {
             Storage::disk('public')->delete($permission->document_path);
         }
-        
+
         $permission->delete();
 
         return response()->json(['message' => 'Permission berhasil dihapus']);

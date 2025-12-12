@@ -42,7 +42,9 @@ export default function OrdersTable({
   onApproveStatusChange?: () => void;
 }) {
   const { props } = usePage();
-  const { orders, department, request_number, stats } = props as any;
+const { orders, department, requestNumber, stats } = props as any;
+
+
 
   
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,67 +67,72 @@ export default function OrdersTable({
   };
 
   // Update status individual item
-  const handleStatusChange = async (id: string, newStatus: Order["status"]) => {
-    // Update UI optimistically
-    setOrderList((prev) =>
-      prev.map((order) =>
-        order.id === id ? { ...order, status: newStatus } : order
-      )
-    );
+ // HAPUS fungsi mapStatusToEnglish
 
-    // Send to backend
-    try {
-      await router.post(`/purchasing-detail/item/${id}/update-status`, {
-        status: mapStatusToEnglish(newStatus)
-      }, {
+const handleStatusChange = async (id: string, newStatus: Order["status"]) => {
+  // Update UI optimistically
+  setOrderList((prev) =>
+    prev.map((order) =>
+      order.id === id ? { ...order, status: newStatus } : order
+    )
+  );
+
+  try {
+    await router.post(
+      `/purchasing-detail/item/${id}/update-status`,
+      {
+        status: newStatus, // ⬅️ langsung kirim apa adanya
+      },
+      {
         preserveScroll: true,
         onError: (errors) => {
-          console.error('Error updating status:', errors);
+          console.error("Error updating status:", errors);
           // Revert on error
           setOrderList(orders);
-        }
-      });
-    } catch (error) {
-      console.error('Failed to update status:', error);
-      // Revert on error
-      setOrderList(orders);
-    }
-  };
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Failed to update status:", error);
+    setOrderList(orders);
+  }
+};
 
   // Approve all items
   const handleApproveAll = async () => {
-    if (isApproving) return;
-    
-    setIsApproving(true);
-    
-    try {
-    await router.post(`/purchasing-detail/${request_number}/approve-all`, {}, {
+  if (isApproving) return;
 
+  setIsApproving(true);
+
+  try {
+   await router.post(
+  `/purchasing-detail/${requestNumber}/approve-all`,
+      {},
+      {
         preserveScroll: true,
         onSuccess: () => {
-          // Update local state
           setOrderList((prev) =>
             prev.map((order) => ({ ...order, status: "Approved" }))
           );
+
           onApproveStatusChange?.();
-          
-          // Show success message
           alert("✅ Semua pesanan pending telah disetujui!");
         },
         onError: (errors) => {
-          console.error('Error approving all:', errors);
-          alert("❌ Gagal menyetujui pesanan. Silakan coba lagi.");
+          console.error("Error approving all:", errors);
+          alert("❌ Gagal menyetujui pesanan.");
         },
         onFinish: () => {
           setIsApproving(false);
-        }
-      });
-    } catch (error) {
-      console.error('Failed to approve all:', error);
-      alert("❌ Terjadi kesalahan. Silakan coba lagi.");
-      setIsApproving(false);
-    }
-  };
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Failed to approve all:", error);
+    alert("❌ Terjadi kesalahan.");
+    setIsApproving(false);
+  }
+};
 
   const handleGoToPricePage = () => {
   if (!orderList.length) return;
