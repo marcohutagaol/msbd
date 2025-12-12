@@ -33,6 +33,27 @@ export default function PermissionDashboard() {
     fetchPermissions()
   }, [])
 
+  // Prevent scroll and body shift when modal opens
+  useEffect(() => {
+    if (activeForm) {
+      // Save current scroll position
+      const scrollY = window.scrollY
+      
+      // Prevent body scroll and maintain position
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
+      
+      return () => {
+        // Restore body scroll and position
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.width = ''
+        window.scrollTo(0, scrollY)
+      }
+    }
+  }, [activeForm])
+
   const fetchPermissions = async () => {
     try {
       setLoading(true)
@@ -98,78 +119,265 @@ const handleAddPermission = async (newPermission: Permission) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-          <p className="mt-4 text-gray-600">Memuat data...</p>
+          <div className="relative inline-block">
+            <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
+            <div className="absolute inset-0 h-16 w-16 animate-ping rounded-full border-4 border-blue-300 opacity-20"></div>
+          </div>
+          <p className="mt-6 text-lg font-semibold text-gray-700">Memuat data perizinan...</p>
+          <p className="mt-2 text-sm text-gray-500">Mohon tunggu sebentar</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-gray-50">
       {/* Permission Cards */}
-      <PermissionCards permissions={permissions} onCardClick={setActiveForm} />
+      <div className="relative">
+        {/* Decorative background elements - hidden on mobile for performance */}
+        <div className="hidden md:block absolute top-0 left-0 w-96 h-96 bg-blue-100 rounded-full filter blur-3xl opacity-20 -z-10"></div>
+        <div className="hidden md:block absolute top-20 right-0 w-80 h-80 bg-purple-100 rounded-full filter blur-3xl opacity-20 -z-10"></div>
+        
+        <PermissionCards permissions={permissions} onCardClick={setActiveForm} />
+      </div>
 
-      {/* Tabs */}
-      <div className="border-b border-blue-200 px-8 pt-8">
-        <div className="flex gap-8">
+      {/* Modern Tabs Navigation */}
+      <div className="relative px-4 md:px-8 pt-8 md:pt-12 pb-2">
+        {/* Gradient line at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+        
+        {/* Desktop Tabs */}
+        <div className="hidden md:flex relative gap-1 bg-white/50 backdrop-blur-sm rounded-2xl p-2 shadow-sm border border-gray-100 max-w-fit">
+          {/* General Tab */}
           <button
             onClick={() => setActiveTab("general")}
-            className={`pb-4 font-semibold transition-colors ${
-              activeTab === "general" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-600 hover:text-gray-900"
+            className={`group relative px-8 py-3 font-bold rounded-xl transition-all duration-300 ${
+              activeTab === "general"
+                ? "text-white shadow-lg shadow-blue-500/30"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
           >
-            General
+            {activeTab === "general" && (
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 rounded-xl"></div>
+            )}
+            <span className="relative z-10 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              General
+            </span>
           </button>
+
+          {/* Sakit Tab */}
           <button
             onClick={() => setActiveTab("sick")}
-            className={`pb-4 font-semibold transition-colors ${
-              activeTab === "sick" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-600 hover:text-gray-900"
+            className={`group relative px-8 py-3 font-bold rounded-xl transition-all duration-300 ${
+              activeTab === "sick"
+                ? "text-white shadow-lg shadow-red-500/30"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
           >
-            Sakit
+            {activeTab === "sick" && (
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-red-600 to-rose-600 rounded-xl"></div>
+            )}
+            <span className="relative z-10 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              Sakit
+            </span>
           </button>
+
+          {/* Izin Tab */}
           <button
             onClick={() => setActiveTab("permission")}
-            className={`pb-4 font-semibold transition-colors ${
+            className={`group relative px-8 py-3 font-bold rounded-xl transition-all duration-300 ${
               activeTab === "permission"
-                ? "border-b-2 border-blue-500 text-blue-600"
-                : "text-gray-600 hover:text-gray-900"
+                ? "text-white shadow-lg shadow-blue-500/30"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
           >
-            Izin
+            {activeTab === "permission" && (
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-600 rounded-xl"></div>
+            )}
+            <span className="relative z-10 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Izin
+            </span>
           </button>
+
+          {/* Cuti Tab */}
           <button
             onClick={() => setActiveTab("vacation")}
-            className={`pb-4 font-semibold transition-colors ${
+            className={`group relative px-8 py-3 font-bold rounded-xl transition-all duration-300 ${
               activeTab === "vacation"
-                ? "border-b-2 border-blue-500 text-blue-600"
-                : "text-gray-600 hover:text-gray-900"
+                ? "text-white shadow-lg shadow-green-500/30"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
           >
-            Cuti
+            {activeTab === "vacation" && (
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 rounded-xl"></div>
+            )}
+            <span className="relative z-10 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Cuti
+            </span>
+          </button>
+        </div>
+
+        {/* Mobile Tabs - Grid Layout */}
+        <div className="md:hidden grid grid-cols-2 gap-2 bg-white/50 backdrop-blur-sm rounded-2xl p-2 shadow-sm border border-gray-100">
+          {/* General Tab Mobile */}
+          <button
+            onClick={() => setActiveTab("general")}
+            className={`group relative px-4 py-3 font-bold rounded-xl transition-all duration-300 ${
+              activeTab === "general"
+                ? "text-white shadow-lg shadow-blue-500/30"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            }`}
+          >
+            {activeTab === "general" && (
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 rounded-xl"></div>
+            )}
+            <span className="relative z-10 flex items-center justify-center gap-2 text-sm">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              General
+            </span>
+          </button>
+
+          {/* Sakit Tab Mobile */}
+          <button
+            onClick={() => setActiveTab("sick")}
+            className={`group relative px-4 py-3 font-bold rounded-xl transition-all duration-300 ${
+              activeTab === "sick"
+                ? "text-white shadow-lg shadow-red-500/30"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            }`}
+          >
+            {activeTab === "sick" && (
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-red-600 to-rose-600 rounded-xl"></div>
+            )}
+            <span className="relative z-10 flex items-center justify-center gap-2 text-sm">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              Sakit
+            </span>
+          </button>
+
+          {/* Izin Tab Mobile */}
+          <button
+            onClick={() => setActiveTab("permission")}
+            className={`group relative px-4 py-3 font-bold rounded-xl transition-all duration-300 ${
+              activeTab === "permission"
+                ? "text-white shadow-lg shadow-blue-500/30"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            }`}
+          >
+            {activeTab === "permission" && (
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-600 rounded-xl"></div>
+            )}
+            <span className="relative z-10 flex items-center justify-center gap-2 text-sm">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Izin
+            </span>
+          </button>
+
+          {/* Cuti Tab Mobile */}
+          <button
+            onClick={() => setActiveTab("vacation")}
+            className={`group relative px-4 py-3 font-bold rounded-xl transition-all duration-300 ${
+              activeTab === "vacation"
+                ? "text-white shadow-lg shadow-green-500/30"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            }`}
+          >
+            {activeTab === "vacation" && (
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 rounded-xl"></div>
+            )}
+            <span className="relative z-10 flex items-center justify-center gap-2 text-sm">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Cuti
+            </span>
           </button>
         </div>
       </div>
 
-      {/* Tab Content */}
-      <div className="p-8">
-        {activeTab === "general" && <GeneralSection permissions={permissions} />}
-        {activeTab === "sick" && <SickLeaveSection permissions={permissions.filter((p) => p.type === "sick")} />}
-        {activeTab === "permission" && (
-          <PermissionSection permissions={permissions.filter((p) => p.type === "permission")} />
-        )}
-        {activeTab === "vacation" && <VacationSection permissions={permissions.filter((p) => p.type === "vacation")} />}
+      {/* Tab Content with Enhanced Container */}
+      <div className="p-4 md:p-8 pt-4 md:pt-6">
+        <div className="relative">
+          {/* Content card wrapper */}
+          <div className="bg-white rounded-xl md:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="animate-fadeIn">
+              {activeTab === "general" && (
+                <div className="p-4 md:p-6">
+                  <GeneralSection permissions={permissions} />
+                </div>
+              )}
+              {activeTab === "sick" && (
+                <div className="p-4 md:p-6">
+                  <SickLeaveSection permissions={permissions.filter((p) => p.type === "sick")} />
+                </div>
+              )}
+              {activeTab === "permission" && (
+                <div className="p-4 md:p-6">
+                  <PermissionSection permissions={permissions.filter((p) => p.type === "permission")} />
+                </div>
+              )}
+              {activeTab === "vacation" && (
+                <div className="p-4 md:p-6">
+                  <VacationSection permissions={permissions.filter((p) => p.type === "vacation")} />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Forms */}
-      {activeForm === "sick" && <SickLeaveForm onClose={() => setActiveForm(null)} onSubmit={handleAddPermission} />}
-      {activeForm === "permission" && (
-        <PermissionForm onClose={() => setActiveForm(null)} onSubmit={handleAddPermission} />
+      {/* Forms with backdrop animation */}
+      {activeForm === "sick" && (
+        <div className="animate-fadeIn">
+          <SickLeaveForm onClose={() => setActiveForm(null)} onSubmit={handleAddPermission} />
+        </div>
       )}
-      {activeForm === "vacation" && <VacationForm onClose={() => setActiveForm(null)} onSubmit={handleAddPermission} />}
+      {activeForm === "permission" && (
+        <div className="animate-fadeIn">
+          <PermissionForm onClose={() => setActiveForm(null)} onSubmit={handleAddPermission} />
+        </div>
+      )}
+      {activeForm === "vacation" && (
+        <div className="animate-fadeIn">
+          <VacationForm onClose={() => setActiveForm(null)} onSubmit={handleAddPermission} />
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.25s ease-out;
+        }
+      `}</style>
     </div>
   )
 }

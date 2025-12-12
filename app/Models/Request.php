@@ -56,11 +56,10 @@ class Request extends Model
     return $this->hasOne(Invoice::class, 'request_id');
   }
 
-  public function departemen()
+  public function department()
   {
-    return $this->belongsTo(Department::class, 'departemen_id');
+    return $this->belongsTo(Department::class, 'department', 'nama_department');
   }
-
 
 
 }

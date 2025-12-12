@@ -31,21 +31,22 @@ export default function InventoryPage() {
     const [filterDivisi, setFilterDivisi] = useState('semua');
     const [filterStok, setFilterStok] = useState('semua');
     const [search, setSearch] = useState('');
+    const [openDept, setOpenDept] = useState(false);
 
     // === OPTIONS UNTUK DROPDOWN ===
-    const departmentOptions: Record<string, string[]> = {
-        'Food And Beverage': ['Support', 'Network', 'Developer'],
-        'Front Office': ['HR', 'Finance'],
-        'Housekeeping': ['Kitchen', 'Service'],
-        'Landscape': ['Cleaning', 'Maintenance'],
-        'Engineering & Maintenance': ['Cleaning', 'Maintenance'],
-        'Security': ['Patrol', 'Monitoring'],
-    };
- 
-    const divisiList =
-        filterDept !== 'semua'
-            ? departmentOptions[filterDept] || []
-            : Object.values(departmentOptions).flat();
+    const departmentOptions = {};
+
+    const deptList = [
+  { kode: "FNB", nama: "Food & Beverage" },
+  { kode: "FO", nama: "Front Office" },
+  { kode: "HK", nama: "Housekeeping" },
+  { kode: "LS", nama: "Landscape" },
+  { kode: "ENG", nama: "Engineering & Maintenance" },
+  { kode: "SEC", nama: "Security" },
+  { kode: "ACC", nama: "Accounting & Administration" },
+  { kode: "MKT", nama: "Marketing " },
+];
+
 
     // === FILTER DATA ===
     const filteredItems = inventories.filter((item) => {
@@ -61,6 +62,12 @@ export default function InventoryPage() {
             (filterStok === 'restock' && needsRestock);
         return matchesSearch && matchesDept && matchesStok;
     });
+
+    const filteredData = inventories.filter(item => {
+    if (filterDept === "semua") return true;
+    return item.department === filterDept;
+});
+
 
     // === STATISTIK ===
     const totalBarang = inventories.length;
@@ -165,40 +172,26 @@ export default function InventoryPage() {
                         <div className="flex flex-wrap gap-3 justify-between items-center">
                             <div className="flex flex-wrap gap-3 items-center">
                                 {/* Department */}
-                                <Select value={filterDept} onValueChange={setFilterDept}>
-                                    <SelectTrigger className="w-[200px] h-9 text-sm bg-slate-50 border-slate-300">
-                                        <Building2 className="w-4 h-4 mr-2 text-slate-500" />
-                                        <SelectValue placeholder="Pilih Departemen" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="semua">Semua Departemen</SelectItem>
-                                        {Object.keys(departmentOptions).map((dept) => (
-                                            <SelectItem key={dept} value={dept}>
-                                                {dept}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+<Select value={filterDept} onValueChange={setFilterDept}>
+    <SelectTrigger className="w-[200px] h-9 text-sm bg-slate-50 border-slate-300">
+        <Building2 className="w-4 h-4 mr-2 text-slate-500" />
+        <SelectValue placeholder="Semua Departemen" />
+    </SelectTrigger>
 
-                                {/* Divisi */}
-                                <Select
-                                    value={filterDivisi}
-                                    onValueChange={setFilterDivisi}
-                                    disabled={divisiList.length === 0}
-                                >
-                                    <SelectTrigger className="w-[180px] h-9 text-sm bg-slate-50 border-slate-300 disabled:opacity-60">
-                                        <PackageSearch className="w-4 h-4 mr-2 text-slate-500" />
-                                        <SelectValue placeholder="Pilih Divisi" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="semua">Semua Divisi</SelectItem>
-                                        {divisiList.map((div) => (
-                                            <SelectItem key={div} value={div}>
-                                                {div}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+    <SelectContent>
+        <SelectItem value="semua">Semua Departemen</SelectItem>
+
+        {deptList.map((dept) => (
+            <SelectItem key={dept.kode} value={dept.nama}>
+                {dept.nama}
+            </SelectItem>
+        ))}
+    </SelectContent>
+</Select>
+
+
+
+                                
 
                                 {/* Stok filter */}
                                 <Select value={filterStok} onValueChange={setFilterStok}>

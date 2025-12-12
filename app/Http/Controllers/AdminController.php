@@ -224,15 +224,21 @@ class AdminController extends Controller
 
   public function inventory()
   {
-    // GUNAKAN TABEL GUDANG YANG ADA DI DATABASE ANDA
     $inventories = DB::table('gudang')
-      ->select('id', 'nama_barang', 'stok', 'satuan')
+      ->leftJoin('requests', 'gudang.request_id', '=', 'requests.id')
+      ->select(
+        'gudang.id',
+        'gudang.nama_barang',
+        'gudang.stok',
+        'gudang.satuan',
+        'requests.department'
+      )
       ->get()
       ->map(function ($item) {
         return [
           'id' => $item->id,
           'nama_barang' => $item->nama_barang,
-          'department' => 'Gudang', // Default department karena tabel gudang tidak ada kolom department
+          'department' => $item->department ?? '-', // tetap aman
           'stok' => $item->stok,
           'satuan' => $item->satuan,
         ];
@@ -242,6 +248,8 @@ class AdminController extends Controller
       'inventories' => $inventories
     ]);
   }
+
+
 
   // Method untuk detail berdasarkan status (jika diperlukan)
   public function dashboardDetail($status)
@@ -471,6 +479,6 @@ class AdminController extends Controller
     ]);
   }
 
-  
+
 
 }

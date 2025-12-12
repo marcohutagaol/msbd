@@ -45,4 +45,9 @@ class User extends Authenticatable
     return $this->hasMany(Permission::class);
   }
 
+  public function karyawan()
+  {
+    return $this->belongsTo(Karyawan::class, 'id_karyawan', 'id_karyawan');
+  }
+
 }
