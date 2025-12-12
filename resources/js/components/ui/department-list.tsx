@@ -9,7 +9,7 @@ interface Department {
   name: string
   nama_department: string
   total_requests: number
-  total_items: number // PASTIKAN INI ADA
+  total_items: number 
   pending_count: number
   approved_count: number
   completed_count: number

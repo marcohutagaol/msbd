@@ -32,7 +32,7 @@ class DashboardPurchasingController extends Controller
                                 ->whereIn('status', ['Completed', 'Arrived'])
                                 ->count();
 
-        return [
+       return [
     'id' => $request->request_number,
     'name' => $request->request_number,
     'nama_department' => $request->department,
@@ -41,8 +41,15 @@ class DashboardPurchasingController extends Controller
     'pending_count' => $pendingItems,
     'approved_count' => $approvedItems,
     'completed_count' => $completedItems,
-    'created_at' => $request->created_at->toISOString(), 
+
+    // 🔥 Tambahkan ini!
+    'request_date' => $request->request_date
+        ? $request->request_date->toISOString()
+        : null,
+
+    'created_at' => $request->created_at->toISOString(),
 ];
+
 
 
         });
@@ -138,7 +145,6 @@ public function getDepartmentDetails($departmentId)
             'approved_count'  => $request->items->where('status', 'Approved')->count(),
             'completed_count' => $request->items->whereIn('status', ['Completed','Arrived'])->count(),
 
-            // 🔥 INI YANG KAMU LUPA
             'request_date' => $request->request_date
                 ? \Carbon\Carbon::parse($request->request_date)->toISOString()
                 : null,

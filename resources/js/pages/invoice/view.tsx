@@ -34,7 +34,6 @@ const formatRupiah = (amount: number) => {
 
 
 
-
 export default function InvoiceView({ invoice }: InvoiceProps) {
     return (
         <>
@@ -86,9 +85,10 @@ export default function InvoiceView({ invoice }: InvoiceProps) {
 
                     {/* Items Table Card */}
                     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                        <div className="bg-gradient-to-r from-slate-700 to-slate-800 p-6">
+                        <div className="bg-gradient-to-r from-blue-800 to-cyan-600 p-6">
+
                             <div className="flex items-center gap-2">
-                                <Package className="w-5 h-5 text-slate-300" />a
+                                <Package className="w-5 h-5 text-slate-300" />
                                 <h2 className="text-xl font-bold text-white">Daftar Item Pembelian</h2>
                             </div>
                             <p className="text-slate-300 text-sm mt-1">
@@ -130,11 +130,11 @@ export default function InvoiceView({ invoice }: InvoiceProps) {
                                             </td>
                                             <td className="p-4 text-center">
                                                 <span className="inline-flex items-center justify-center px-3 py-1 bg-slate-100 text-slate-700 rounded-full font-semibold text-sm">
-                                                    {item.jumlah}x
+                                                    {item.jumlah}
                                                 </span>
                                             </td>
                                             <td className="p-4 text-right font-medium text-gray-700">
-                                                {formatRupiah(invoice.total_harga)}
+                                                {formatRupiah(invoice.total_harga/item.jumlah)}
 
                                             </td>
                                             <td className="p-4 text-right">

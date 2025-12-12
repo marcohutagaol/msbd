@@ -14,7 +14,6 @@ class MonitoringRequestController extends Controller
         try {
             $user = Auth::user();
 
-            // Ambil nama departemen user login
             $departmentName = DB::table('karyawan')
                 ->join('department', 'karyawan.kode_department', '=', 'department.kode_department')
                 ->where('karyawan.id_karyawan', $user->id_karyawan)
@@ -40,7 +39,6 @@ class MonitoringRequestController extends Controller
                     $lateCount     = $req->items->whereIn('status', ['Rejected', 'Canceled'])->count();
                     $processCount  = $req->items->whereIn('status', ['Pending', 'Approved'])->count();
 
-                    // Tentukan status final
                     if ($totalItems > 0 && $completeCount === $totalItems) {
                         $finalStatus = 'Completed';
                     } elseif ($lateCount > 0 && $processCount === 0) {
@@ -54,7 +52,6 @@ class MonitoringRequestController extends Controller
                         'request_number' => $req->request_number,
                         'department' => $req->department,
 
-                        // Format tanggal
                         'request_date' => $req->request_date
                             ? $req->request_date->toISOString()
                             : null,
@@ -64,13 +61,16 @@ class MonitoringRequestController extends Controller
                         'status' => $finalStatus,
                         'total_items' => $totalItems,
                     ];
-                });
+                })
+                ->filter(function ($req) {
+                    return $req['total_items'] > 0;
+                })
+                ->values(); // <- WAJIB supaya index rapih
 
             return Inertia::render('table/monitoring-item', [
                 'requests' => $requests,
                 'departmentName' => $departmentName,
             ]);
-
         } catch (\Exception $e) {
             return Inertia::render('table/monitoring-item', [
                 'requests' => [],

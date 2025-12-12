@@ -131,7 +131,7 @@ Route::get('/invoice/{id}/download', function ($id) {
     $invoice = \App\Models\Invoice::with('purchases')->findOrFail($id);
 
     $pdf = Pdf::loadView('pdf.struk', ['invoice' => $invoice])
-        ->setPaper([0, 0, 226.77, 600], 'portrait'); // ukuran struk 80mm
+      ->setPaper([0, 0, 226.77, 600], 'portrait'); // ukuran struk 80m
 
     return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
 });

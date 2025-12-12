@@ -8,7 +8,7 @@ interface InvoiceSummaryProps {
   summary: any;
   formatDate: (date: string) => string;
   formatRupiah: (value: number) => string;
-  downloadPDF: () => void;
+
 }
 
 export default function InvoiceSummary({
@@ -18,7 +18,7 @@ export default function InvoiceSummary({
   summary,
   formatDate,
   formatRupiah,
-  downloadPDF
+
 }: InvoiceSummaryProps) {
   if (!show) return null;
 
@@ -40,13 +40,6 @@ export default function InvoiceSummary({
               </p>
             </div>
           </div>
-          <Button
-            onClick={downloadPDF}
-            className="flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-50 shadow-xl hover:shadow-2xl transition-all duration-300 font-semibold px-6 py-6 rounded-xl"
-          >
-            <Download className="w-5 h-5" />
-            Download PDF
-          </Button>
         </div>
       </div>
 
