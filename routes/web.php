@@ -1,6 +1,11 @@
 <?php
-
+use App\Http\Controllers\AdminInvoiceController;
+use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\DashboardPurchasingController;
 use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\LogRequestController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportItemController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
@@ -15,7 +20,13 @@ use App\Http\Controllers\DepartemenItemController;
 use App\Http\Controllers\TransferBarangController;
 use App\Http\Controllers\PurchasingDetailController;
 use App\Http\Controllers\RequestManagementController;
-use App\Http\Controllers\DashboardPurchasingController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MonitoringRequestController;
+use App\Http\Controllers\DashboardController;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+
+
 
 
 
@@ -81,8 +92,8 @@ use App\Http\Controllers\DashboardPurchasingController;
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
-  Route::get('/', fn() => Inertia::render('dashboard'))->name('home');
-  Route::get('/dashboard', fn() => Inertia::render('dashboard'))->name('dashboard');
+  Route::get('/', [DashboardController::class, 'index'])->name('home');
+  Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 // =======================
@@ -101,10 +112,16 @@ Route::middleware(['auth'])->group(function () {
   // =======================
   // PURCHASING & REQUEST
   // =======================
-  Route::get('/dashboard-purchasing', [DashboardPurchasingController::class, 'index'])->name('dashboard-purchasing');
-  Route::get('/dashboard-purchasing/department/{id}', [DashboardPurchasingController::class, 'getDepartmentDetails'])->name('dashboard-purchasing.department');
-  Route::get('/purchasing/{departmentId}', [PurchasingDetailController::class, 'show'])->name('purchasing.detail');
-  Route::post('/purchasing-detail/{departmentId}/approve-all', [PurchasingDetailController::class, 'approveAll'])->name('purchasing.approve-all');
+  Route::get('/dashboard-purchasing', [DashboardPurchasingController::class, 'index'])
+    ->name('dashboard-purchasing');
+
+
+  Route::get('/purchasing/{request_number}', [PurchasingDetailController::class, 'show'])
+    ->name('purchasing.show');
+
+
+  
+Route::post('/purchasing-detail/{requestNumber}/approve-all', [PurchasingDetailController::class, 'approveAll']);
   Route::post('/purchasing-detail/item/{itemId}/update-status', [PurchasingDetailController::class, 'updateStatus'])->name('purchasing.update-status');
 
   Route::get('/request', fn() => Inertia::render('table/request'))->name('request');
@@ -115,9 +132,16 @@ Route::middleware(['auth'])->group(function () {
   // =======================
   // MONITORING
   // =======================
-  Route::get('/monitoring-item', [MonitoringController::class, 'index'])->name('monitoring-item');
+  Route::get(
+    '/monitoring-item/{request_number}',
+    [MonitoringController::class, 'index']
+  )->name('monitoring-item');
+
   Route::patch('/request-items/{id}', [MonitoringController::class, 'update'])->name('request-items.update');
   Route::delete('/request-items/{id}', [MonitoringController::class, 'destroy'])->name('request-items.destroy');
+
+  Route::get('/monitoring-request', [MonitoringRequestController::class, 'index'])
+    ->name('monitoring-request');
 
   // =======================
   // PERMISSION
@@ -136,10 +160,41 @@ Route::middleware(['auth'])->group(function () {
   // =======================
   // INPUT PRICE
   // =======================
-  Route::get('/input-price', [InputPriceController::class, 'index'])->name('input-price');
-  Route::post('/input-price/confirm-preorder', [InputPriceController::class, 'confirmPreorder'])->name('input-price.confirm');
-  Route::post('/input-price/mark-arrived', [InputPriceController::class, 'markAsArrived'])->name('input-price.mark-arrived');
-  Route::post('/input-price/mark-all-arrived', [InputPriceController::class, 'markAllArrived'])->name('input-price.mark-all-arrived');
+  Route::get('/input-price/{request_number}', 
+    [InputPriceController::class, 'index']
+)->name('input-price.show');
+
+
+Route::post('/input-price/save-invoice', 
+    [InputPriceController::class, 'saveInvoice']
+);
+
+Route::post('/input-price/confirm-preorder', 
+    [InputPriceController::class, 'confirmPreorder']
+)->name('input-price.confirm-preorder');
+
+Route::post('/input-price/mark-arrived', 
+    [InputPriceController::class, 'markAsArrived']
+)->name('input-price.mark-arrived');
+
+Route::post('/input-price/mark-all-arrived', 
+    [InputPriceController::class, 'markAllArrived']
+)->name('input-price.mark-all-arrived');
+
+// =========================
+// VIEW INVOICE
+// =========================
+Route::get('/invoice/{invoice_number}', [InvoiceController::class, 'show'])
+    ->name('invoice.show');
+
+Route::get('/invoice/{id}/download', function ($id) {
+    $invoice = \App\Models\Invoice::with('purchases')->findOrFail($id);
+
+    $pdf = Pdf::loadView('pdf.struk', ['invoice' => $invoice])
+      ->setPaper([0, 0, 226.77, 600], 'portrait'); // ukuran struk 80m
+
+    return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
+});
 
   // =======================
   // TRANSFER
@@ -161,23 +216,57 @@ Route::middleware(['auth'])->group(function () {
   // =======================
   Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
     Route::get('/absensi', [AdminController::class, 'absensi'])->name('absensi');
+
     Route::get('/inventory', [AdminController::class, 'inventory'])->name('inventory');
+
+    Route::get('/invoice', [AdminInvoiceController::class, 'index'])->name('invoice');
+    Route::get('/LogRequest', [LogRequestController::class, 'index'])->name('log_request');
+    Route::get('/LogRequest/export/pdf', [LogRequestController::class, 'exportPDF'])->name('logs.export.pdf');
+    Route::get('/LogRequest/export/csv', [LogRequestController::class, 'exportCSV'])->name('logs.export.csv');
+    Route::get('/LogRequest/export/all', [LogRequestController::class, 'exportAll'])->name('logs.export.all');
+
+    Route::get('/ReportItem', [ReportItemController::class, 'index'])->name('report_item');
+
     Route::get('/requestitem', fn() => Inertia::render('admin/RequestItem'))->name('requestitem');
     Route::get('/requestdetail/{kode_department}', fn($kode_department) => Inertia::render('admin/RequestDetailPage', ['kode_department' => $kode_department]))->name('requestdetail');
     Route::get('/dashboard/detail/{status}', fn($status) => Inertia::render('admin/StatusDetail', ['status' => $status]))->name('dashboard.detail');
     Route::get('/requests-management', [RequestManagementController::class, 'index'])->name('requests-management');
     Route::get('/requests-detail/{kodeDepartment}', [RequestManagementController::class, 'showDetail'])->name('requests-detail');
+
     Route::get('/karyawan', [KaryawanController::class, 'index'])->name('karyawan');
     Route::post('/karyawan/store', [KaryawanController::class, 'store']);
     Route::put('/karyawan/update/{id}', [KaryawanController::class, 'update'])->name('karyawan.update');
     Route::get('/detailKaryawan/{id}', [KaryawanController::class, 'detail']);
     Route::get('/mantanKaryawan', [KaryawanController::class, 'mantan']);
+    Route::delete('/karyawan/delete/{id}', [KaryawanController::class, 'destroy'])->name('karyawan.destroy');
 
-    Route::get('/permission', function () {
-      return Inertia::render('admin/permission');
-  })->name('admin.permission');
+
+    Route::get('/permission', [AdminController::class, 'permission']);
+
+    Route::get('/Announcement', [AnnouncementController::class, 'index'])->name('announcement.index');
+    Route::post('/Announcement', [AnnouncementController::class, 'store'])->name('announcement.store');
+    Route::put('/Announcement/{id}', [AnnouncementController::class, 'update'])->name('announcement.update');
+    Route::delete('/Announcement/{id}', [AnnouncementController::class, 'destroy'])->name('announcement.destroy');
+
+    Route::get('/Report', [ReportController::class, 'index'])->name('report.index');
+    Route::delete('/Report/{id}', [ReportController::class, 'destroy'])->name('report.destroy');
+
+
+    Route::get('/RequestItem', function () {
+      return Inertia::render('admin/RequestItem');
+    })->name('admin.RequestItem');
+
+
   });
+  Route::post('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+
+    return redirect('/login');
+  })->name('logout');
 
 
   // =======================
@@ -200,6 +289,9 @@ Route::get('/api/departemen', [DepartemenItemController::class, 'getDepartemen']
 // SETTINGS
 // =======================
 require __DIR__ . '/settings.php';
+
+Route::get('/announcement', fn() => Inertia::render('announcement/page'))->name('announcement');
+
 
 
 

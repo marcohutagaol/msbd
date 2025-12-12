@@ -1,28 +1,38 @@
-
 import { useState, useEffect } from "react";
+import { usePage } from "@inertiajs/react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
+// Type user sesuai Breeze
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  role?: string;
+  company?: string;
+  photo?: string | null;
+};
 
 export default function StatsToday() {
   const [currentTime, setCurrentTime] = useState("");
 
+  // Ambil user login dari Laravel (Inertia)
+  const { props } = usePage<{ auth: { user: User } }>();
+  const user = props.auth.user;
+
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setCurrentTime(now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }));
+      setCurrentTime(
+        now.toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      );
     };
     updateTime();
     const interval = setInterval(updateTime, 60000);
     return () => clearInterval(interval);
   }, []);
-
-  const stats = [
-    { label: "Hadir", value: 65, color: "#10b981" },
-    { label: "Izin", value: 15, color: "#3b82f6" },
-    { label: "Sakit", value: 10, color: "#f59e0b" },
-    { label: "Belum Absen", value: 7, color: "#8b5cf6" },
-    { label: "Tanpa Keterangan", value: 3, color: "#ef4444" },
-  ];
 
   return (
     <div>
@@ -31,25 +41,33 @@ export default function StatsToday() {
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-4">
             <Avatar className="w-16 h-16">
-              <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" />
-              <AvatarFallback>CL</AvatarFallback>
+              <AvatarImage
+                src={user.photo ?? undefined}
+              />
+              <AvatarFallback>
+                {user.name.substring(0, 2).toUpperCase()}
+              </AvatarFallback>
             </Avatar>
+
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Rio Nibaho</h2>
-              <p className="text-gray-600">Super Visior</p>
-              <p className="text-sm text-gray-500 mt-2">PT. Bergoyang</p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {user.name}
+              </h2>
+              <p className="text-gray-600">
+                {user.role ?? "Jabatan belum diatur"}
+              </p>
+              {/* <p className="text-sm text-gray-500 mt-2">
+                {user.company ?? "Perusahaan belum diatur"}
+              </p> */}
             </div>
           </div>
+
           <div className="text-right">
             <p className="text-sm text-gray-600">Rabu, 27 Sep 2023</p>
             <p className="text-sm text-gray-600">{currentTime} WIB</p>
           </div>
         </div>
       </div>
-
-     
-     
-      
     </div>
   );
 }

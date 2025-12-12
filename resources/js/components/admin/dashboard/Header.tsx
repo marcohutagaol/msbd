@@ -2,7 +2,19 @@
 
 import { IoMdNotifications } from "react-icons/io";
 import { FiMoon } from "react-icons/fi";
-import { HiMenuAlt2 } from "react-icons/hi"; // 🔹 Ikon toggle sidebar
+import { HiMenuAlt2 } from "react-icons/hi";
+
+import { usePage } from "@inertiajs/react";
+
+// Type user dari Laravel Breeze
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  role?: string;
+  company?: string;
+  photo?: string | null;
+};
 
 interface HeaderProps {
   isSidebarOpen: boolean;
@@ -10,6 +22,16 @@ interface HeaderProps {
 }
 
 export default function Header({ onToggleSidebar }: HeaderProps) {
+  const { props } = usePage<{ auth: { user: User } }>();
+  const user = props.auth.user;
+
+  // Ambil inisial (misal Rio Naibaho -> RN)
+  const initials = user.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+
   return (
     <header className="flex items-center justify-between bg-white px-10 py-4 shadow-sm font-[Poppins,sans-serif]">
       {/* === TOGGLE SIDEBAR BUTTON === */}
@@ -40,10 +62,13 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
 
           <div className="w-8 h-8 rounded-full bg-[#2f6d8a] flex items-center justify-center font-semibold shrink-0">
 
-            RN
+            {initials}
+
           </div>
-          <span className="font-medium whitespace-nowrap">Rio Naibaho</span>
-          <span className="text-[10px]">▼</span>
+
+          <span className="font-medium whitespace-nowrap">{user.name}</span>
+
+          
         </div>
       </div>
     </header>

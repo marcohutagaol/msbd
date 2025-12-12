@@ -8,12 +8,12 @@ use Illuminate\Http\Request;
 
 class MonitoringController extends Controller
 {
-    public function index()
-    {
-        // Ambil data dari request_items dengan relasi request
-        $requestItems = RequestItem::with(['request' => function($query) {
-            $query->select('id', 'department', 'request_date', 'notes');
-        }])
+public function index($request_number)
+{
+    $requestItems = RequestItem::with(['request'])
+        ->whereHas('request', function ($query) use ($request_number) {
+            $query->where('request_number', $request_number);
+        })
         ->orderBy('created_at', 'desc')
         ->get()
         ->map(function ($item) {
@@ -27,19 +27,18 @@ class MonitoringController extends Controller
                 'catatan' => $item->catatan,
                 'status' => $item->status,
                 'request' => $item->request ? [
-                    'department' => $item->request->department,
                     'request_date' => $item->request->request_date,
-                    'notes' => $item->request->notes,
                 ] : null,
-                'created_at' => $item->created_at,
-                'updated_at' => $item->updated_at,
             ];
         });
 
-        return Inertia::render('table/monitoring-item', [
-            'requestItems' => $requestItems
-        ]);
-    }
+    return Inertia::render('table/monitoring-item-detail', [
+        'orders' => $requestItems,      // ✅ HARUS PERSIS INI
+        'requestNumber' => $request_number,
+    ]);
+}
+
+
 
     public function update(Request $request, $id)
     {
@@ -65,4 +64,20 @@ class MonitoringController extends Controller
 
         return redirect()->back()->with('success', 'Item berhasil dihapus');
     }
+
+    private function updateRequestStatusIfAllDone($request_id)
+{
+    $totalItems = RequestItem::where('request_id', $request_id)->count();
+
+    $doneItems = RequestItem::where('request_id', $request_id)
+        ->whereIn('status', ['Completed', 'Arrived'])
+        ->count();
+
+    if ($totalItems > 0 && $totalItems === $doneItems) {
+        Request::where('id', $request_id)->update([
+            'status' => 'Completed'
+        ]);
+    }
+}
+
 }

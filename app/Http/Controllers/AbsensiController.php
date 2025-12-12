@@ -8,24 +8,42 @@ use Illuminate\Http\Request;
 use App\Models\Absen;
 use Illuminate\Support\Facades\Auth;
 use Cloudinary\Cloudinary;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+
 
 class AbsensiController extends Controller
 {
   public function store(Request $request)
 {
+    // dd([
+    //     'masuk_store' => true,
+    //     'has_file' => $request->hasFile('foto'),
+    //     'all_request' => $request->all(),
+    // ]);
     try {
 
         // =============================
         // VALIDASI (status_absen dihapus)
         // =============================
-        $validated = $request->validate([
-            'foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-            'tipe_absen' => 'required|in:masuk,pulang',
-            'waktu_absen' => 'required|string',
-            'lokasi' => 'required|string',
-            'device_info' => 'required|string',
-            'ip_address' => 'required|string'
-        ]);
+      $validator = Validator::make($request->all(), [
+    'foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+    'tipe_absen' => 'required|in:masuk,pulang',
+    'waktu_absen' => 'required|string',
+    'lokasi' => 'required|string',
+    'device_info' => 'required|string',
+    'ip_address' => 'required|string'
+]);
+
+if ($validator->fails()) {
+    return response()->json([
+        'success' => false,
+        'errors' => $validator->errors()
+    ], 422);
+}
+
+$validated = $validator->validated();
+
 
         // =============================
         // CEK FILE FOTO
@@ -40,30 +58,35 @@ class AbsensiController extends Controller
         // =============================
         // UPLOAD KE CLOUDINARY
         // =============================
-        try {
-            $cloudinary = new Cloudinary([
-                'cloud' => [
-                    'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                    'api_key' => env('CLOUDINARY_KEY'),
-                    'api_secret' => env('CLOUDINARY_SECRET'),
-                ],
-                'url' => ['secure' => true]
-            ]);
+ try {
 
-            $uploadResult = $cloudinary->uploadApi()->upload(
-                $request->file('foto')->getRealPath(),
-                ['folder' => 'absensi_kawaland']
-            );
+    $cloudinary = new Cloudinary([
+        'cloud' => [
+            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+            'api_key' => env('CLOUDINARY_KEY'),
+            'api_secret' => env('CLOUDINARY_SECRET'),
+        ],
+        'url' => [
+            'secure' => true
+        ]
+    ]);
 
-            $imageUrl = $uploadResult['secure_url'];
+    $uploadResult = $cloudinary->uploadApi()->upload(
+        $request->file('foto')->getRealPath(),
+        [
+            'folder' => 'absensi_kawaland'
+        ]
+    );
 
-        } catch (\Exception $e) {
-            \Log::error('Cloudinary upload gagal:', [$e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Upload ke Cloudinary gagal: ' . $e->getMessage(),
-            ], 500);
-        }
+    $imageUrl = $uploadResult['secure_url'];
+
+} catch (\Exception $e) {
+    Log::error('Cloudinary upload gagal:', [$e->getMessage()]);
+    return response()->json([
+        'success' => false,
+        'message' => 'Upload ke Cloudinary gagal: ' . $e->getMessage(),
+    ], 500);
+}
 
         // =============================
         // AMBIL DATA KARYAWAN

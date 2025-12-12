@@ -12,11 +12,30 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+
+import { 
+    BookOpen, 
+    Folder, 
+    LayoutGrid, 
+    Calendar,
+    FileCheck,
+    Package,
+    ShoppingCart,
+    Store,
+    Warehouse,
+    Megaphone,
+    BarChart3,
+    Users,
+    ClipboardList
+} from 'lucide-react';
+
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
+/* -------------------------------------------------------
+   NAV UNTUK USER
+------------------------------------------------------- */
+const userNavItems: NavItem[] = [
     {
         title: 'Beranda',
         href: dashboard(),
@@ -25,83 +44,88 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Absensi',
         href: '/absensi/1',
-        icon: LayoutGrid,
+        icon: Calendar,
     },
     {
         title: 'Izin',
         href: '/permission',
-        icon: LayoutGrid,
+        icon: FileCheck,
     },
     {
         title: 'Barang',
         href: '#',
-        icon: LayoutGrid,
+        icon: Package,
         items: [
             {
                 title: 'Permintaan',
                 href: '/request',
-                icon: LayoutGrid,
+                icon: ClipboardList,
             },
             {
                 title: 'Pemantauan Item',
-                href: '/monitoring-item',
-                icon: LayoutGrid,
+                href: '/monitoring-request',
+                icon: Package,
             },
         ],
     },
     {
         title: 'Pembelian',
         href: '#',
-        icon: LayoutGrid,
+        icon: ShoppingCart,
         items: [
             {
                 title: 'Pembelian',
                 href: '/dashboard-purchasing',
-                icon: LayoutGrid,
+                icon: ShoppingCart,
             },
-       
             {
-                title: 'Input Harga',
-                href: '/input-price',
-                icon: LayoutGrid,
-            },
-                {
-                title: 'Toko ',
+                title: 'Toko',
                 href: '/toko',
-                icon: LayoutGrid,
+                icon: Store,
             },
         ],
     },
-
     {
         title: 'Inventory',
         href: '/inventory',
-        icon: LayoutGrid,
+        icon: Warehouse,
     },
+];
 
+/* -------------------------------------------------------
+   NAV UNTUK MANAGER
+------------------------------------------------------- */
+const managerNavItems: NavItem[] = [
     {
         title: 'Manager Dashboard',
         href: '/manager',
-        icon: LayoutGrid,
-    },
-    
-    {
-        title: 'Manager Absensi',
-        href: '/manager-absensi',
-        icon: LayoutGrid,
+        icon: BarChart3,
     },
     {
         title: 'Manager Karyawan',
         href: '/manager-karyawan',
-        icon: LayoutGrid,
+        icon: Users,
+    },
+    {
+        title: 'Manager Absensi',
+        href: '/manager-absensi',
+        icon: Calendar,
+    },
+    {
+        title: 'Announcement',
+        href: '/announcement',
+        icon: Megaphone,
     },
     {
         title: 'Report',
         href: '/report',
-        icon: LayoutGrid,
+        icon: BarChart3,
     },
 ];
 
+/* -------------------------------------------------------
+   FOOTER NAV
+------------------------------------------------------- */
 const footerNavItems: NavItem[] = [
     {
         title: 'Repository',
@@ -115,7 +139,19 @@ const footerNavItems: NavItem[] = [
     },
 ];
 
+/* -------------------------------------------------------
+   SIDEBAR UTAMA
+------------------------------------------------------- */
 export function AppSidebar() {
+    const { auth } = usePage().props;
+
+    const role = auth?.user?.role;
+
+    const navItems =
+        role === 'manager'
+            ? managerNavItems
+            : userNavItems;
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -131,7 +167,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={navItems} />
             </SidebarContent>
 
             <SidebarFooter>

@@ -1,17 +1,14 @@
-
-
-
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import React from 'react';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  Users, 
-  UserX, 
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Users,
+  UserX,
   Search,
   Filter,
   Building,
@@ -29,9 +26,9 @@ import {
   XCircle,
   CheckCircle,
   RefreshCw,
-  Home,      
-  Coffee,      
-  Calculator, 
+  Home,
+  Coffee,
+  Calculator,
   Heart,
   X,
   Save,
@@ -42,100 +39,183 @@ import {
   Phone as PhoneIcon,
   MapPin as MapPinIcon,
   Building as BuildingIcon,
-  Camera
+  Camera,
+  Menu
 } from 'lucide-react';
 import Header from '../../components/admin/dashboard/Header';
 import Sidebar from '../../components/admin/dashboard/Sidebar';
-
 import { router, usePage } from '@inertiajs/react';
-
 
 // Interface untuk data karyawan
 interface Karyawan {
   id: number;
   nama: string;
-
   department: string;
+  kode_department: string;
   jabatan: string;
   status_aktif: 'AKTIF' | 'NONAKTIF';
-  tanggalBergabung: string;
-
+  tanggalBergabung?: string;
+  alamat?: string;
+  tanggal_lahir?: string;
+  tempat_lahir?: string;
+  no_telepon?: string;
 }
 
 const Karyawan: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [karyawanEdit, setKaryawanEdit] = useState<Karyawan | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
-
-  nama: '',
-  department: '',
-  jabatan: '',
-  status_aktif: 'AKTIF' as 'AKTIF' | 'NONAKTIF',
-  alamat: '',
-  tanggal_lahir: '',
-  tempat_lahir: '',
-  no_telepon: '',
-});
-
-
-
-  // Fungsi toggle sidebar
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
-  // Fungsi untuk membuka modal edit
-
-  const openEditModal = (karyawan: any) => {
-  setEditId(karyawan.id_karyawan);
-
-  setFormData({
-    nama: karyawan.nama,
-    department: karyawan.department,
-    jabatan: karyawan.jabatan,
-    status_aktif: karyawan.status_aktif,
-
-    alamat: karyawan.alamat ?? "",
-    tanggal_lahir: karyawan.tanggal_lahir ?? "",
-    tempat_lahir: karyawan.tempat_lahir ?? "",
-    no_telepon: karyawan.no_telepon ?? ""
-  });
-
-  setShowEditModal(true);
-};
-
-
-
-
-  // Fungsi untuk membuka modal tambah
-  const openAddModal = () => {
-    // Reset form data untuk modal tambah
-    setFormData({
-
     nama: '',
     department: '',
     jabatan: '',
-    status_aktif: 'AKTIF',
-    alamat:'',
+    status_aktif: 'AKTIF' as 'AKTIF' | 'NONAKTIF',
+    alamat: '',
     tanggal_lahir: '',
     tempat_lahir: '',
     no_telepon: '',
   });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterDept, setFilterDept] = useState('');
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+  const [deptDropdownOpen, setDeptDropdownOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-    setShowAddModal(true);
-    document.body.style.overflow = 'hidden';
+  // Deteksi ukuran layar untuk responsif
+  useEffect(() => {
+    const checkIfMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      
+      if (mobile && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+      if (!mobile && !isSidebarOpen) {
+        setIsSidebarOpen(true);
+      }
+    };
+
+    checkIfMobile();
+    window.addEventListener("resize", checkIfMobile);
+    return () => window.removeEventListener("resize", checkIfMobile);
+  }, []);
+
+  // Close sidebar on mobile when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const sidebar = document.querySelector('.mobile-sidebar');
+      const toggleButton = document.querySelector('.sidebar-toggle-button');
+      
+      if (isMobile && isSidebarOpen && 
+          sidebar && 
+          !sidebar.contains(event.target as Node) &&
+          toggleButton &&
+          !toggleButton.contains(event.target as Node)) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMobile, isSidebarOpen]);
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  // Ambil data dari Inertia props
+  const { karyawanData, totalKaryawan, totalKaryawanAktif, totalMantanKaryawan, departments } = usePage<{
+    karyawanData: Karyawan[],
+    departments: { kode_department: string, nama_department: string }[],
+    totalKaryawan: number,
+    totalKaryawanAktif: number,
+    totalMantanKaryawan: number,
+  }>().props;
+
+  // Filter & Pagination
+  const filteredData = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+
+    return karyawanData.filter((k) => {
+      const matchesSearch =
+        q === '' ||
+        (k.nama && k.nama.toLowerCase().includes(q)) ||
+        (k.department && k.department.toLowerCase().includes(q)) ||
+        (k.jabatan && k.jabatan.toLowerCase().includes(q)) ||
+        String(k.id).includes(q);
+
+      const matchesStatus = filterStatus === '' || k.status_aktif === filterStatus;
+      const matchesDept = filterDept === '' || k.kode_department === filterDept;
+
+      return matchesSearch && matchesStatus && matchesDept;
+    });
+  }, [karyawanData, searchTerm, filterStatus, filterDept]);
+
+  const totalItems = filteredData.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = filteredData.slice(startIndex, endIndex);
+
+  if (currentPage > totalPages) {
+    setCurrentPage(1);
+  }
+
+  // Modal handlers
+  const openEditModal = (karyawan: Karyawan) => {
+    setEditId(karyawan.id);
+    setKaryawanEdit(karyawan);
+    setFormData({
+      nama: karyawan.nama || '',
+      department: karyawan.department || '',
+      jabatan: karyawan.jabatan || '',
+      status_aktif: karyawan.status_aktif || 'AKTIF',
+      alamat: karyawan.alamat ?? '',
+      tanggal_lahir: karyawan.tanggal_lahir ?? '',
+      tempat_lahir: karyawan.tempat_lahir ?? '',
+      no_telepon: karyawan.no_telepon ?? '',
+    });
+    setShowEditModal(true);
   };
 
-  // Fungsi untuk menutup modal
-  const closeModal = () => {
-    setShowEditModal(false);
-    setShowAddModal(false);
+  const openAddModal = () => {
+    setEditId(null);
     setKaryawanEdit(null);
-    document.body.style.overflow = 'auto';
+    setFormData({
+      nama: '',
+      department: '',
+      jabatan: '',
+      status_aktif: 'AKTIF',
+      alamat: '',
+      tanggal_lahir: '',
+      tempat_lahir: '',
+      no_telepon: '',
+    });
+    setShowAddModal(true);
   };
 
-  // Fungsi untuk menangani perubahan form
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const closeModal = () => {
+    setShowAddModal(false);
+    setShowEditModal(false);
+    setEditId(null);
+    setFormData({
+      nama: "",
+      department: "",
+      jabatan: "",
+      status_aktif: "AKTIF",
+      alamat: "",
+      tanggal_lahir: "",
+      tempat_lahir: "",
+      no_telepon: "",
+    });
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -143,145 +223,85 @@ const Karyawan: React.FC = () => {
     }));
   };
 
-  // Fungsi untuk menyimpan perubahan edit
-  const handleSaveEdit = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (!karyawanEdit) return;
-
-  router.put(`/admin/karyawan/update/${karyawanEdit.id}`, formData, {
-    onSuccess: () => {
-      closeModal();
-    },
-    onError: (errors) => {
-  console.log("ERROR DARI SERVER:", errors);
-  alert("Terjadi kesalahan saat update.");
-}
-
-  });
-};
-
-
-
-  // Fungsi untuk menyimpan karyawan baru
-  const handleSaveAdd = () => {
-  router.post('/admin/karyawan/store', formData, {
-    onSuccess: () => {
-      closeModal();
-      setFormData({
-    nama: '',
-    department: '',
-    jabatan: '',
-    status_aktif: 'AKTIF',
-    alamat:'',
-    tanggal_lahir: '',
-    tempat_lahir: '',
-    no_telepon: '',
-  });
-    },
-    onError: (errors) => {
-      console.log(errors);
-      alert("Terjadi kesalahan.");
+    if (editId) {
+      router.post(`/admin/karyawan/update/${editId}`, { ...formData, _method: 'PUT' }, {
+        onSuccess: () => closeModal(),
+        onError: (errors: any) => {
+          console.log("ERROR UPDATE:", errors);
+          alert("Terjadi kesalahan saat update.");
+        }
+      });
+    } else {
+      router.post('/admin/karyawan/store', formData, {
+        onSuccess: () => closeModal(),
+        onError: (errors: any) => {
+          console.log("ERROR CREATE:", errors);
+          alert("Terjadi kesalahan saat menyimpan.");
+        }
+      });
     }
-  });
-};
+  };
 
-const [editId, setEditId] = useState<string | null>(null);
+  const handleEdit = (item: any) => {
+    setEditId(item.id);
+    setFormData({
+      nama: item.nama || "",
+      department: item.department || "",
+      jabatan: item.jabatan || "",
+      status_aktif: item.status_aktif || "AKTIF",
+      alamat: item.alamat || "",
+      tanggal_lahir: item.tanggal_lahir || "",
+      tempat_lahir: item.tempat_lahir || "",
+      no_telepon: item.no_telepon || "",
+    });
+    setShowEditModal(true);
+  };
 
-
-  // Fungsi untuk menangani submit form
-  const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  const url = editId
-    ? `/karyawan/update/${editId}`
-    : `/karyawan/store`;
-
-  const method = editId ? 'POST' : 'POST'; 
-  // PUT tidak bisa dipakai langsung tanpa _method
-  // Jadi kita override manual
-
-  const form = new FormData();
-  Object.entries(formData).forEach(([key, value]) => {
-    form.append(key, value as string);
-  });
-
-  if (editId) {
-    form.append("_method", "PUT"); // Laravel style
-  }
-
-  await fetch(url, {
-    method: "POST",
-    headers: {
-      "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement).content
-    },
-    body: form
-  });
-
-  setShowEditModal(false);
-  window.location.reload();
-};
-
-
-
-
-  // Data dummy karyawan
-  const { karyawanData, totalKaryawan, totalKaryawanAktif, totalMantanKaryawan } = usePage<{
-    karyawanData: Karyawan[];
-    totalKaryawan: number;
-    totalKaryawanAktif: number;
-    totalMantanKaryawan: number;
-}>().props;
-
-  // Data mantan karyawan
-  const mantanKaryawanData = karyawanData.filter(k => k.status_aktif === 'NONAKTIF');
-
-  // List department untuk dropdown
-  const departmentsList = [
-    { kode: "FNB", nama: "Food & Beverage Department" },
-    { kode: "FO", nama: "Front Office Department" },
-    { kode: "HK", nama: "Housekeeping Department" },
-    { kode: "LS", nama: "Landscape Department" },
-    { kode: "ENG", nama: "Engineering & Maintenance Department" },
-    { kode: "SEC", nama: "Security Department" },
-    { kode: "ACC", nama: "Accounting & Administration" },
-    { kode: "MKT", nama: "Marketing Department" },
-  ];
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // jumlah karyawan per halaman
-
-  const totalItems = karyawanData.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-
-  const paginatedData = karyawanData.slice(startIndex, endIndex);
-  
-
+  const handleDelete = (id: number) => {
+    if (!confirm('Hapus karyawan ini?')) return;
+    router.post(`/admin/karyawan/delete/${id}`, { _method: 'DELETE' }, {
+      onSuccess: () => alert('Berhasil dihapus'),
+      onError: () => alert('Gagal menghapus.')
+    });
+  };
 
   return (
-    <div className="flex min-h-screen bg-[#f5f7fa] font-[Poppins,Segoe_UI,system-ui,sans-serif] transition-all duration-300">
-
+    <div className="flex min-h-screen bg-[#f5f7fa] font-[Poppins,Segoe_UI,system-ui,sans-serif]">
       {/* === SIDEBAR === */}
       <div
-        className={`fixed top-0 left-0 z-50 h-full w-[260px] bg-white shadow-md transition-transform duration-300 ${
+        className={`hidden md:block fixed top-0 left-0 z-50 h-full w-[260px] bg-white shadow-md transition-transform duration-300 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <Sidebar />
       </div>
 
+      {/* Sidebar Mobile Overlay */}
+      {isMobile && isSidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={toggleSidebar}
+          ></div>
+          <div className="mobile-sidebar fixed top-0 left-0 z-50 h-full w-[260px] bg-white shadow-lg transition-transform duration-300 translate-x-0">
+            <Sidebar />
+          </div>
+        </>
+      )}
+
       {/* === MAIN CONTENT === */}
       <div
-        className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ${
-          isSidebarOpen ? 'ml-[260px]' : 'ml-0'
+        className={`flex min-h-screen flex-1 flex-col transition-all duration-300 w-full ${
+          isSidebarOpen ? 'md:ml-[260px]' : 'ml-0'
         }`}
       >
         {/* === HEADER === */}
         <div
-          className={`fixed top-0 right-0 z-40 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 ${
-            isSidebarOpen ? 'left-[260px]' : 'left-0'
+          className={`fixed top-0 right-0 z-40 bg-white shadow-sm transition-all duration-300 w-full ${
+            isSidebarOpen ? 'md:left-[260px] md:w-[calc(100%-260px)]' : 'left-0'
           }`}
         >
           <Header
@@ -291,94 +311,85 @@ const [editId, setEditId] = useState<string | null>(null);
         </div>
 
         {/* === ISI HALAMAN === */}
-        <div className="px-4 pb-8 flex flex-1 flex-col gap-6 pt-[120px] transition-all duration-300">
+        <div className="px-4 sm:px-6 lg:px-8 pb-6 flex flex-col flex-1 gap-4 md:gap-6 pt-20 md:pt-28 transition-all duration-300">
           {/* Page Header */}
-          <div className="mb-4 md:mb-1">
+          <div className="mb-2 md:mb-1">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Kelola Karyawan</h1>
-                <p className="text-gray-600 text-sm md:text-base">Kelola data karyawan aktif dan mantan karyawan Kawaland</p>
+              <div className="flex items-center gap-3">
+                <div className="p-2 md:p-3 bg-[#4789A8]/10 rounded-lg">
+                  <Users className="w-5 h-5 md:w-6 md:h-6 text-[#4789A8]" />
+                </div>
+                <div>
+                  <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">Kelola Karyawan</h1>
+                  <p className="text-gray-600 text-sm md:text-base mt-1">Kelola data karyawan aktif dan mantan karyawan</p>
+                </div>
               </div>
-              
+
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={openAddModal}
-                  className="flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 bg-[#4789A8] text-white rounded-xl hover:bg-[#3a768f] transition-all duration-200 font-medium shadow-lg hover:shadow-xl flex-1 sm:flex-none justify-center"
+                  className="flex items-center gap-2 px-4 py-2.5 md:py-3 bg-[#4789A8] text-white rounded-lg md:rounded-xl hover:bg-[#3a768f] transition-all duration-200 font-medium shadow-sm hover:shadow-md w-full sm:w-auto justify-center"
                 >
                   <UserPlus className="w-4 h-4 md:w-5 md:h-5" />
-                  <span className="hidden sm:inline">Tambah Karyawan</span>
-                  <span className="sm:hidden">Tambah</span>
+                  <span className="text-sm md:text-base">Tambah Karyawan</span>
                 </button>
               </div>
             </div>
           </div>
 
           {/* Stats Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-1">
-            {/* Total Karyawan Card */}
-            <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-4 md:mb-1">
+            <div className="bg-white rounded-lg md:rounded-xl p-4 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-500 text-sm font-medium mb-1">Total Karyawan</p>
-
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">{totalKaryawan}</p>
-
+                  <p className="text-xs md:text-sm text-gray-500 font-medium mb-1">Total Karyawan</p>
+                  <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-1">{totalKaryawan}</p>
                   <p className="text-xs md:text-sm text-gray-400">Semua karyawan terdaftar</p>
                 </div>
-                <div className="p-3 rounded-xl bg-blue-50">
-                  <Users className="w-6 h-6 md:w-8 md:h-8 text-[#4789A8]" />
+                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-blue-50">
+                  <Users className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-[#4789A8]" />
                 </div>
               </div>
             </div>
 
-            {/* Karyawan Aktif Card */}
-            <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-white rounded-lg md:rounded-xl p-4 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-500 text-sm font-medium mb-1">Karyawan Aktif</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-
-                    {totalKaryawanAktif}
-                  </p>
+                  <p className="text-xs md:text-sm text-gray-500 font-medium mb-1">Karyawan Aktif</p>
+                  <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-1">{totalKaryawanAktif}</p>
                   <p className="text-xs md:text-sm text-green-600 font-medium flex items-center gap-1">
                     <CheckCircle className="w-3 h-3 md:w-4 md:h-4" />
-                    {Math.round((totalKaryawanAktif / totalKaryawan) * 100)}% active rate
-
+                    {Math.round((totalKaryawanAktif / Math.max(1, totalKaryawan)) * 100)}% active rate
                   </p>
                 </div>
-                <div className="p-3 rounded-xl bg-green-50">
-                  <UserCheck className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
+                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-green-50">
+                  <UserCheck className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-green-600" />
                 </div>
               </div>
             </div>
 
-            {/* Mantan Karyawan Card */}
-            <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-white rounded-lg md:rounded-xl p-4 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-500 text-sm font-medium mb-1">Mantan Karyawan</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-
-                    {totalMantanKaryawan}
-                  </p>
+                  <p className="text-xs md:text-sm text-gray-500 font-medium mb-1">Mantan Karyawan</p>
+                  <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-1">{totalMantanKaryawan}</p>
                   <p className="text-xs md:text-sm text-red-600 font-medium flex items-center gap-1">
                     <XCircle className="w-3 h-3 md:w-4 md:h-4" />
-                    {Math.round((totalMantanKaryawan / totalKaryawan) * 100)}% turnover
-
+                    {Math.round((totalMantanKaryawan / Math.max(1, totalKaryawan)) * 100)}% turnover
                   </p>
                 </div>
-                <div className="p-3 rounded-xl bg-red-50">
-                  <UserX className="w-6 h-6 md:w-8 md:h-8 text-red-600" />
+                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-red-50">
+                  <UserX className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-red-600" />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Main Content Card */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-6 md:mb-1">
+          <div className="bg-white rounded-lg md:rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4 md:mb-1">
             {/* Card Header */}
             <div className="p-4 md:p-6 border-b border-gray-100">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4 md:mb-6">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
                 <div>
                   <h2 className="text-lg md:text-xl font-bold text-gray-900">Daftar Karyawan</h2>
                   <p className="text-gray-600 text-sm md:text-base">Kelola dan pantau data karyawan secara detail</p>
@@ -394,106 +405,111 @@ const [editId, setEditId] = useState<string | null>(null);
                   <input
                     type="text"
                     placeholder="Cari karyawan..."
-                    className="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300 bg-white text-sm md:text-base hover:border-gray-400"
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300 bg-white text-sm md:text-base"
                   />
                 </div>
 
                 {/* Status Filter */}
-                <div className="relative group">
-                  <button className="w-full flex items-center justify-between pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-xl bg-white text-sm md:text-base text-gray-700 hover:border-gray-400 transition-all duration-300">
-                    <div className="flex items-center gap-3">
-                      <div className="absolute left-3">
-                        <Filter className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
-                      </div>
-                      <span>Semua Status</span>
-                    </div>
-                    <ChevronDown className="w-4 h-4 text-gray-400 transition-transform duration-200 group-hover:rotate-180" />
+                <div className="relative">
+                  <button
+                    onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
+                    className="w-full flex items-center justify-between pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg bg-white text-sm md:text-base"
+                  >
+                    <span>{filterStatus === '' ? 'Semua Status' : filterStatus}</span>
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
                   </button>
-                  
-                  <div className="absolute hidden group-hover:block w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
-                    <div className="py-2">
-                      <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-700 transition-colors">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <span>Active</span>
-                      </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-700 transition-colors">
-                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
 
-                        <span>NONAKTIF</span>
+                  {statusDropdownOpen && (
+                    <div className="absolute w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                      <button
+                        onClick={() => { setFilterStatus('AKTIF'); setCurrentPage(1); setStatusDropdownOpen(false); }}
+                        className="w-full px-4 py-3 hover:bg-gray-50 text-sm text-left"
+                      >
+                        AKTIF
                       </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-700 transition-colors border-t border-gray-100">
-                        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                        <span>Semua Status</span>
+                      <button
+                        onClick={() => { setFilterStatus('NONAKTIF'); setCurrentPage(1); setStatusDropdownOpen(false); }}
+                        className="w-full px-4 py-3 hover:bg-gray-50 text-sm text-left"
+                      >
+                        NONAKTIF
+                      </button>
+                      <button
+                        onClick={() => { setFilterStatus(''); setCurrentPage(1); setStatusDropdownOpen(false); }}
+                        className="w-full px-4 py-3 hover:bg-gray-50 text-sm text-left border-t"
+                      >
+                        Semua Status
                       </button>
                     </div>
-                  </div>
+                  )}
                 </div>
 
-
-                {/* department Filter */}
-
-                <div className="relative group">
-                  <button className="w-full flex items-center justify-between pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-xl bg-white text-sm md:text-base text-gray-700 hover:border-gray-400 transition-all duration-300">
-                    <div className="flex items-center gap-3">
-                      <div className="absolute left-3">
-                        <Building className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
-                      </div>
-
-                      <span>Semua department</span>
-
-                    </div>
-                    <ChevronDown className="w-4 h-4 text-gray-400 transition-transform duration-200 group-hover:rotate-180" />
+                {/* Department Filter */}
+                <div className="relative">
+                  <button
+                    onClick={() => setDeptDropdownOpen(!deptDropdownOpen)}
+                    className="w-full flex items-center justify-between pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg bg-white text-sm md:text-base"
+                  >
+                    <span>{filterDept === '' ? 'Semua Department' : filterDept}</span>
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
                   </button>
-                  
-                  <div className="absolute hidden group-hover:block w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
-                    <div className="py-2 max-h-60 overflow-y-auto">
-                      <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 text-gray-700 transition-colors">
-                        <Users className="w-4 h-4 text-blue-500" />
-                        <span>Front Office</span>
+
+                  {deptDropdownOpen && (
+                    <div className="absolute w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                      <button
+                        onClick={() => { setFilterDept(''); setDeptDropdownOpen(false); }}
+                        className="w-full px-4 py-3 hover:bg-blue-50 text-gray-700 text-sm text-left"
+                      >
+                        Semua Department
                       </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-green-50 text-gray-700 transition-colors">
-                        <Home className="w-4 h-4 text-green-500" />
-                        <span>Housekeeping</span>
-                      </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 text-gray-700 transition-colors">
-                        <Coffee className="w-4 h-4 text-orange-500" />
-                        <span>F&B (Food & Beverage)</span>
-                      </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-purple-50 text-gray-700 transition-colors whitespace-nowrap">
-                        <Calculator className="w-4 h-4 text-purple-500 shrink-0" />
-                        <span className="truncate">Accounting & Administration</span>
-                      </button>
+                      {departments.map((d) => (
+                        <button
+                          key={d.kode_department}
+                          onClick={() => { setFilterDept(d.kode_department); setDeptDropdownOpen(false); }}
+                          className="w-full px-4 py-3 hover:bg-blue-50 text-gray-700 text-sm text-left"
+                        >
+                          {d.nama_department}
+                        </button>
+                      ))}
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex gap-2 md:gap-3">
                   <button
-                    className="flex items-center gap-2 px-3 md:px-4 py-2.5 md:py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium flex-1 justify-center hover:border-gray-400"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setFilterStatus('');
+                      setFilterDept('');
+                      setCurrentPage(1);
+                    }}
+                    className="flex items-center gap-2 px-3 md:px-4 py-2.5 md:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium flex-1 justify-center text-sm md:text-base"
                   >
                     <RefreshCw className="w-4 h-4" />
-                    <span className="hidden md:inline">Reset</span>
+                    <span>Reset</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[800px] md:min-w-full">
+            {/* Table - Desktop View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Karyawan
                     </th>
                     <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-
-                      department 
+                      department
                     </th>
                     <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Jabatan
-
                     </th>
                     <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Status
@@ -504,120 +520,89 @@ const [editId, setEditId] = useState<string | null>(null);
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-
-                  {paginatedData.map((karyawan, index) => (
-                    <tr key={karyawan.id} className="hover:bg-gray-50/80 transition-colors duration-200 group">
-                      <td className="px-4 md:px-6 py-4 md:py-5">
+                  {paginatedData.map((karyawan) => (
+                    <tr key={karyawan.id} className="transition-colors duration-200 hover:bg-gray-50">
+                      <td className="px-4 md:px-6 py-4">
                         <div className="flex items-center gap-3 md:gap-4">
                           <div className="relative shrink-0">
-                            {/* <img
-                              src={karyawan.avatar}
-                              alt={karyawan.nama}
-                              className="w-10 h-10 md:w-12 md:h-12 rounded-xl border-2 border-white shadow-sm"
-                            /> */}
-                            <div className={`absolute -bottom-1 -right-1 w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white ${
-                              karyawan.status_aktif === 'AKTIF' ? 'bg-green-500' : 'bg-red-500'
-
-                            }`} />
+                            <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-medium">
+                              {karyawan.nama.charAt(0)}
+                            </div>
+                            <div
+                              className={`absolute -bottom-1 -right-1 w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white ${
+                                karyawan.status_aktif === "AKTIF" ? "bg-green-500" : "bg-red-500"
+                              }`}
+                            />
                           </div>
                           <div className="min-w-0">
-                            <div className="font-semibold text-gray-900 truncate text-sm md:text-base">{karyawan.nama}</div>
-                            
-
-                            {/* <div className="text-gray-400 text-xs flex items-center gap-1 mt-0.5 md:mt-1">
-                              <Calendar className="w-3 h-3" />
-                              <span>Joined {karyawan.tanggalBergabung}</span>
-                            </div> */}
-                            <div className="text-xs text-[#4789A8] font-medium mt-1 md:mt-2">
+                            <div className="font-semibold text-gray-900 text-sm md:text-base truncate">
+                              {karyawan.nama}
+                            </div>
+                            <div className="text-xs text-[#4789A8] font-medium mt-1">
                               ID: {karyawan.id}
-
                             </div>
                           </div>
                         </div>
                       </td>
-                    
-                      <td className="px-4 md:px-6 py-4 md:py-5">
+
+                      <td className="px-4 md:px-6 py-4">
                         <div className="flex items-center gap-2 md:gap-3">
                           <div className="p-2 rounded-lg shrink-0 bg-blue-50 text-blue-700">
                             <Building className="w-3 h-3 md:w-4 md:h-4" />
                           </div>
                           <div className="min-w-0">
-
-                            <div className="font-medium text-gray-900 text-sm md:text-base truncate">{karyawan.department}</div>
-
+                            <div className="font-medium text-gray-900 text-sm md:text-base truncate">
+                              {karyawan.department}
+                            </div>
                           </div>
                         </div>
                       </td>
-                      
 
-                      <td className="px-4 md:px-6 py-4 md:py-5">
-                        <div className="space-y-1.5 md:space-y-2">
-                          <div className="flex items-center gap-2 text-xs md:text-sm group/email">
+                      <td className="px-4 md:px-6 py-4">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2 text-xs md:text-sm">
                             <span className="text-gray-700 truncate">{karyawan.jabatan}</span>
-
                           </div>
                         </div>
                       </td>
-                      
 
-                      <td className="px-4 md:px-6 py-4 md:py-5">
-                        <div className="flex flex-col gap-1.5 md:gap-2">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-xs font-medium border ${
-                            karyawan.status_aktif === 'AKTIF' 
-                              ? 'bg-green-50 text-green-700 border-green-100' 
-                              : 'bg-red-50 text-red-700 border-red-100'
-                          }`}>
-                            {karyawan.status_aktif === 'AKTIF' ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                      <td className="px-4 md:px-6 py-4">
+                        <div className="flex flex-col gap-1.5">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 md:px-3 py-1 rounded-full text-xs font-medium border ${
+                              karyawan.status_aktif === "AKTIF"
+                                ? "bg-green-50 text-green-700 border-green-100"
+                                : "bg-red-50 text-red-700 border-red-100"
+                            }`}
+                          >
+                            {karyawan.status_aktif === "AKTIF" ? (
+                              <CheckCircle className="w-3 h-3" />
+                            ) : (
+                              <XCircle className="w-3 h-3" />
+                            )}
                             {karyawan.status_aktif}
                           </span>
                           <span className="text-xs text-gray-500">
-                            {karyawan.status_aktif === 'AKTIF' ? 'Aktif bekerja' : 'Tidak aktif'}
-
+                            {karyawan.status_aktif === "AKTIF" ? "Aktif bekerja" : "Tidak aktif"}
                           </span>
                         </div>
                       </td>
-                      
 
-                      <td className="px-4 md:px-6 py-4 md:py-5">
-                        <div className="flex items-center gap-1 md:gap-2">
-                          <a 
+                      <td className="px-4 md:px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <a
                             href={`/admin/detailKaryawan/${karyawan.id}`}
-
-                            className="p-1.5 md:p-2 text-gray-600 hover:text-[#4789A8] hover:bg-blue-50 rounded-lg transition-all duration-200 group relative"
+                            className="peer flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
                             title="View Details"
                           >
-                            <Eye className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                              View Details
-                            </div>
+                            <Eye className="w-4 h-4" />
                           </a>
-                          
-                          <button 
-                            className="p-1.5 md:p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 group/edit relative"
+                          <button
+                            className="peer p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                            onClick={() => handleEdit(karyawan)}
                             title="Edit"
-                            onClick={() => openEditModal(karyawan)}
                           >
-                            <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/edit:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                              Edit
-                            </div>
-                          </button>
-                          
-                          <button 
-                            className={`p-1.5 md:p-2 rounded-lg transition-all duration-200 group/delete relative ${
-
-                              karyawan.status_aktif === 'AKTIF' 
-                                ? 'text-gray-400 cursor-not-allowed' 
-                                : 'text-red-600 hover:text-red-700 hover:bg-red-50'
-                            }`}
-                            title={karyawan.status_aktif === 'AKTIF' ? 'Hanya untuk NONAKTIF' : 'Delete'}
-                            disabled={karyawan.status_aktif === 'AKTIF'}
-                          >
-                            <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/delete:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                              {karyawan.status_aktif === 'AKTIF' ? 'Hanya untuk NONAKTIF' : 'Delete'}
-
-                            </div>
+                            <Edit className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -627,100 +612,166 @@ const [editId, setEditId] = useState<string | null>(null);
               </table>
             </div>
 
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-gray-200">
+              {paginatedData.map((karyawan) => (
+                <div key={karyawan.id} className="p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-start gap-3">
+                      <div className="relative">
+                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-medium">
+                          {karyawan.nama.charAt(0)}
+                        </div>
+                        <div
+                          className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
+                            karyawan.status_aktif === "AKTIF" ? "bg-green-500" : "bg-red-500"
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 text-sm">{karyawan.nama}</h3>
+                        <div className="text-xs text-[#4789A8] font-medium mt-1">ID: {karyawan.id}</div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="p-1.5 bg-blue-50 text-blue-700 rounded">
+                            <Building className="w-3 h-3" />
+                          </div>
+                          <span className="text-xs text-gray-700">{karyawan.department}</span>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">{karyawan.jabatan}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                          karyawan.status_aktif === "AKTIF"
+                            ? "bg-green-50 text-green-700"
+                            : "bg-red-50 text-red-700"
+                        }`}
+                      >
+                        {karyawan.status_aktif}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                    <div className="flex gap-2">
+                      <a
+                        href={`/admin/detailKaryawan/${karyawan.id}`}
+                        className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 text-xs"
+                      >
+                        <Eye className="w-3 h-3" />
+                        Lihat
+                      </a>
+                      <button
+                        className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 text-xs"
+                        onClick={() => handleEdit(karyawan)}
+                      >
+                        <Edit className="w-3 h-3" />
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* No Data State */}
+            {paginatedData.length === 0 && (
+              <div className="text-center py-8 md:py-12">
+                <Users className="w-10 h-10 md:w-12 md:h-12 text-gray-400 mx-auto mb-3 md:mb-4" />
+                <p className="text-gray-500 text-sm md:text-base">Tidak ada karyawan ditemukan</p>
+                <p className="text-gray-400 text-xs md:text-sm mt-1">Coba ubah filter pencarian Anda</p>
+              </div>
+            )}
+
             {/* Table Footer - Pagination */}
             <div className="px-4 md:px-6 py-4 border-t border-gray-100 bg-gray-50/50">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
-
-
-                {/* Info */}
-                <div className="text-sm text-gray-600 order-2 md:order-1">
-                  Menampilkan <span className="font-semibold">{startIndex + 1}-{Math.min(endIndex, totalItems)}</span>
+              <div className="flex flex-col md:flex-row justify-between items-center gap-3">
+                <div className="text-xs md:text-sm text-gray-600">
+                  Menampilkan <span className="font-semibold">{Math.min(startIndex + 1, totalItems)}-{Math.min(endIndex, totalItems)}</span>
                   {" "} dari {" "}
                   <span className="font-semibold">{totalItems}</span> karyawan
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center gap-1 order-1 md:order-2 mb-2 md:mb-0">
-                  {Array.from({ length: totalPages }, (_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`w-8 h-8 md:w-10 md:h-10 rounded-lg font-medium 
-                        ${currentPage === i + 1 
-                          ? "bg-[#4789A8] text-white" 
-                          : "bg-white text-gray-600 border border-gray-300"
+                <div className="flex items-center gap-1 overflow-x-auto pb-2 md:pb-0">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    
+                    if (pageNum < 1 || pageNum > totalPages) return null;
+                    
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`min-w-8 h-8 md:min-w-10 md:h-10 rounded-lg font-medium text-sm ${
+                          currentPage === pageNum
+                            ? "bg-[#4789A8] text-white"
+                            : "bg-white text-gray-600 border border-gray-300 hover:bg-gray-50"
                         }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
                 </div>
-                
-
               </div>
             </div>
           </div>
 
           {/* Mantan Karyawan Section */}
-          <div className="bg-white rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4 mb-4 md:mb-6">
+          <div className="bg-white rounded-lg md:rounded-xl p-4 md:p-6 border border-gray-200 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4 mb-4">
               <div>
                 <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1">Mantan Karyawan</h3>
-
                 <p className="text-gray-600 text-sm md:text-base">Karyawan dengan status NONAKTIF</p>
-
               </div>
               <a
                 href="/admin/mantanKaryawan"
-                className="p-1.5 md:p-2 text-gray-600 hover:text-[#4789A8] hover:bg-blue-50 rounded-lg transition-all duration-200 flex items-center gap-2"
+                className="p-2 text-gray-600 hover:text-[#4789A8] hover:bg-blue-50 rounded-lg transition-all duration-200 flex items-center gap-2 text-sm"
               >
-                <Eye className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                <span>View Detail</span>
+                <Eye className="w-4 h-4" />
+                <span>Lihat Detail</span>
               </a>
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-              {mantanKaryawanData.length > 0 ? (
-                mantanKaryawanData.map((karyawan) => (
-                  <div key={karyawan.id} className="border border-gray-200 rounded-xl p-3 md:p-4 hover:border-gray-300 hover:shadow-sm transition-all duration-200 group">
-                    <div className="flex items-center gap-3 mb-3 md:mb-4">
 
-                      {/* <img
-                        src={karyawan.avatar}
-                        alt={karyawan.nama}
-                        className="w-12 h-12 md:w-14 md:h-14 rounded-xl border-2 border-white shadow-sm group-hover:scale-105 transition-transform duration-200"
-                      /> */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+              {karyawanData.filter(k => k.status_aktif === 'NONAKTIF').length > 0 ? (
+                karyawanData.filter(k => k.status_aktif === 'NONAKTIF').slice(0, 3).map((karyawan) => (
+                  <div key={karyawan.id} className="border border-gray-200 rounded-lg p-3 md:p-4 hover:border-gray-300 hover:shadow-sm transition-all duration-200">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-red-50 text-red-600 rounded-full flex items-center justify-center">
+                        <UserX className="w-5 h-5" />
+                      </div>
                       <div className="min-w-0">
                         <h4 className="font-semibold text-gray-900 text-sm md:text-base truncate">{karyawan.nama}</h4>
                         <p className="text-gray-600 text-xs md:text-sm truncate">{karyawan.department}</p>
                       </div>
                     </div>
-                    {/* <div className="space-y-1.5 md:space-y-2">
-
-                      <div className="flex items-center justify-between text-xs md:text-sm">
-                        <span className="text-gray-500">Bergabung:</span>
-                        <span className="font-medium">{karyawan.tanggalBergabung}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs md:text-sm">
-                        <span className="text-gray-500">Kontak:</span>
-                        <span className="font-medium truncate">{karyawan.email}</span>
-                      </div>
-
-                    </div> */}
-
-                    <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-100">
-                      <button 
-                        className="w-full py-2 text-xs md:text-sm text-[#4789A8] hover:bg-blue-50 rounded-lg transition-colors font-medium"
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <button
+                        onClick={() => handleDelete(karyawan.id)}
+                        className="w-full py-2 text-xs md:text-sm rounded-lg font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-all flex items-center justify-center gap-2"
                       >
-                        View Full History
+                        <Trash2 className="w-4 h-4" />
+                        Hapus
                       </button>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="border border-gray-200 rounded-xl p-3 md:p-4 hover:border-gray-300 hover:shadow-sm transition-all duration-200 flex items-center justify-center min-h-[180px] col-span-3">
+                <div className="border border-gray-200 rounded-lg p-4 flex items-center justify-center min-h-[140px] col-span-3">
                   <div className="text-center">
-                    <UserX className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 text-gray-300" />
+                    <UserX className="w-8 h-8 md:w-10 md:h-10 mx-auto mb-2 text-gray-300" />
                     <p className="text-gray-400 text-sm">Tidak ada mantan karyawan</p>
                   </div>
                 </div>
@@ -730,264 +781,212 @@ const [editId, setEditId] = useState<string | null>(null);
         </div>
       </div>
 
-      {/* Modal Tambah Karyawan */}
+      {/* Modal Tambah / Edit Karyawan */}
       {(showEditModal || showAddModal) && (
-        <>
-          {/* Backdrop dengan blur */}
-          <div 
-
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-999 transition-opacity duration-300"
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={closeModal}
-            style={{
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)'
-            }}
           />
-          
-          {/* Modal Content */}
-
-          <div className="fixed inset-0 z-1000 flex items-center justify-center p-4 overflow-y-auto">
-
-            <div 
-              className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-300 scale-100"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Modal Header */}
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between rounded-t-2xl z-10">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">
-                    {showEditModal ? 'Edit Data Karyawan' : 'Tambah Karyawan Baru'}
-                  </h2>
-                  <p className="text-gray-600 text-sm mt-1">
-                    {showEditModal ? 'Perbarui informasi karyawan' : 'Tambahkan karyawan baru ke sistem'}
-                  </p>
-                </div>
-                <button
-                  onClick={closeModal}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
+          <div
+            className="bg-white rounded-lg md:rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 md:p-6 flex items-center justify-between rounded-t-lg md:rounded-t-xl">
+              <div>
+                <h2 className="text-lg md:text-xl font-bold text-gray-900">
+                  {showEditModal ? 'Edit Data Karyawan' : 'Tambah Karyawan Baru'}
+                </h2>
+                <p className="text-gray-600 text-xs md:text-sm mt-1">
+                  {showEditModal ? 'Perbarui informasi karyawan' : 'Tambahkan karyawan baru ke sistem'}
+                </p>
               </div>
+              <button
+                onClick={closeModal}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
 
-              {/* Modal Body dengan Form */}
-              <form onSubmit={handleSubmit} className="p-6">
-                <div className="flex flex-col md:flex-row gap-6 mb-8">
+            {/* Modal Body dengan Form */}
+            <form onSubmit={handleSubmit} className="p-4 md:p-6">
+              <div className="space-y-4 md:space-y-6">
+                {/* Nama */}
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                    <User className="w-4 h-4" />
+                    Nama Lengkap
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="nama"
+                    value={formData.nama}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300 text-sm md:text-base"
+                    placeholder="Masukkan nama lengkap"
+                    required
+                  />
+                </div>
 
-                  
+                {/* Department */}
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                    <BuildingIcon className="w-4 h-4" />
+                    Department
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300 text-sm md:text-base"
+                    required
+                  >
+                    <option value="">Pilih Department</option>
+                    {departments.map((dept) => (
+                      <option key={dept.kode_department} value={dept.kode_department}>
+                        {dept.nama_department}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
+                {/* Jabatan */}
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                    <User className="w-4 h-4" />
+                    Jabatan
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="jabatan"
+                    value={formData.jabatan}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300 text-sm md:text-base"
+                    placeholder="Masukkan jabatan"
+                    required
+                  />
+                </div>
 
-                  {/* Form Section */}
-                  <div className="flex-1 space-y-6">
-                    {/* Nama */}
-                    <div>
-                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                        <User className="w-4 h-4" />
-                        Nama Lengkap
-                        <span className="text-red-500">*</span>
-                      </label>
+                {/* Tempat Lahir */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tempat Lahir</label>
+                  <input
+                    type="text"
+                    name="tempat_lahir"
+                    className="w-full px-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none text-sm md:text-base"
+                    value={formData.tempat_lahir || ""}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+
+                {/* Tanggal Lahir */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir</label>
+                  <input
+                    type="date"
+                    name="tanggal_lahir"
+                    className="w-full px-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none text-sm md:text-base"
+                    value={formData.tanggal_lahir || ""}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+
+                {/* Alamat */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Alamat</label>
+                  <textarea
+                    name="alamat"
+                    className="w-full px-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none text-sm md:text-base"
+                    rows={3}
+                    value={formData.alamat || ""}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                {/* No Telepon */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">No Telepon</label>
+                  <input
+                    type="text"
+                    name="no_telepon"
+                    maxLength={15}
+                    className="w-full px-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none text-sm md:text-base"
+                    value={formData.no_telepon || ""}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                    <Globe className="w-4 h-4" />
+                    Status Karyawan
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
                       <input
-                        type="text"
-                        name="nama"
-                        value={formData.nama}
+                        type="radio"
+                        name="status_aktif"
+                        value="AKTIF"
+                        checked={formData.status_aktif === 'AKTIF'}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300"
-                        placeholder="Masukkan nama lengkap"
+                        className="w-4 h-4 text-[#4789A8] cursor-pointer"
                         required
                       />
-                    </div>
-
-
-                    {/* department */}
-                    <div>
-  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-    <BuildingIcon className="w-4 h-4" />
-    Department
-    <span className="text-red-500">*</span>
-  </label>
-
-  <select
-    name="department"
-    value={formData.department}
-    onChange={handleInputChange}
-    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300 bg-white"
-    required
-  >
-    <option value="">Pilih department</option>
-
-    {departmentsList.map((dept) => (
-      <option key={dept.kode} value={dept.kode}>
-        {dept.nama}
-      </option>
-    ))}
-  </select>
-</div>
-
-
-                    <div>
-                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                        <User className="w-4 h-4" />
-                        Jabatan
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="jabatan"
-                        value={formData.jabatan}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4789A8]/20 focus:border-[#4789A8] outline-none transition-all duration-300"
-                        placeholder="Masukkan jabatan"
-                        required
-                      />
-                    </div>
-
-
-
-                    {/* Status */}
-                    <div>
-                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                        <Globe className="w-4 h-4" />
-                        Status Karyawan
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-
-                            name="status_aktif"
-                            value="AKTIF"
-                            checked={formData.status_aktif === 'AKTIF'}
-
-                            onChange={handleInputChange}
-                            className="w-4 h-4 text-[#4789A8] cursor-pointer"
-                            required
-                          />
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                            <span className="text-gray-700">Active</span>
-                          </div>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-
-                            name="status_aktif"
-                            value="NONAKTIF"
-                            checked={formData.status_aktif === 'NONAKTIF'}
-
-                            onChange={handleInputChange}
-                            className="w-4 h-4 text-[#4789A8] cursor-pointer"
-                          />
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-
-                            <span className="text-gray-700">NONAKTIF</span>
-
-                          </div>
-                        </label>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        <span className="text-gray-700">AKTIF</span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-2">
-
-                        Pilih "Active" untuk karyawan aktif, "NONAKTIF" untuk mantan karyawan
-
-                      </p>
-                    </div>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="status_aktif"
+                        value="NONAKTIF"
+                        checked={formData.status_aktif === 'NONAKTIF'}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-[#4789A8] cursor-pointer"
+                      />
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                        <span className="text-gray-700">NONAKTIF</span>
+                      </div>
+                    </label>
                   </div>
                 </div>
+              </div>
 
-                {/* Modal Footer */}
-                <div className="flex gap-3 pt-6 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-6 py-3 bg-[#4789A8] text-white rounded-xl hover:bg-[#3a768f] transition-all duration-200 font-medium flex items-center justify-center gap-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    {showEditModal ? 'Simpan Perubahan' : 'Tambah Karyawan'}
-                  </button>
-                </div>
-              </form>
-            </div>
+              {/* Modal Footer */}
+              <div className="flex gap-3 pt-6 border-t border-gray-200 mt-6">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="flex-1 px-4 md:px-6 py-2.5 md:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium text-sm md:text-base"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-[#4789A8] text-white rounded-lg hover:bg-[#3a768f] transition-all duration-200 font-medium flex items-center justify-center gap-2 text-sm md:text-base"
+                >
+                  <Save className="w-4 h-4" />
+                  {showEditModal ? 'Simpan Perubahan' : 'Tambah Karyawan'}
+                </button>
+              </div>
+            </form>
           </div>
-        </>
+        </div>
       )}
-
-      {/* Global Styles untuk font Poppins */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
-
-        body {
->>>>>>> d9280bafcd04a8bf05b301b11fd12992dddabef1
-          font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
-        }
-        
-        /* Animasi untuk modal */
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        @keyframes slideIn {
-          from { transform: translateY(-20px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .modal-backdrop {
-          animation: fadeIn 0.3s ease-out;
-        }
-        
-        .modal-content {
-          animation: slideIn 0.3s ease-out;
-        }
-        
-        @media (max-width: 768px) {
-          .overflow-x-auto {
-            -webkit-overflow-scrolling: touch;
-          }
-          
-          .modal-content {
-            margin: 1rem;
-            max-height: calc(100vh - 2rem);
-          }
-        }
-        
-        /* Custom scrollbar untuk modal */
-        .overflow-y-auto {
-          scrollbar-width: thin;
-          scrollbar-color: #c1c1c1 transparent;
-        }
-        
-        .overflow-y-auto::-webkit-scrollbar {
-          width: 6px;
-        }
-        
-        .overflow-y-auto::-webkit-scrollbar-track {
-          background: transparent;
-          border-radius: 10px;
-        }
-        
-        .overflow-y-auto::-webkit-scrollbar-thumb {
-          background: #c1c1c1;
-          border-radius: 10px;
-        }
-        
-        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-          background: #a1a1a1;
-        }
-      `}</style>
     </div>
   );
 };
 
-
 export default Karyawan;
-
