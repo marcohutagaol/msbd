@@ -2,18 +2,41 @@
 
 import { useState } from "react"
 import { Clock, Calendar, ChevronDown } from "lucide-react"
+import { router } from "@inertiajs/react"
 
 export default function AttendanceRecordForm() {
-  const [selectedTime, setSelectedTime] = useState("Pagi")
-  const [selectedDate, setSelectedDate] = useState("14 December 2025")
+  const [jamMasuk, setJamMasuk] = useState("08:00")
+  const [jamKeluar, setJamKeluar] = useState("17:00")
+  const [tanggalMulai, setTanggalMulai] = useState("")
+  const [tanggalSelesai, setTanggalSelesai] = useState("")
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false)
   const [selectedPeriod, setSelectedPeriod] = useState<number | null>(null)
 
   const periods = [
-    { id: 1, label: "Seminggu" },
-    { id: 2, label: "Sebulan" },
-    { id: 3, label: "3 Bulan" },
+    { id: 1, label: "Seminggu", days: 7 },
+    { id: 2, label: "Sebulan", days: 30 },
+    { id: 3, label: "3 Bulan", days: 90 },
   ]
+
+  const handleSubmit = () => {
+    router.post("/manager-absensi", {
+      tanggal_mulai: tanggalMulai,
+      tanggal_selesai: tanggalSelesai,
+      jam_masuk: jamMasuk,
+      jam_keluar: jamKeluar,
+      keterangan: "Absensi otomatis"
+    })
+  }
+
+  const handlePeriodSelect = (days: number) => {
+    const start = new Date()
+    const end = new Date()
+    end.setDate(start.getDate() + days)
+
+    setTanggalMulai(start.toISOString().slice(0, 10))
+    setTanggalSelesai(end.toISOString().slice(0, 10))
+    setShowPeriodDropdown(false)
+  }
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm h-full flex flex-col">
@@ -21,78 +44,87 @@ export default function AttendanceRecordForm() {
       <p className="text-sm text-slate-500 mb-6">Absen berkaitan selama periode waktu</p>
 
       <div className="space-y-4 flex-1">
-        {/* Jam Section */}
+
+        {/* Jam Masuk */}
         <div>
-          <label className="text-sm font-medium text-slate-700 block mb-2">Jam</label>
+          <label className="text-sm font-medium text-slate-700 block mb-2">Jam Masuk</label>
           <div className="relative">
             <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
-              type="text"
-              value={selectedTime}
-              onChange={(e) => setSelectedTime(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white text-slate-900 transition"
-              placeholder="Pilih jam"
+              type="time"
+              value={jamMasuk}
+              onChange={(e) => setJamMasuk(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-300 rounded-lg"
             />
           </div>
         </div>
 
-        {/* Tanggal Section */}
+        {/* Jam Keluar */}
         <div>
-          <label className="text-sm font-medium text-slate-700 block mb-2">Tanggal</label>
+          <label className="text-sm font-medium text-slate-700 block mb-2">Jam Keluar</label>
           <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
-              type="text"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white text-slate-900 transition"
-              placeholder="Pilih tanggal"
+              type="time"
+              value={jamKeluar}
+              onChange={(e) => setJamKeluar(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-300 rounded-lg"
             />
           </div>
         </div>
 
-        {/* Period Dropdown Section */}
+        {/* Tanggal */}
+        <div>
+          <label className="text-sm font-medium text-slate-700 block mb-2">Tanggal Mulai</label>
+          <input
+            type="date"
+            value={tanggalMulai}
+            onChange={(e) => setTanggalMulai(e.target.value)}
+            className="w-full px-4 py-2.5 border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-slate-700 block mb-2">Tanggal Selesai</label>
+          <input
+            type="date"
+            value={tanggalSelesai}
+            onChange={(e) => setTanggalSelesai(e.target.value)}
+            className="w-full px-4 py-2.5 border rounded-lg"
+          />
+        </div>
+
+        {/* Period Dropdown */}
         {showPeriodDropdown && (
-          <div className="pt-4 border-t border-slate-200">
-            <label className="text-sm font-medium text-slate-700 block mb-3">Pilih Periode</label>
-            <div className="space-y-2">
-              {periods.map((period) => (
-                <button
-                  key={period.id}
-                  onClick={() => setSelectedPeriod(period.id)}
-                  className={`w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-left ${
-                    selectedPeriod === period.id
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
-                  }`}
-                >
-                  {period.label}
-                </button>
-              ))}
-            </div>
+          <div className="pt-4 border-t">
+            {periods.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => handlePeriodSelect(p.days)}
+                className="w-full mb-2 px-4 py-2 bg-slate-100 rounded-lg"
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-2 pt-2 mt-auto">
-          <button className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors duration-200 shadow-sm">
+        {/* Buttons */}
+        <div className="mt-auto space-y-2">
+          <button
+            onClick={handleSubmit}
+            className="w-full bg-blue-600 text-white py-2.5 rounded-lg"
+          >
             Buat
           </button>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowPeriodDropdown(!showPeriodDropdown)}
-              className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors duration-200 flex items-center justify-center gap-2 border border-slate-300"
-            >
-              <span>Buat Default</span>
-              <ChevronDown
-                size={16}
-                className={`transition-transform duration-200 ${showPeriodDropdown ? "rotate-180" : ""}`}
-              />
-            </button>
-            <button className="flex-1 px-4 py-2.5 bg-white text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors duration-200 border border-red-200">
-              Hapus
-            </button>
-          </div>
+
+          <button
+            onClick={() => setShowPeriodDropdown(!showPeriodDropdown)}
+            className="w-full bg-slate-200 py-2.5 rounded-lg flex justify-center items-center gap-2"
+          >
+            Buat Default
+            <ChevronDown />
+          </button>
         </div>
       </div>
     </div>
