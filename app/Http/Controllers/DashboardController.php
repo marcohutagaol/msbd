@@ -34,7 +34,8 @@ class DashboardController extends Controller
         if ($absen) {
             if (!empty($absen->jam_datang)) {
                 $status = "Masuk";
-                $absenMasukTime = Carbon::parse($absen->jam_datang)->format('H:i:s');
+                $absenMasukTime = Carbon::parse($absen->jam_datang)->toIso8601String();
+
             }
 
             if (!empty($absen->jam_datang) && !empty($absen->jam_balik)) {
@@ -63,12 +64,22 @@ class DashboardController extends Controller
         $jamKeluarDefault = $generate ? $generate->jam_keluar_default : null;
 
         // Hitung total menit kerja default (untuk progress bar)
-        $totalMenitDefault = null;
+        // Hitung total menit kerja default (FIX + AKURAT)
+$totalMenitDefault = null;
 
-        if ($jamMasukDefault && $jamKeluarDefault) {
-            $totalMenitDefault = Carbon::parse($jamKeluarDefault)
-                ->diffInMinutes(Carbon::parse($jamMasukDefault));
-        }
+if ($jamMasukDefault && $jamKeluarDefault) {
+    $start = Carbon::parse($today . ' ' . $jamMasukDefault);
+    $end   = Carbon::parse($today . ' ' . $jamKeluarDefault);
+
+    // kalau jam keluar lebih kecil (lintas hari)
+    if ($end->lessThan($start)) {
+        $end->addDay();
+    }
+
+    $totalMenitDefault = $end->diffInMinutes($start);
+}
+
+
 
         return Inertia::render('dashboard', [
             'user' => [

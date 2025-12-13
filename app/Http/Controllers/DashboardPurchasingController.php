@@ -11,14 +11,23 @@ class DashboardPurchasingController extends Controller
    public function index()
 {
     // Statistik utama boleh tetap seperti ini dulu (opsional nanti dibenahi)
-    $stats = [
-        'total_requests'      => Request::whereHas('items')->count(),
-        'pending_requests'    => Request::whereHas('items')->where('status', 'Pending')->count(),
-        'approved_requests'   => Request::whereHas('items')->where('status', 'Approved')->count(),
-        'completed_requests'  => Request::whereHas('items')->where('status', 'Completed')->count(),
-        'rejected_requests'   => Request::whereHas('items')->where('status', 'Rejected')->count(),
-        'total_items'         => RequestItem::count(),
-    ];
+   $stats = [
+    'total_requests' => Request::whereHas('items')->count(),
+    'total_items' => RequestItem::count(),
+
+    'pending_requests' => RequestItem::whereIn('status', [
+        'Pending',
+        'Approved'
+    ])->count(),
+
+    'completed_requests' => RequestItem::whereIn('status', [
+        'Completed',
+        'Arrived'
+    ])->count(),
+
+    'rejected_requests' => RequestItem::where('status', 'Rejected')->count(),
+];
+
 
     $departmentStats = Request::whereHas('items')
         ->with('items') 

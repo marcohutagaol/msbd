@@ -134,16 +134,16 @@ export default function InvoiceView({ invoice }: InvoiceProps) {
                                                 </span>
                                             </td>
                                             <td className="p-4 text-right font-medium text-gray-700">
-                                                {formatRupiah(invoice.total_harga/item.jumlah)}
+                                                {formatRupiah(item.harga_item)}
 
                                             </td>
                                             <td className="p-4 text-right">
                                                 <span className="font-bold text-gray-900 text-lg">
-                                                    {formatRupiah(invoice.total_harga)}
+                                                    {formatRupiah(item.harga_item * item.jumlah )}
 
                                                 </span>
                                             </td>
-                                        </tr>
+                                    </tr>
                                     ))}
                                 </tbody>
                                 <tfoot>

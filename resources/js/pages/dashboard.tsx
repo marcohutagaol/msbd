@@ -70,6 +70,25 @@ export default function Dashboard() {
         total_menit_default: totalMenitDefault,
     } = props;
 
+    const formatTimeFull = (time?: string) => {
+        if (!time) return "-";
+
+        const date = new Date(time);
+        if (isNaN(date.getTime())) return "-";
+
+        const hh = String(date.getHours()).padStart(2, "0");
+        const mm = String(date.getMinutes()).padStart(2, "0");
+        const ss = String(date.getSeconds()).padStart(2, "0");
+
+        return `${hh}:${mm}:${ss}`;
+    };
+
+
+    const formatJam = (time?: string) => {
+        if (!time) return "-";
+        return time.split(":").slice(0, 2).join(":");
+    };
+
     const [workTime, setWorkTime] = useState({
         hours: 0,
         minutes: 0,
@@ -91,39 +110,42 @@ export default function Dashboard() {
         return () => clearInterval(timer);
     }, []);
 
+
     // realtime worktime counter
     useEffect(() => {
-        if (!absenMasukTime || !totalMenitDefault) return;
+    if (!absenMasukTime) return;
 
-        const interval = setInterval(() => {
-            const now = new Date();
+    const masukDate = new Date(absenMasukTime);
+    if (isNaN(masukDate.getTime())) return;
 
-            const [h, m, s] = absenMasukTime.split(':').map(Number);
-            const masukDate = new Date();
-            masukDate.setHours(h, m, s, 0);
+    const interval = setInterval(() => {
+        const now = new Date();
 
-            const diffMs = now.getTime() - masukDate.getTime();
-            if (diffMs < 0) return;
+        const diffMs = now.getTime() - masukDate.getTime();
+        if (diffMs < 0) return;
 
-            const totalMinutes = Math.floor(diffMs / 60000);
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
+        const totalMinutes = Math.floor(diffMs / 60000);
 
-            const percent = Math.min(
-                Math.floor((totalMinutes / totalMenitDefault) * 100),
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+
+        let percent = 0;
+
+        if (typeof totalMenitDefault === 'number' && totalMenitDefault > 0) {
+            percent = Math.min(
+                Math.round((totalMinutes / totalMenitDefault) * 100),
                 100
             );
+        } else {
+            // fallback supaya bar tetap muncul
+            percent = 100;
+        }
 
-            setWorkTime({ hours, minutes, percent });
-        }, 1000);
+        setWorkTime({ hours, minutes, percent });
+    }, 1000);
 
-        return () => clearInterval(interval);
-    }, [absenMasukTime, totalMenitDefault]);
-
-    const formatJam = (time?: string) => {
-    if (!time) return "-";
-    return time.substring(0, 5);
-};
+    return () => clearInterval(interval);
+}, [absenMasukTime, totalMenitDefault]);
 
 
     return (
@@ -203,9 +225,9 @@ export default function Dashboard() {
                         {/* Attendance Section */}
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                             <div className="space-y-6 lg:col-span-2">
-                              <p className="text-sm ml-1 font-medium text-gray-600">
-    {formatJam(props.jam_masuk_default)} | {formatJam(props.jam_keluar_default)}
-</p>
+                                <p className="text-sm ml-1 font-medium text-gray-600">
+                                    {formatJam(props.jam_masuk_default)} | {formatJam(props.jam_keluar_default)}
+                                </p>
 
 
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -233,7 +255,7 @@ export default function Dashboard() {
                                                 Absen Masuk
                                             </p>
                                             <p className="font-mono text-4xl font-black tracking-tight text-blue-700 sm:text-5xl">
-                                                {absenMasukTime ?? currentTime}
+                                                {absenMasukTime ? formatTimeFull(absenMasukTime) : currentTime}
                                             </p>
                                             <p className="mt-1 text-xs font-medium text-blue-600">WIB</p>
                                         </div>
@@ -263,7 +285,7 @@ export default function Dashboard() {
                                                 Absen Keluar
                                             </p>
                                             <p className="font-mono text-4xl font-black tracking-tight text-rose-700 sm:text-5xl">
-                                                {absenKeluarTime ?? '-'}
+                                                {absenKeluarTime ? formatTimeFull(absenKeluarTime) : currentTime}
                                             </p>
                                             <p className="mt-1 text-xs font-medium text-rose-600">WIB</p>
                                         </div>
@@ -355,8 +377,11 @@ export default function Dashboard() {
                                             />
                                         </div>
 
+
                                         <p className="mt-1 text-right text-xs text-gray-500">
-                                            {workTime.percent}% dari {(((totalMenitDefault ?? 0) / 60).toFixed(1))} jam
+                                            {totalMenitDefault
+                                                ? (totalMenitDefault / 60).toFixed(1)
+                                                : "0"} jam
                                         </p>
                                     </div>
                                 </div>

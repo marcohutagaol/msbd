@@ -212,7 +212,8 @@ Route::get('/invoice/{id}/download', function ($id) {
     $invoice = \App\Models\Invoice::with('purchases')->findOrFail($id);
 
     $pdf = Pdf::loadView('pdf.struk', ['invoice' => $invoice])
-    ->setPaper([0, 0, 650, 926.77], 'landscape');
+    ->setPaper('A4', 'landscape');
+
 
 
 

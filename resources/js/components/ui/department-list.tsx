@@ -13,7 +13,7 @@ interface Department {
   pending_count: number
   approved_count: number
   completed_count: number
-  created_at: string
+created_at: string
   request_date?: string
 }
 
