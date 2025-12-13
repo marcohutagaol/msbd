@@ -18,9 +18,9 @@ function InventoryPage() {
     <>
       <Head title="Inventory Management" />
 
-      <main className="min-h-screen bg-white p-6 md:p-8 lg:p-12">
+      <main className="min-h-screen bg-white dark:bg-slate-900 p-6 md:p-8 lg:p-12">
         <div className="mx-auto max-w-7xl">
-          <h1 className="text-2xl font-bold mb-6">Inventory Management</h1>
+          <h1 className="text-2xl font-bold mb-6 dark:text-white">Inventory Management</h1>
           <InventoryLayout />
         </div>
       </main>

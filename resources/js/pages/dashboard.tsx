@@ -129,7 +129,7 @@ export default function Dashboard() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden rounded-xl bg-gray-50 p-4 sm:p-6">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden rounded-xl bg-gray-50 dark:bg-slate-900 p-4 sm:p-6">
                 <main className="flex-1 overflow-auto">
                     <div className="mx-auto max-w-7xl space-y-8">
                         {/* Profile Card - Enhanced */}
@@ -138,7 +138,7 @@ export default function Dashboard() {
                             <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-30" />
 
                             {/* Inner Card */}
-                            <div className="relative overflow-hidden rounded-3xl bg-white p-8">
+                            <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-800 p-8">
                                 {/* Background Decorations */}
                                 <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 opacity-40 blur-3xl" />
                                 <div className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-gradient-to-tr from-indigo-100 to-blue-100 opacity-30 blur-2xl" />
@@ -163,7 +163,7 @@ export default function Dashboard() {
 
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-3">
-                                                <h2 className="text-2xl font-extrabold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 bg-clip-text text-transparent sm:text-3xl">
+                                                <h2 className="text-2xl font-extrabold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 dark:from-gray-100 dark:via-blue-100 dark:to-purple-100 bg-clip-text text-transparent sm:text-3xl">
                                                     {user.name}
                                                 </h2>
                                                 {/* Verified Badge */}
@@ -180,7 +180,7 @@ export default function Dashboard() {
                                                 </div>
                                             </div>
 
-                                            <p className="text-base font-medium text-gray-600">
+                                            <p className="text-base font-medium text-gray-600 dark:text-gray-400">
                                                 {user.departemen}
                                             </p>
 
@@ -205,7 +205,7 @@ export default function Dashboard() {
                                     </div>
 
                                     {/* Right Side - Date & Time */}
-                                    <div className="relative rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 p-5 shadow-inner">
+                                    <div className="relative rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-700 dark:to-slate-800 p-5 shadow-inner">
                                         <div className="space-y-3">
                                             {/* Date */}
                                             <div className="flex items-center gap-3">
@@ -225,8 +225,8 @@ export default function Dashboard() {
                                                     </svg>
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs font-medium text-gray-500">Tanggal</p>
-                                                    <span className="text-sm font-bold text-gray-800">
+                                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</p>
+                                                    <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
                                                         {new Date().toLocaleDateString('id-ID', {
                                                             weekday: 'long',
                                                             day: 'numeric',
@@ -243,7 +243,7 @@ export default function Dashboard() {
                                                     <Clock className="h-5 w-5 text-white" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs font-medium text-gray-500">Waktu</p>
+                                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Waktu</p>
                                                     <p className="font-mono text-xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                                                         {currentTime}
                                                     </p>
@@ -258,14 +258,14 @@ export default function Dashboard() {
                         {/* Attendance Section */}
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                             <div className="space-y-6 lg:col-span-2">
-                                <p className="text-sm ml-1 font-medium text-gray-600">
+                                <p className="text-sm ml-1 font-medium text-gray-600 dark:text-gray-400">
                                     {formatJam(props.jam_masuk_default)} | {formatJam(props.jam_keluar_default)}
                                 </p>
 
 
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     {/* Clock In Card */}
-                                    <div className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 bg-gradient-to-br from-blue-50 via-blue-100/50 to-white p-6 shadow-lg shadow-blue-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30">
+                                    <div className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 dark:border-blue-600 bg-gradient-to-br from-blue-50 via-blue-100/50 to-white dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 shadow-lg shadow-blue-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30">
                                         <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-blue-400/20 blur-2xl" />
                                         <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-blue-500/10 blur-xl" />
 
@@ -295,7 +295,7 @@ export default function Dashboard() {
                                     </div>
 
                                     {/* Clock Out Card */}
-                                    <div className="group relative overflow-hidden rounded-2xl border-2 border-rose-500 bg-gradient-to-br from-rose-50 via-rose-100/50 to-white p-6 shadow-lg shadow-rose-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-rose-500/30">
+                                    <div className="group relative overflow-hidden rounded-2xl border-2 border-rose-500 dark:border-rose-600 bg-gradient-to-br from-rose-50 via-rose-100/50 to-white dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 shadow-lg shadow-rose-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-rose-500/30">
                                         <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-rose-400/20 blur-2xl" />
                                         <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-rose-500/10 blur-xl" />
 
@@ -372,7 +372,7 @@ export default function Dashboard() {
                             </div>
 
                             {/* RIGHT PANEL (Work Time + Status) */}
-                            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-white via-white to-blue-50/30 p-6 shadow-sm transition-all hover:shadow-lg sm:p-8">
+                            <div className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-white via-white to-blue-50/30 dark:from-slate-800 dark:to-slate-900 p-6 shadow-sm transition-all hover:shadow-lg sm:p-8">
                                 <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-blue-200/20 blur-3xl" />
                                 <div className="absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-green-200/20 blur-2xl" />
 
@@ -382,8 +382,8 @@ export default function Dashboard() {
                                         <ClipboardList className="h-5 w-5 text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-gray-900">Ringkasan Hari Ini</h3>
-                                        <p className="text-xs text-gray-500">Update real-time</p>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Ringkasan Hari Ini</h3>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Update real-time</p>
                                     </div>
                                 </div>
 
@@ -395,10 +395,10 @@ export default function Dashboard() {
                                                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100">
                                                     <Clock className="h-4 w-4 text-blue-600" />
                                                 </div>
-                                                <p className="text-sm font-medium text-gray-600">Jam Kerja</p>
+                                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Jam Kerja</p>
                                             </div>
 
-                                            <p className="text-2xl font-bold text-gray-900">
+                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">
                                                 {workTime.hours}h {workTime.minutes}m
                                             </p>
                                         </div>
@@ -438,7 +438,7 @@ export default function Dashboard() {
                                                             : 'bg-red-500 shadow-red-300/50'
                                                     }`}
                                             />
-                                            <p className="text-xs font-medium text-gray-600">Status</p>
+                                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Status</p>
                                         </div>
 
                                         <p
@@ -458,7 +458,7 @@ export default function Dashboard() {
                                     <div className="group rounded-xl bg-blue-100/50 p-4 transition-all hover:bg-blue-100">
                                         <div className="flex items-center gap-2">
                                             <User className="h-3 w-3 text-blue-600" />
-                                            <p className="text-xs font-medium text-gray-600">Kehadiran</p>
+                                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Kehadiran</p>
                                         </div>
                                         <p className="mt-2 text-lg font-bold text-blue-600">100%</p>
                                     </div>
@@ -474,10 +474,10 @@ export default function Dashboard() {
                                         <Megaphone className="h-5 w-5 text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-gray-900">
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                                             Pengumuman
                                         </h3>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
                                             Informasi terbaru untuk Anda
                                         </p>
                                     </div>
@@ -500,7 +500,7 @@ export default function Dashboard() {
                                     return (
                                         <div
                                             key={announcement.id}
-                                            className="group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                                            className="group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
                                             style={{ animationDelay: `${index * 100}ms` }}
                                         >
                                             <div
@@ -527,10 +527,10 @@ export default function Dashboard() {
                                             </div>
 
                                             <div className="p-5">
-                                                <h4 className="mb-2 line-clamp-2 text-base font-bold text-gray-900 transition-colors group-hover:text-blue-600">
+                                                <h4 className="mb-2 line-clamp-2 text-base font-bold text-gray-900 dark:text-white transition-colors group-hover:text-blue-600">
                                                     {announcement.title}
                                                 </h4>
-                                                <p className="mb-4 line-clamp-2 text-sm text-gray-500">
+                                                <p className="mb-4 line-clamp-2 text-sm text-gray-500 dark:text-gray-400">
                                                     {announcement.description}
                                                 </p>
 

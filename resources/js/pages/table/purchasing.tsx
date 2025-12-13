@@ -53,9 +53,9 @@ function Page() {
     <>
       <Head title="Purchasing Progress" />
 
-      <main className="min-h-screen bg-white p-4 md:p-8 lg:p-12">
+      <main className="min-h-screen bg-white dark:bg-slate-900 p-4 md:p-8 lg:p-12">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold mb-4">
+          <h1 className="text-2xl font-bold mb-4 dark:text-white">
             Progres Pembelian
           </h1>
 
@@ -65,7 +65,7 @@ function Page() {
             onChange={handleTimelineChange}
           />
 
-          <p className="mt-6 text-gray-700 text-lg">
+          <p className="mt-6 text-gray-700 dark:text-gray-300 text-lg">
             Status saat ini:{' '}
             <span className="font-semibold text-blue-600">
               {status}
@@ -73,7 +73,7 @@ function Page() {
           </p>
         </div>
 
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-white via-blue-50 to-white" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-white via-blue-50 to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-900" />
 
         <div className="mx-auto max-w-7xl">
           <OrdersTable onStatusChange={handleTimelineChange} requestNumber={requestNumber} />

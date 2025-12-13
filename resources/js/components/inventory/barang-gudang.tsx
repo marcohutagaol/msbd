@@ -27,7 +27,7 @@ export default function BarangGudang({ onTransfer }: Props) {
     try {
       setLoading(true)
       setError(null)
-      
+
       // Langsung ke URL yang paling simpel
       const response = await fetch("http://localhost:8000/api/inventory/gudang", {
         method: 'GET',
@@ -36,13 +36,13 @@ export default function BarangGudang({ onTransfer }: Props) {
           'Content-Type': 'application/json',
         },
       })
-      
+
       console.log('Response status:', response.status)
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      
+
       const data = await response.json()
       console.log('Data received:', data)
       setItems(data)
@@ -56,9 +56,9 @@ export default function BarangGudang({ onTransfer }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-lg border-2 border-blue-500 p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-lg border-2 border-blue-500 dark:border-blue-600 p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Barang Gudang</h2>
+        <h2 className="text-xl font-bold text-gray-800 dark:text-white">Barang Gudang</h2>
         <button
           onClick={fetchBarangGudang}
           disabled={loading}
@@ -85,11 +85,11 @@ export default function BarangGudang({ onTransfer }: Props) {
             items.map((item) => (
               <div
                 key={item.id}
-                className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors border border-gray-200"
+                className="flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-600 transition-colors border border-gray-200 dark:border-gray-600"
               >
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-800">{item.nama_barang}</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">{item.nama_barang}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     Stok: {item.stok} {item.satuan}
                   </p>
                 </div>
@@ -103,15 +103,15 @@ export default function BarangGudang({ onTransfer }: Props) {
               </div>
             ))
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               Belum ada data barang di gudang
             </div>
           )}
         </div>
       )}
 
-      <div className="mt-6 pt-4 border-t border-gray-200">
-        <p className="text-sm text-gray-600">Total Barang: <span className="font-bold text-blue-600">{items.length}</span></p>
+      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <p className="text-sm text-gray-600 dark:text-gray-400">Total Barang: <span className="font-bold text-blue-600">{items.length}</span></p>
       </div>
     </div>
   )

@@ -296,29 +296,29 @@ function InputPricePage({
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Input Price" />
-      <main className="min-h-screen bg-white p-6 font-[Poppins]">
+      <main className="min-h-screen bg-white dark:bg-slate-900 p-6 font-[Poppins]">
         <div className="mx-auto max-w-7xl space-y-6">
           {initialOrders.length === 0 ? (
-            <div className="rounded-xl border-2 border-gray-200 p-12 text-center bg-gray-50">
+            <div className="rounded-xl border-2 border-gray-200 dark:border-gray-700 p-12 text-center bg-gray-50 dark:bg-slate-800">
               <ShoppingCart className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Tidak Ada Item yang Perlu Input Harga
               </h3>
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 Semua item sudah memiliki harga atau belum ada item yang disetujui.
               </p>
             </div>
           ) : (
             <>
               {/* Summary Card */}
-              <div className="rounded-xl border-2 border-blue-400 bg-white p-6 shadow-sm">
+              <div className="rounded-xl border-2 border-blue-400 dark:border-blue-600 bg-white dark:bg-slate-800 p-6 shadow-sm">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 gap-4">
                   <div className="flex items-center gap-3">
                     <div>
-                      <h2 className="text-xl font-bold text-slate-900">
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                         Input Harga Preorder
                       </h2>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-slate-600 dark:text-gray-400">
                         Departemen: {summary.departemen}
                       </p>
                     </div>
@@ -327,25 +327,25 @@ function InputPricePage({
                     <p className="text-2xl font-bold text-blue-700">
                       {formatRupiah(summary.totalHarga)}
                     </p>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-slate-600 dark:text-gray-400">
                       {summary.itemsWithPrice.length} dari {summary.totalBarang} item
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-lg border border-blue-200 bg-blue-50">
-                    <p className="text-sm font-medium text-slate-700">Total Item</p>
+                  <div className="p-4 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20">
+                    <p className="text-sm font-medium text-slate-700 dark:text-gray-300">Total Item</p>
                     <p className="text-lg font-bold text-blue-700">{summary.totalBarang}</p>
                   </div>
 
-                  <div className="p-4 rounded-lg border border-green-200 bg-green-50">
-                    <p className="text-sm font-medium text-slate-700">Item dengan Harga</p>
+                  <div className="p-4 rounded-lg border border-green-200 dark:border-green-700 bg-green-50 dark:bg-green-900/20">
+                    <p className="text-sm font-medium text-slate-700 dark:text-gray-300">Item dengan Harga</p>
                     <p className="text-lg font-bold text-green-700">{summary.itemsWithPrice.length}</p>
                   </div>
 
-                  <div className="p-4 rounded-lg border border-purple-200 bg-purple-50">
-                    <p className="text-sm font-medium text-slate-700">Siap Dikonfirmasi</p>
+                  <div className="p-4 rounded-lg border border-purple-200 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20">
+                    <p className="text-sm font-medium text-slate-700 dark:text-gray-300">Siap Dikonfirmasi</p>
                     <p className="text-lg font-bold text-purple-700">
                       {summary.itemsWithPrice.length > 0 ? 'Ya' : 'Tidak'}
                     </p>
@@ -354,12 +354,12 @@ function InputPricePage({
               </div>
 
               {/* Orders List */}
-              <div className="rounded-xl border-2 border-blue-400 bg-white p-6 shadow-sm">
+              <div className="rounded-xl border-2 border-blue-400 dark:border-blue-600 bg-white dark:bg-slate-800 p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-slate-900">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                     Daftar Item Request
                   </h3>
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-400">
                     <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                     Klik pensil untuk input harga, klik kotak untuk tandai sampai
                   </div>

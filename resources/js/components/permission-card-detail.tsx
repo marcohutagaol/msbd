@@ -62,15 +62,15 @@ export default function PermissionCardDetail({ permission }: PermissionCardDetai
 
   return (
     <>
-      <div className="rounded-lg border-2 border-blue-300 bg-white p-6 transition-all hover:shadow-md h-full flex flex-col">
+      <div className="rounded-lg border-2 border-blue-300 dark:border-blue-600 bg-white dark:bg-slate-800 p-6 transition-all hover:shadow-md h-full flex flex-col">
         <div className="mb-6 flex items-start justify-between">
           <div className="flex gap-4 flex-1">
             {/* Date */}
             <div className="flex flex-col items-center justify-start w-16">
-              <p className="text-2xl font-bold text-gray-800">
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">
                 {new Date(permission.createdDate).getDate().toString().padStart(2, "0")}
               </p>
-              <p className="text-xs font-medium text-gray-500">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
                 {new Date(permission.createdDate)
                   .toLocaleDateString("id-ID", { month: "short" })
                   .toUpperCase()}
@@ -79,17 +79,17 @@ export default function PermissionCardDetail({ permission }: PermissionCardDetai
 
             {/* Info */}
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {getTypeLabel(permission.type)}
               </h3>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 {permission.type === "sick"
                   ? `${permission.days} hari - ${permission.sickType}`
                   : permission.type === "permission"
                     ? `${permission.time} - ${permission.notes || "Izin"}`
                     : `${permission.days} hari - ${permission.vacationType}`}
               </p>
-              <p className="text-xs text-gray-500 mt-1">with {permission.createdBy}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">with {permission.createdBy}</p>
             </div>
           </div>
 
@@ -102,13 +102,13 @@ export default function PermissionCardDetail({ permission }: PermissionCardDetai
         </div>
 
         {/* Details */}
-        <div className="grid grid-cols-3 gap-6 mb-6 pb-6 border-b border-gray-200">
+        <div className="grid grid-cols-3 gap-6 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-1">LOKASI</p>
-            <p className="text-sm font-medium text-gray-900">{permission.location || "Online"}</p>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">LOKASI</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-200">{permission.location || "Online"}</p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-1">STATUS</p>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">STATUS</p>
             <span
               className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${getStatusColor(
                 permission.status
@@ -118,8 +118,8 @@ export default function PermissionCardDetail({ permission }: PermissionCardDetai
             </span>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-1">DIBUAT OLEH</p>
-            <p className="text-sm font-medium text-gray-900">{permission.createdBy}</p>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">DIBUAT OLEH</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-200">{permission.createdBy}</p>
           </div>
         </div>
 
@@ -127,7 +127,7 @@ export default function PermissionCardDetail({ permission }: PermissionCardDetai
         <div className="flex justify-end mt-auto">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="rounded-full border-2 border-blue-500 px-6 py-2 font-semibold text-blue-600 text-sm transition-colors hover:bg-blue-50"
+            className="rounded-full border-2 border-blue-500 dark:border-blue-600 px-6 py-2 font-semibold text-blue-600 dark:text-blue-400 text-sm transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/30"
           >
             View Details
           </button>

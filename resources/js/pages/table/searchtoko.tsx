@@ -121,8 +121,8 @@ function SearchToko() {
     <>
       <Head title="Cari Produk / Toko" />
 
-      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
-        
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden">
+
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
@@ -140,10 +140,10 @@ function SearchToko() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <h1 className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 bg-clip-text text-transparent">
+              <h1 className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 dark:from-blue-400 dark:via-indigo-400 dark:to-blue-600 bg-clip-text text-transparent">
                 Temukan Produk Impian
               </h1>
-              <p className="text-gray-600 max-w-2xl mx-auto text-lg leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed">
                 Pencarian semantik dengan filter cerdas untuk pengalaman belanja terbaik
               </p>
             </div>
@@ -152,7 +152,7 @@ function SearchToko() {
             <div className="w-full max-w-4xl mx-auto mb-8">
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 rounded-3xl blur-lg opacity-30 group-hover:opacity-50 transition duration-500"></div>
-                <div className="relative backdrop-blur-xl bg-white/90 rounded-3xl shadow-2xl border border-white/50 overflow-hidden">
+                <div className="relative backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 rounded-3xl shadow-2xl border border-white/50 dark:border-gray-700 overflow-hidden">
                   <div className="flex items-center p-2">
                     <div className="pl-4 flex items-center pointer-events-none">
                       <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,7 +161,7 @@ function SearchToko() {
                     </div>
                     <input
                       type="text"
-                      className="flex-1 px-4 py-4 bg-transparent border-none outline-none text-gray-800 text-lg placeholder-gray-400 focus:placeholder-gray-300"
+                      className="flex-1 px-4 py-4 bg-transparent border-none outline-none text-gray-800 dark:text-gray-200 text-lg placeholder-gray-400 dark:placeholder-gray-500 focus:placeholder-gray-300"
                       placeholder="Cari produk... (contoh: laptop gaming murah)"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
@@ -188,7 +188,7 @@ function SearchToko() {
                 <select
                   value={sortPrice}
                   onChange={(e) => handleSortChange('price', e.target.value)}
-                  className="appearance-none px-6 py-3.5 pr-12 rounded-xl border-2 border-blue-200 bg-white shadow-sm hover:shadow-md hover:border-blue-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 font-medium text-gray-700 cursor-pointer outline-none"
+                  className="appearance-none px-6 py-3.5 pr-12 rounded-xl border-2 border-blue-200 dark:border-gray-600 bg-white dark:bg-slate-800 dark:text-gray-200 shadow-sm hover:shadow-md hover:border-blue-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 font-medium text-gray-700 cursor-pointer outline-none"
                 >
                   <option value="">Harga</option>
                   <option value="lowest">Termurah</option>
@@ -205,7 +205,7 @@ function SearchToko() {
                 <select
                   value={sortDistance}
                   onChange={(e) => handleSortChange('distance', e.target.value)}
-                  className="appearance-none px-6 py-3.5 pr-12 rounded-xl border-2 border-indigo-200 bg-white shadow-sm hover:shadow-md hover:border-indigo-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-300 font-medium text-gray-700 cursor-pointer outline-none"
+                  className="appearance-none px-6 py-3.5 pr-12 rounded-xl border-2 border-indigo-200 dark:border-gray-600 bg-white dark:bg-slate-800 dark:text-gray-200 shadow-sm hover:shadow-md hover:border-indigo-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-300 font-medium text-gray-700 cursor-pointer outline-none"
                 >
                   <option value="">Jarak</option>
                   <option value="nearest">Terdekat</option>
@@ -222,7 +222,7 @@ function SearchToko() {
                 <select
                   value={sortRating}
                   onChange={(e) => handleSortChange('rating', e.target.value)}
-                  className="appearance-none px-6 py-3.5 pr-12 rounded-xl border-2 border-amber-200 bg-white shadow-sm hover:shadow-md hover:border-amber-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-100 transition-all duration-300 font-medium text-gray-700 cursor-pointer outline-none"
+                  className="appearance-none px-6 py-3.5 pr-12 rounded-xl border-2 border-amber-200 dark:border-gray-600 bg-white dark:bg-slate-800 dark:text-gray-200 shadow-sm hover:shadow-md hover:border-amber-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-100 transition-all duration-300 font-medium text-gray-700 cursor-pointer outline-none"
                 >
                   <option value="">⭐ Rating</option>
                   <option value="highest">Terbaik</option>
@@ -251,12 +251,12 @@ function SearchToko() {
             {/* Loading */}
             {loading && (
               <div className="flex justify-center mb-10">
-                <div className="inline-flex items-center gap-4 px-8 py-5 bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-blue-100">
+                <div className="inline-flex items-center gap-4 px-8 py-5 bg-white/80 dark:bg-slate-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-blue-100 dark:border-gray-700">
                   <div className="relative">
                     <div className="animate-spin h-7 w-7 border-4 border-blue-500 border-t-transparent rounded-full"></div>
                     <div className="absolute inset-0 animate-ping h-7 w-7 border-4 border-blue-300 border-t-transparent rounded-full opacity-20"></div>
                   </div>
-                  <span className="text-gray-700 font-bold text-lg">Mencari produk terbaik...</span>
+                  <span className="text-gray-700 dark:text-gray-200 font-bold text-lg">Mencari produk terbaik...</span>
                 </div>
               </div>
             )}
@@ -264,15 +264,15 @@ function SearchToko() {
             {/* Results Header */}
             {!loading && results.length > 0 && (
               <>
-                <div className="mb-8 backdrop-blur-xl bg-white/80 rounded-3xl p-5 shadow-xl border border-white/50">
+                <div className="mb-8 backdrop-blur-xl bg-white/80 dark:bg-slate-800/90 rounded-3xl p-5 shadow-xl border border-white/50 dark:border-gray-700">
                   <div className="flex items-center justify-between flex-wrap gap-4">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl text-white text-xl font-black shadow-lg">
                         {results.length}
                       </div>
                       <div>
-                        <p className="text-gray-800 font-bold text-lg">Produk Ditemukan</p>
-                        <p className="text-gray-500 text-sm">Halaman {page} dari {totalPages}</p>
+                        <p className="text-gray-800 dark:text-gray-200 font-bold text-lg">Produk Ditemukan</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm">Halaman {page} dari {totalPages}</p>
                       </div>
                     </div>
                     {query && (
@@ -290,7 +290,7 @@ function SearchToko() {
                   {results.map((item) => (
                     <div
                       key={item.id}
-                      className="group relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-white/50 hover:-translate-y-2"
+                      className="group relative bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-white/50 dark:border-gray-700 hover:-translate-y-2"
                     >
                       {/* Product Image */}
                       {item.image && (
@@ -301,7 +301,7 @@ function SearchToko() {
                             className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                          
+
                           {/* Category Badge */}
                           {item.category && (
                             <div className="absolute top-3 right-3 backdrop-blur-md bg-white/90 px-4 py-1.5 rounded-xl text-xs font-bold text-blue-700 shadow-lg border border-blue-100">
@@ -311,11 +311,10 @@ function SearchToko() {
 
                           {/* Stock Badge */}
                           {item.stock !== null && (
-                            <div className={`absolute top-3 left-3 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-bold shadow-lg ${
-                              item.stock > 0 
-                                ? 'bg-green-100 text-green-700 border border-green-200' 
+                            <div className={`absolute top-3 left-3 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-bold shadow-lg ${item.stock > 0
+                                ? 'bg-green-100 text-green-700 border border-green-200'
                                 : 'bg-red-100 text-red-700 border border-red-200'
-                            }`}>
+                              }`}>
                               {item.stock > 0 ? `📦 Stok: ${item.stock}` : '❌ Habis'}
                             </div>
                           )}
@@ -325,7 +324,7 @@ function SearchToko() {
                       {/* Product Info */}
                       <div className="p-5 flex flex-col">
                         {/* Product Name */}
-                        <h2 className="font-bold text-lg line-clamp-2 text-gray-800 mb-3 min-h-[3.5rem] leading-snug group-hover:text-blue-700 transition-colors">
+                        <h2 className="font-bold text-lg line-clamp-2 text-gray-800 dark:text-gray-200 mb-3 min-h-[3.5rem] leading-snug group-hover:text-blue-700 transition-colors">
                           {item.name}
                         </h2>
 
@@ -334,10 +333,10 @@ function SearchToko() {
                           <p className="text-3xl font-black bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
                             {item.price
                               ? new Intl.NumberFormat("id-ID", {
-                                  style: "currency",
-                                  currency: "IDR",
-                                  minimumFractionDigits: 0,
-                                }).format(item.price)
+                                style: "currency",
+                                currency: "IDR",
+                                minimumFractionDigits: 0,
+                              }).format(item.price)
                               : "Hubungi Penjual"}
                           </p>
                         </div>
@@ -356,7 +355,7 @@ function SearchToko() {
 
                         {/* Store Info */}
                         {item.store && (
-                          <div className="flex items-center gap-3 mb-5 p-3 bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl border border-slate-200 shadow-sm">
+                          <div className="flex items-center gap-3 mb-5 p-3 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-800 rounded-2xl border border-slate-200 dark:border-gray-600 shadow-sm">
                             {item.store.logo && (
                               <img
                                 src={item.store.logo}
@@ -365,7 +364,7 @@ function SearchToko() {
                               />
                             )}
                             <div className="text-xs flex-1 min-w-0">
-                              <p className="font-bold text-gray-800 truncate mb-1">{item.store.name}</p>
+                              <p className="font-bold text-gray-800 dark:text-gray-200 truncate mb-1">{item.store.name}</p>
                               <p className="text-gray-500 flex items-center gap-1.5">
                                 <svg className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -473,16 +472,15 @@ function SearchToko() {
                     } else {
                       pageNum = page - 3 + i;
                     }
-                    
+
                     return (
                       <button
                         key={pageNum}
                         onClick={() => setPage(pageNum)}
-                        className={`w-12 h-12 rounded-2xl font-bold transition-all duration-300 ${
-                          page === pageNum
+                        className={`w-12 h-12 rounded-2xl font-bold transition-all duration-300 ${page === pageNum
                             ? 'bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-2xl scale-110 border-2 border-blue-500'
                             : 'bg-white/80 backdrop-blur-sm border-2 border-blue-200 text-gray-700 hover:bg-blue-50 hover:border-blue-400 hover:scale-105'
-                        }`}
+                          }`}
                       >
                         {pageNum}
                       </button>

@@ -95,10 +95,10 @@ function OrdersPage() {
   return (
     <>
       <Head title="Request Item" />
-      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 p-6 font-[Poppins]">
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-6 font-[Poppins]">
         <div className="mx-auto max-w-6xl space-y-6">
           {/* Main Card with Enhanced Design */}
-          <div className="rounded-2xl border border-blue-200/50 bg-white/80 backdrop-blur-sm p-8 shadow-xl shadow-blue-100/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-200/40">
+          <div className="rounded-2xl border border-blue-200/50 dark:border-gray-700 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm p-8 shadow-xl shadow-blue-100/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-200/40">
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-6 border-b-2 border-gradient-to-r from-blue-200 via-blue-100 to-transparent">
               <div className="flex flex-col gap-2">
@@ -108,11 +108,11 @@ function OrdersPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                     Permintaan Barang
                   </h2>
                 </div>
-                <p className="text-sm text-slate-600 ml-14 flex items-center gap-2">
+                <p className="text-sm text-slate-600 dark:text-gray-400 ml-14 flex items-center gap-2">
                   <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                   Departemen
                 </p>
@@ -141,14 +141,14 @@ function OrdersPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                     </svg>
                   </div>
-                  <p className="text-lg font-semibold text-gray-600 mb-2">Belum ada item yang ditambahkan</p>
-                  <p className="text-sm text-gray-500">Klik tombol "Add Order" untuk menambahkan item permintaan</p>
+                  <p className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">Belum ada item yang ditambahkan</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500">Klik tombol "Add Order" untuk menambahkan item permintaan</p>
                 </div>
               ) : (
                 orderedItems.map((item, index) => (
                   <div
                     key={item.id}
-                    className="group relative flex items-center justify-between rounded-xl border-2 border-blue-100 bg-gradient-to-br from-blue-50/50 to-white p-5 transition-all duration-300 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-100/50 hover:-translate-y-0.5"
+                    className="group relative flex items-center justify-between rounded-xl border-2 border-blue-100 dark:border-gray-700 bg-gradient-to-br from-blue-50/50 to-white dark:from-slate-700 dark:to-slate-800 p-5 transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:shadow-blue-100/50 hover:-translate-y-0.5"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     {/* Item Number Badge */}
@@ -157,8 +157,8 @@ function OrdersPage() {
                     </div>
 
                     <div className="flex-1 pl-4">
-                      <h4 className="font-bold text-gray-900 text-lg">{item.nama_barang}</h4>
-                      <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-600">
+                      <h4 className="font-bold text-gray-900 dark:text-white text-lg">{item.nama_barang}</h4>
+                      <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
                         <span className="inline-flex items-center gap-1.5 bg-blue-100 px-3 py-1 rounded-full">
                           <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
@@ -175,7 +175,7 @@ function OrdersPage() {
                         )}
                       </div>
                       {item.catatan && (
-                        <p className="text-xs text-gray-500 mt-2 italic bg-gray-50 px-3 py-1.5 rounded-lg inline-block">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic bg-gray-50 dark:bg-slate-700 px-3 py-1.5 rounded-lg inline-block">
                           💬 {item.catatan}
                         </p>
                       )}
@@ -197,8 +197,8 @@ function OrdersPage() {
 
             {/* Notes Section */}
             {orderedItems.length > 0 && (
-              <div className="mt-8 p-6 bg-gradient-to-br from-slate-50 to-white rounded-xl border-2 border-slate-200">
-                <label className="block text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <div className="mt-8 p-6 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 rounded-xl border-2 border-slate-200 dark:border-gray-700">
+                <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
                   <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
@@ -209,7 +209,7 @@ function OrdersPage() {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Tambahkan catatan untuk request ini..."
                   rows={3}
-                  className="w-full rounded-xl border-2 border-slate-300 px-4 py-3 text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all resize-none"
+                  className="w-full rounded-xl border-2 border-slate-300 dark:border-gray-600 dark:bg-slate-700 dark:text-gray-200 px-4 py-3 text-gray-700 placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all resize-none"
                 />
               </div>
             )}

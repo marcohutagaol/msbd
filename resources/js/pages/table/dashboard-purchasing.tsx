@@ -54,23 +54,23 @@ function Home({ stats, departments }: DashboardProps) {
   return (
     <>
       <Head title="Dashboard" />
-      <main className="min-h-screen bg-white p-6">
+      <main className="min-h-screen bg-white dark:bg-slate-900 p-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
             {/* <div className="w-3 h-3 rounded-full bg-blue-600"></div> */}
-            <h1 className="text-3xl font-bold text-slate-900">Dashboard Pembelian</h1>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard Pembelian</h1>
           </div>
 
           <StatsCards stats={stats || defaultStats} />
 
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-slate-900 mb-4">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
               Request Departemen
             </h2>
-           <DepartmentList
-  departments={departments || []}
-  onSelectDepartment={(id) => console.log(id)}
-/>
+            <DepartmentList
+              departments={departments || []}
+              onSelectDepartment={(id) => console.log(id)}
+            />
 
           </div>
         </div>
