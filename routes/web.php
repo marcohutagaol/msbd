@@ -24,6 +24,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MonitoringRequestController;
 use App\Http\Controllers\DashboardController;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 
 
@@ -114,11 +115,8 @@ Route::middleware(['auth'])->group(function () {
   // =======================
   Route::get('/dashboard-purchasing', [DashboardPurchasingController::class, 'index'])
     ->name('dashboard-purchasing');
-
-
   Route::get('/purchasing/{request_number}', [PurchasingDetailController::class, 'show'])
     ->name('purchasing.show');
-
 
   
 Route::post('/purchasing-detail/{requestNumber}/approve-all', [PurchasingDetailController::class, 'approveAll']);
@@ -191,7 +189,9 @@ Route::get('/invoice/{id}/download', function ($id) {
     $invoice = \App\Models\Invoice::with('purchases')->findOrFail($id);
 
     $pdf = Pdf::loadView('pdf.struk', ['invoice' => $invoice])
-      ->setPaper([0, 0, 226.77, 600], 'portrait'); // ukuran struk 80m
+    ->setPaper([0, 0, 650, 926.77], 'landscape');
+
+
 
     return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
 });

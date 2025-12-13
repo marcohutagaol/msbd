@@ -20,9 +20,8 @@ class DashboardPurchasingController extends Controller
         'total_items'         => RequestItem::count(),
     ];
 
-    // ✅ LIST CARD DI "Request Departemen" – HITUNG DARI ITEMS, BUKAN DARI REQUEST.STATUS
     $departmentStats = Request::whereHas('items')
-        ->with('items') // penting, supaya gak N+1
+        ->with('items') 
         ->orderBy('created_at', 'desc')
         ->get()
         ->map(function ($request) {

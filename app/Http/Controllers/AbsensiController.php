@@ -10,111 +10,98 @@ use Illuminate\Support\Facades\Auth;
 use Cloudinary\Cloudinary;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+use App\Models\AbsensiGenerate;
+
 
 
 class AbsensiController extends Controller
 {
-  public function store(Request $request)
+public function store(Request $request)
 {
-    // dd([
-    //     'masuk_store' => true,
-    //     'has_file' => $request->hasFile('foto'),
-    //     'all_request' => $request->all(),
-    // ]);
     try {
 
         // =============================
-        // VALIDASI (status_absen dihapus)
+        // VALIDASI DATA
         // =============================
-      $validator = Validator::make($request->all(), [
-    'foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-    'tipe_absen' => 'required|in:masuk,pulang',
-    'waktu_absen' => 'required|string',
-    'lokasi' => 'required|string',
-    'device_info' => 'required|string',
-    'ip_address' => 'required|string'
-]);
+        $validator = Validator::make($request->all(), [
+            'foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'tipe_absen' => 'required|in:masuk,pulang',
+            'id_absensi_generate' => 'required|integer', // ★ WAJIB ADA
+            'waktu_absen' => 'required|string',
+            'lokasi' => 'required|string',
+            'device_info' => 'required|string',
+            'ip_address' => 'required|string'
+        ]);
 
-if ($validator->fails()) {
-    return response()->json([
-        'success' => false,
-        'errors' => $validator->errors()
-    ], 422);
-}
-
-$validated = $validator->validated();
-
-
-        // =============================
-        // CEK FILE FOTO
-        // =============================
-        if (!$request->hasFile('foto')) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Tidak ada file foto dikirim ke server.'
-            ], 400);
+                'errors' => $validator->errors()
+            ], 422);
         }
 
+        $validated = $validator->validated();
+
+
         // =============================
-        // UPLOAD KE CLOUDINARY
+        // UPLOAD CLOUDINARY
         // =============================
- try {
+        if (!$request->hasFile('foto')) {
+            return response()->json(['success' => false, 'message' => 'Tidak ada foto'], 400);
+        }
 
-    $cloudinary = new Cloudinary([
-        'cloud' => [
-            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-            'api_key' => env('CLOUDINARY_KEY'),
-            'api_secret' => env('CLOUDINARY_SECRET'),
-        ],
-        'url' => [
-            'secure' => true
-        ]
-    ]);
+        $cloudinary = new Cloudinary([
+            'cloud' => [
+                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                'api_key' => env('CLOUDINARY_KEY'),
+                'api_secret' => env('CLOUDINARY_SECRET'),
+            ],
+            'url' => ['secure' => true]
+        ]);
 
-    $uploadResult = $cloudinary->uploadApi()->upload(
-        $request->file('foto')->getRealPath(),
-        [
-            'folder' => 'absensi_kawaland'
-        ]
-    );
+        $uploadResult = $cloudinary->uploadApi()->upload(
+            $request->file('foto')->getRealPath(),
+            ['folder' => 'absensi_kawaland']
+        );
 
-    $imageUrl = $uploadResult['secure_url'];
+        $imageUrl = $uploadResult['secure_url'];
 
-} catch (\Exception $e) {
-    Log::error('Cloudinary upload gagal:', [$e->getMessage()]);
-    return response()->json([
-        'success' => false,
-        'message' => 'Upload ke Cloudinary gagal: ' . $e->getMessage(),
-    ], 500);
-}
 
         // =============================
         // AMBIL DATA KARYAWAN
         // =============================
-        $idKaryawan = Auth::user()->id_karyawan; // dari tabel users
-
-        if (!$idKaryawan) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User tidak memiliki ID karyawan.'
-            ], 404);
-        }
+        $idKaryawan = Auth::user()->id_karyawan;
 
         $karyawan = Karyawan::where('id_karyawan', $idKaryawan)->first();
 
-        if (!$karyawan) {
+
+        // =============================
+        // AMBIL DATA ABSENSI GENERATE
+        // =============================
+        $generate = AbsensiGenerate::find($validated['id_absensi_generate']);
+
+        if (!$generate) {
             return response()->json([
                 'success' => false,
-                'message' => 'Data karyawan tidak ditemukan.'
+                'message' => 'ID absensi generate tidak ditemukan.'
             ], 404);
         }
 
-        // =============================
-        // GENERATE DATA ABSENSI
-        // =============================
-        $isMasuk = strtoupper($validated['tipe_absen']) === 'MASUK';
+        $jamMasukDefault = Carbon::parse($generate->jam_masuk_default);
+        $jamKeluarDefault = Carbon::parse($generate->jam_keluar_default);
 
-        $statusAbsen = $isMasuk ? 'HADIR' : 'PULANG';
+        // Total menit kerja default → jadi 100%
+        $totalMenitKerja = $jamKeluarDefault->diffInMinutes($jamMasukDefault);
+
+
+        // =============================
+        // HITUNG TERLAMBAT
+        // =============================
+        $jamAbsen = Carbon::parse($validated['waktu_absen']);
+        $isLate = $jamAbsen->greaterThan($jamMasukDefault);
+        $statusAbsen = $isLate ? 'TERLAMBAT' : 'HADIR';
+
 
         // =============================
         // SIMPAN ABSENSI
@@ -123,30 +110,41 @@ $validated = $validator->validated();
             'id_karyawan' => $idKaryawan,
             'kode_department' => $karyawan->kode_department,
             'tanggal_absen' => date('Y-m-d'),
-            'tipe_absen' => $isMasuk ? 'DATANG' : 'BALIK',
-            'jam_datang' => date('Y-m-d H:i:s', strtotime($validated['waktu_absen'])),
+            'tipe_absen' => strtoupper($validated['tipe_absen']) === 'MASUK' ? 'DATANG' : 'BALIK',
+
+            // waktu absen
+            'jam_datang' => $jamAbsen,
+
+            // lokasi + foto
             'lokasi_datang' => $validated['lokasi'],
-            'link_gambar_datang' => $imageUrl,   // ✔ masuk ke DB
-            'status_absen' => $statusAbsen,       // ✔ otomatis
+            'link_gambar_datang' => $imageUrl,
+
+            // status hadir / terlambat
+            'status_absen' => $statusAbsen,
+
+            // sistem informasi
             'device_info' => $validated['device_info'],
-            'ip_address' => $validated['ip_address']
+            'ip_address' => $validated['ip_address'],
+
+            // tambahkan default bekerja
+            'total_menit_kerja_default' => $totalMenitKerja,
         ]);
 
         return response()->json([
             'success' => true,
-            'url' => $imageUrl
+            'message' => 'Absensi berhasil disimpan',
+            'foto' => $imageUrl,
+            'terlambat' => $isLate,
+            'total_menit_kerja_default' => $totalMenitKerja
         ]);
 
     } catch (\Exception $e) {
-
         return response()->json([
             'success' => false,
             'message' => 'Gagal menyimpan absensi: ' . $e->getMessage()
         ], 500);
     }
 }
-
-
 
   public function getRiwayat()
   {

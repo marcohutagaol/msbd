@@ -62,26 +62,73 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Dashboard() {
     const { props }: any = usePage();
-    const user = props.user;
+    const {
+        user,
+        absen_masuk_time: absenMasukTime,
+        absen_keluar_time: absenKeluarTime,
+        absen_status: absenStatus,
+        total_menit_default: totalMenitDefault,
+    } = props;
+
+    const [workTime, setWorkTime] = useState({
+        hours: 0,
+        minutes: 0,
+        percent: 0,
+    });
 
     const [currentTime, setCurrentTime] = useState('00:00:00');
 
+    // realtime clock
     useEffect(() => {
         const timer = setInterval(() => {
             const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            setCurrentTime(`${hours}:${minutes}:${seconds}`);
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            setCurrentTime(`${hh}:${mm}:${ss}`);
         }, 1000);
 
         return () => clearInterval(timer);
     }, []);
 
+    // realtime worktime counter
+    useEffect(() => {
+        if (!absenMasukTime || !totalMenitDefault) return;
+
+        const interval = setInterval(() => {
+            const now = new Date();
+
+            const [h, m, s] = absenMasukTime.split(':').map(Number);
+            const masukDate = new Date();
+            masukDate.setHours(h, m, s, 0);
+
+            const diffMs = now.getTime() - masukDate.getTime();
+            if (diffMs < 0) return;
+
+            const totalMinutes = Math.floor(diffMs / 60000);
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            const percent = Math.min(
+                Math.floor((totalMinutes / totalMenitDefault) * 100),
+                100
+            );
+
+            setWorkTime({ hours, minutes, percent });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [absenMasukTime, totalMenitDefault]);
+
+    const formatJam = (time?: string) => {
+    if (!time) return "-";
+    return time.substring(0, 5);
+};
+
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden rounded-xl bg-gray-50 p-4 sm:p-6">
                 <main className="flex-1 overflow-auto">
                     <div className="mx-auto max-w-7xl space-y-8">
@@ -93,6 +140,7 @@ export default function Dashboard() {
                                         <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" />
                                         <AvatarFallback>SA</AvatarFallback>
                                     </Avatar>
+
                                     <div>
                                         <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
                                             {user.name}
@@ -100,6 +148,7 @@ export default function Dashboard() {
                                         <p className="text-sm text-gray-600 sm:text-base">
                                             {user.departemen}
                                         </p>
+
                                         <div className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 px-3 py-1 shadow-sm">
                                             <svg
                                                 className="h-3.5 w-3.5 text-white"
@@ -118,6 +167,7 @@ export default function Dashboard() {
                                         </div>
                                     </div>
                                 </div>
+
                                 <div className="text-left sm:text-right">
                                     <div className="flex items-center gap-2 text-sm text-gray-600">
                                         <svg
@@ -134,17 +184,15 @@ export default function Dashboard() {
                                             />
                                         </svg>
                                         <span className="font-medium">
-                                            {new Date().toLocaleDateString(
-                                                'id-ID',
-                                                {
-                                                    weekday: 'long',
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                    year: 'numeric',
-                                                },
-                                            )}
+                                            {new Date().toLocaleDateString('id-ID', {
+                                                weekday: 'long',
+                                                day: 'numeric',
+                                                month: 'short',
+                                                year: 'numeric',
+                                            })}
                                         </span>
                                     </div>
+
                                     <p className="text-lg font-semibold text-blue-600">
                                         {currentTime} WIB
                                     </p>
@@ -155,14 +203,18 @@ export default function Dashboard() {
                         {/* Attendance Section */}
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                             <div className="space-y-6 lg:col-span-2">
+                              <p className="text-sm ml-1 font-medium text-gray-600">
+    {formatJam(props.jam_masuk_default)} | {formatJam(props.jam_keluar_default)}
+</p>
+
+
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     {/* Clock In Card */}
                                     <div className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 bg-gradient-to-br from-blue-50 via-blue-100/50 to-white p-6 shadow-lg shadow-blue-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30">
-                                        {/* Decorative Elements */}
                                         <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-blue-400/20 blur-2xl" />
                                         <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-blue-500/10 blur-xl" />
 
-                                        {/* Icon & Label */}
+                                        {/* Label */}
                                         <div className="relative mb-3 flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
@@ -175,27 +227,24 @@ export default function Dashboard() {
                                             <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
                                         </div>
 
-                                        {/* Time Display */}
+                                        {/* Time */}
                                         <div className="relative">
                                             <p className="mb-1 text-xs font-semibold tracking-wider text-slate-600 uppercase">
                                                 Absen Masuk
                                             </p>
                                             <p className="font-mono text-4xl font-black tracking-tight text-blue-700 sm:text-5xl">
-                                                {currentTime}
+                                                {absenMasukTime ?? currentTime}
                                             </p>
-                                            <p className="mt-1 text-xs font-medium text-blue-600">
-                                                WIB
-                                            </p>
+                                            <p className="mt-1 text-xs font-medium text-blue-600">WIB</p>
                                         </div>
                                     </div>
 
                                     {/* Clock Out Card */}
                                     <div className="group relative overflow-hidden rounded-2xl border-2 border-rose-500 bg-gradient-to-br from-rose-50 via-rose-100/50 to-white p-6 shadow-lg shadow-rose-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-rose-500/30">
-                                        {/* Decorative Elements */}
                                         <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-rose-400/20 blur-2xl" />
                                         <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-rose-500/10 blur-xl" />
 
-                                        {/* Icon & Label */}
+                                        {/* Label */}
                                         <div className="relative mb-3 flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 shadow-md">
@@ -208,40 +257,32 @@ export default function Dashboard() {
                                             <div className="h-2 w-2 animate-pulse rounded-full bg-rose-500" />
                                         </div>
 
-                                        {/* Time Display */}
+                                        {/* Time */}
                                         <div className="relative">
                                             <p className="mb-1 text-xs font-semibold tracking-wider text-slate-600 uppercase">
                                                 Absen Keluar
                                             </p>
                                             <p className="font-mono text-4xl font-black tracking-tight text-rose-700 sm:text-5xl">
-                                                {currentTime}
+                                                {absenKeluarTime ?? '-'}
                                             </p>
-                                            <p className="mt-1 text-xs font-medium text-rose-600">
-                                                WIB
-                                            </p>
+                                            <p className="mt-1 text-xs font-medium text-rose-600">WIB</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* ACTION BUTTONS */}
                                 <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    {/* Clock In Button */}
                                     <button
-                                        onClick={() =>
-                                            router.visit(`/absensi/${user.id}`)
-                                        }
+                                        onClick={() => router.visit(`/absensi/${user.id}`)}
                                         className="group relative overflow-hidden rounded-xl border-2 border-blue-500 bg-gradient-to-r from-blue-500 to-blue-600 p-5 shadow-lg shadow-blue-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-600/40 active:scale-95"
                                     >
-                                        {/* Shine */}
                                         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
 
                                         <div className="relative flex items-center justify-center gap-3">
                                             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
-                                                <Clock
-                                                    className="h-6 w-6 text-white"
-                                                    strokeWidth={2.5}
-                                                />
+                                                <Clock className="h-6 w-6 text-white" strokeWidth={2.5} />
                                             </div>
+
                                             <div className="text-left">
                                                 <p className="text-lg font-black tracking-wide text-white uppercase">
                                                     Clock In
@@ -255,16 +296,13 @@ export default function Dashboard() {
 
                                     {/* Clock Out Button */}
                                     <button className="group relative overflow-hidden rounded-xl border-2 border-rose-500 bg-gradient-to-r from-rose-500 to-rose-600 p-5 shadow-lg shadow-rose-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-rose-600/40 active:scale-95">
-                                        {/* Shine */}
                                         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
 
                                         <div className="relative flex items-center justify-center gap-3">
                                             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
-                                                <Clock
-                                                    className="h-6 w-6 text-white"
-                                                    strokeWidth={2.5}
-                                                />
+                                                <Clock className="h-6 w-6 text-white" strokeWidth={2.5} />
                                             </div>
+
                                             <div className="text-left">
                                                 <p className="text-lg font-black tracking-wide text-white uppercase">
                                                     Clock Out
@@ -278,8 +316,8 @@ export default function Dashboard() {
                                 </div>
                             </div>
 
+                            {/* RIGHT PANEL (Work Time + Status) */}
                             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-white via-white to-blue-50/30 p-6 shadow-sm transition-all hover:shadow-lg sm:p-8">
-                                {/* Background Decoration */}
                                 <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-blue-200/20 blur-3xl" />
                                 <div className="absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-green-200/20 blur-2xl" />
 
@@ -289,102 +327,92 @@ export default function Dashboard() {
                                         <ClipboardList className="h-5 w-5 text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-gray-900">
-                                            Ringkasan Hari Ini
-                                        </h3>
-                                        <p className="text-xs text-gray-500">
-                                            Update real-time
-                                        </p>
+                                        <h3 className="text-lg font-bold text-gray-900">Ringkasan Hari Ini</h3>
+                                        <p className="text-xs text-gray-500">Update real-time</p>
                                     </div>
                                 </div>
 
-                                {/* Stats Grid */}
+                                {/* Work Time */}
                                 <div className="relative space-y-4">
-                                    {/* Jam Kerja */}
                                     <div className="group rounded-xl bg-white/60 p-4 backdrop-blur-sm transition-all hover:bg-white/80 hover:shadow-sm">
-                                        <div className="flex items-center justify-between">
+                                        <div className="flex items-center justify-between mb-5">
                                             <div className="flex items-center gap-3">
                                                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100">
                                                     <Clock className="h-4 w-4 text-blue-600" />
                                                 </div>
-                                                <p className="text-sm font-medium text-gray-600">
-                                                    Jam Kerja
-                                                </p>
+                                                <p className="text-sm font-medium text-gray-600">Jam Kerja</p>
                                             </div>
+
                                             <p className="text-2xl font-bold text-gray-900">
-                                                7h 58m
+                                                {workTime.hours}h {workTime.minutes}m
                                             </p>
                                         </div>
 
-                                        <div className="mt-3">
-                                            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
-                                                <div className="h-full w-[83%] rounded-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-500" />
-                                            </div>
-                                            <p className="mt-1 text-right text-xs text-gray-500">
-                                                83% dari 8 jam
-                                            </p>
+                                        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                                            <div
+                                                className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-500"
+                                                style={{ width: `${workTime.percent}%` }}
+                                            />
                                         </div>
+
+                                        <p className="mt-1 text-right text-xs text-gray-500">
+                                            {workTime.percent}% dari {(((totalMenitDefault ?? 0) / 60).toFixed(1))} jam
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Status & hadir */}
+                                <div className="mt-4 grid grid-cols-2 gap-3">
+                                    {/* STATUS */}
+                                    <div
+                                        className={`group rounded-xl p-4 transition-all 
+                                            ${absenStatus === 'Masuk'
+                                                ? 'bg-green-100/50 hover:bg-green-100'
+                                                : absenStatus === 'Pulang'
+                                                    ? 'bg-purple-100/50 hover:bg-purple-100'
+                                                    : 'bg-red-100/50 hover:bg-red-100'
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div
+                                                className={`h-2.5 w-2.5 rounded-full animate-pulse 
+                                                    ${absenStatus === 'Masuk'
+                                                        ? 'bg-green-500 shadow-green-300/50'
+                                                        : absenStatus === 'Pulang'
+                                                            ? 'bg-purple-500 shadow-purple-300/50'
+                                                            : 'bg-red-500 shadow-red-300/50'
+                                                    }`}
+                                            />
+                                            <p className="text-xs font-medium text-gray-600">Status</p>
+                                        </div>
+
+                                        <p
+                                            className={`mt-2 text-lg font-bold 
+                                                ${absenStatus === 'Masuk'
+                                                    ? 'text-green-600'
+                                                    : absenStatus === 'Pulang'
+                                                        ? 'text-purple-600'
+                                                        : 'text-red-600'
+                                                }`}
+                                        >
+                                            {absenStatus}
+                                        </p>
                                     </div>
 
-                                    {/* Status & Kehadiran Row */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {/* STATUS ABSEN */}
-                                        <div
-                                            className={`group rounded-xl p-4 transition-all 
-        ${props.absen_status === "Masuk"
-                                                    ? "bg-green-100/50 hover:bg-green-100"
-                                                    : props.absen_status === "Pulang"
-                                                        ? "bg-purple-100/50 hover:bg-purple-100"
-                                                        : "bg-red-100/50 hover:bg-red-100"
-                                                }
-    `}
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <div
-                                                    className={`h-2.5 w-2.5 rounded-full animate-pulse 
-                ${props.absen_status === "Masuk"
-                                                            ? "bg-green-500 shadow-green-300/50"
-                                                            : props.absen_status === "Pulang"
-                                                                ? "bg-purple-500 shadow-purple-300/50"
-                                                                : "bg-red-500 shadow-red-300/50"
-                                                        }
-            `}
-                                                />
-                                                <p className="text-xs font-medium text-gray-600">Status</p>
-                                            </div>
-
-                                            <p
-                                                className={`mt-2 text-lg font-bold 
-            ${props.absen_status === "Masuk"
-                                                        ? "text-green-600"
-                                                        : props.absen_status === "Pulang"
-                                                            ? "text-purple-600"
-                                                            : "text-red-600"
-                                                    }
-                                                `}
-                                            >
-                                                {props.absen_status}
-                                            </p>
+                                    {/* Kehadiran */}
+                                    <div className="group rounded-xl bg-blue-100/50 p-4 transition-all hover:bg-blue-100">
+                                        <div className="flex items-center gap-2">
+                                            <User className="h-3 w-3 text-blue-600" />
+                                            <p className="text-xs font-medium text-gray-600">Kehadiran</p>
                                         </div>
-                                        {/* Kehadiran */}
-                                        <div className="group rounded-xl bg-blue-100/50 p-4 transition-all hover:bg-blue-100">
-                                            <div className="flex items-center gap-2">
-                                                <User className="h-3 w-3 text-blue-600" />
-                                                <p className="text-xs font-medium text-gray-600">
-                                                    Kehadiran
-                                                </p>
-                                            </div>
-                                            <p className="mt-2 text-lg font-bold text-blue-600">
-                                                100%
-                                            </p>
-                                        </div>
+                                        <p className="mt-2 text-lg font-bold text-blue-600">100%</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Announcements - Improved Design */}
-                        <div className="space-y-6">
+                        <div className="mt-10 space-y-6">
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="flex items-center gap-3">
                                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-400 shadow-lg shadow-blue-300/30">
@@ -409,6 +437,7 @@ export default function Dashboard() {
                                 </a>
                             </div>
 
+                            {/* Announcement Cards */}
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {announcements.map((announcement, index) => {
                                     const IconComponent = announcement.icon;
@@ -417,9 +446,7 @@ export default function Dashboard() {
                                         <div
                                             key={announcement.id}
                                             className="group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
-                                            style={{
-                                                animationDelay: `${index * 100}ms`,
-                                            }}
+                                            style={{ animationDelay: `${index * 100}ms` }}
                                         >
                                             <div
                                                 className={`relative h-32 bg-gradient-to-br ${announcement.gradient} p-4`}
@@ -437,9 +464,7 @@ export default function Dashboard() {
                                                 </div>
 
                                                 <Badge
-                                                    variant={
-                                                        announcement.categoryColor as any
-                                                    }
+                                                    variant={announcement.categoryColor as any}
                                                     className="absolute top-4 left-4 border-0 bg-white/90 text-xs font-semibold text-gray-900 shadow-sm backdrop-blur-sm"
                                                 >
                                                     {announcement.category}
@@ -457,15 +482,11 @@ export default function Dashboard() {
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-1.5 text-xs text-gray-500">
                                                         <Calendar className="h-3.5 w-3.5" />
-                                                        <span>
-                                                            {announcement.date}
-                                                        </span>
+                                                        <span>{announcement.date}</span>
                                                     </div>
 
                                                     <div className="flex items-center gap-1 text-xs font-medium text-blue-600 opacity-0 transition-all duration-300 group-hover:opacity-100">
-                                                        <span>
-                                                            Baca selengkapnya
-                                                        </span>
+                                                        <span>Baca selengkapnya</span>
                                                         <ChevronRight className="h-3.5 w-3.5" />
                                                     </div>
                                                 </div>
