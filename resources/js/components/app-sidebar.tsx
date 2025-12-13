@@ -27,7 +27,8 @@ import {
     Megaphone,
     BarChart3,
     Users,
-    ClipboardList
+    ClipboardList,
+    FileText
 } from 'lucide-react';
 
 import AppLogo from './app-logo';
@@ -89,6 +90,11 @@ const userNavItems: NavItem[] = [
         title: 'Inventory',
         href: '/inventory',
         icon: Warehouse,
+    },
+    {
+        title: 'Laporan',
+        href: '/laporan',
+        icon: FileText,
     },
 ];
 
