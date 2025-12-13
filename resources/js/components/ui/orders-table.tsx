@@ -42,7 +42,9 @@ export default function OrdersTable({
   onApproveStatusChange?: () => void;
 }) {
   const { props } = usePage();
-  const { orders, department, request_number, stats } = props as any;
+const { orders, department, requestNumber, stats } = props as any;
+
+
 
   
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,103 +67,72 @@ export default function OrdersTable({
   };
 
   // Update status individual item
-  const handleStatusChange = async (id: string, newStatus: Order["status"]) => {
-    // Update UI optimistically
-    setOrderList((prev) =>
-      prev.map((order) =>
-        order.id === id ? { ...order, status: newStatus } : order
-      )
-    );
+ // HAPUS fungsi mapStatusToEnglish
 
-    // Send to backend
-    try {
-      await router.post(`/purchasing-detail/item/${id}/update-status`, {
-        status: mapStatusToEnglish(newStatus)
-      }, {
+const handleStatusChange = async (id: string, newStatus: Order["status"]) => {
+  // Update UI optimistically
+  setOrderList((prev) =>
+    prev.map((order) =>
+      order.id === id ? { ...order, status: newStatus } : order
+    )
+  );
+
+  try {
+    await router.post(
+      `/purchasing-detail/item/${id}/update-status`,
+      {
+        status: newStatus, // ⬅️ langsung kirim apa adanya
+      },
+      {
         preserveScroll: true,
         onError: (errors) => {
-          console.error('Error updating status:', errors);
+          console.error("Error updating status:", errors);
           // Revert on error
           setOrderList(orders);
-        }
-      });
-    } catch (error) {
-      console.error('Failed to update status:', error);
-      // Revert on error
-      setOrderList(orders);
-    }
-  };
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Failed to update status:", error);
+    setOrderList(orders);
+  }
+};
 
   // Approve all items
   const handleApproveAll = async () => {
-    if (isApproving) return;
-    
-    setIsApproving(true);
-    
-    try {
-    await router.post(`/purchasing-detail/${request_number}/approve-all`, {}, {
+  if (isApproving) return;
 
+  setIsApproving(true);
+
+  try {
+   await router.post(
+  `/purchasing-detail/${requestNumber}/approve-all`,
+      {},
+      {
         preserveScroll: true,
         onSuccess: () => {
-          // Update local state
           setOrderList((prev) =>
             prev.map((order) => ({ ...order, status: "Approved" }))
           );
+
           onApproveStatusChange?.();
-          
-          // Show success notification
-          const notification = document.createElement('div');
-          notification.className = 'fixed top-4 right-4 z-50 bg-white border-2 border-green-500 rounded-lg shadow-2xl p-4 flex items-center gap-3 animate-slide-in-right';
-          notification.innerHTML = `
-            <div class="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
-              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-            </div>
-            <div>
-              <p class="font-semibold text-gray-800">Berhasil!</p>
-              <p class="text-sm text-gray-600">Semua pesanan pending telah disetujui</p>
-            </div>
-          `;
-          document.body.appendChild(notification);
-          setTimeout(() => {
-            notification.style.animation = 'slide-out-right 0.3s ease-out';
-            setTimeout(() => notification.remove(), 300);
-          }, 3000);
+          alert("✅ Semua pesanan pending telah disetujui!");
         },
         onError: (errors) => {
-          console.error('Error approving all:', errors);
-          
-          // Show error notification
-          const notification = document.createElement('div');
-          notification.className = 'fixed top-4 right-4 z-50 bg-white border-2 border-red-500 rounded-lg shadow-2xl p-4 flex items-center gap-3 animate-slide-in-right';
-          notification.innerHTML = `
-            <div class="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full">
-              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </div>
-            <div>
-              <p class="font-semibold text-gray-800">Gagal!</p>
-              <p class="text-sm text-gray-600">Gagal menyetujui pesanan. Silakan coba lagi</p>
-            </div>
-          `;
-          document.body.appendChild(notification);
-          setTimeout(() => {
-            notification.style.animation = 'slide-out-right 0.3s ease-out';
-            setTimeout(() => notification.remove(), 300);
-          }, 3000);
+          console.error("Error approving all:", errors);
+          alert("❌ Gagal menyetujui pesanan.");
         },
         onFinish: () => {
           setIsApproving(false);
-        }
-      });
-    } catch (error) {
-      console.error('Failed to approve all:', error);
-      alert("❌ Terjadi kesalahan. Silakan coba lagi.");
-      setIsApproving(false);
-    }
-  };
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Failed to approve all:", error);
+    alert("❌ Terjadi kesalahan.");
+    setIsApproving(false);
+  }
+};
 
   const handleGoToPricePage = () => {
   if (!orderList.length) return;

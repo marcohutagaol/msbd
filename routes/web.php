@@ -23,12 +23,74 @@ use App\Http\Controllers\RequestManagementController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MonitoringRequestController;
 use App\Http\Controllers\DashboardController;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+
+
+
+
+
+
+
+  Route::get('/admin/karyawan', function () {
+      return Inertia::render('admin/karyawan');
+  })->name('admin.karyawan');
+
+   Route::get('/admin/detailKaryawan', function () {
+      return Inertia::render('admin/detailKaryawan');
+  })->name('admin.detailKaryawan');
+
+    Route::get('/admin/mantanKaryawan', function () {
+      return Inertia::render('admin/mantanKaryawan');
+  })->name('admin.mantanKaryawan');
+
+      Route::get('/admin/permission', function () {
+      return Inertia::render('admin/permission');
+  })->name('admin.permission');
+
+    Route::get('/admin/RequestItem', function () {
+      return Inertia::render('admin/RequestItem');
+  })->name('admin.RequestItem');
+
+  Route::get('/admin/invoice', function () {
+      return Inertia::render('admin/invoice');
+  })->name('admin.invoice');
+  
+    Route::get('/admin/LogRequest', function () {
+      return Inertia::render('admin/LogRequest');
+  })->name('admin.LogRequest');
+
+    Route::get('/admin/ReportItem', function () {
+      return Inertia::render('admin/ReportItem');
+  })->name('admin.ReportItem');
+
+      Route::get('/admin/LogAbsensi', function () {
+      return Inertia::render('admin/LogAbsensi');
+  })->name('admin.LogAbsensi');
+
+       Route::get('/admin/Announcement', function () {
+      return Inertia::render('admin/Announcement');
+  })->name('admin.Announcement');
+
+      Route::get('/admin/Report', function () {
+      return Inertia::render('admin/Report');
+  })->name('admin.Report');
+
+
+
+
+
+
+
 
 
 
 // =======================
 // AUTH | HOME
 // =======================
+
+
+
 Route::middleware(['auth', 'verified'])->group(function () {
   Route::get('/', [DashboardController::class, 'index'])->name('home');
   Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -53,13 +115,13 @@ Route::middleware(['auth'])->group(function () {
   Route::get('/dashboard-purchasing', [DashboardPurchasingController::class, 'index'])
     ->name('dashboard-purchasing');
 
-  Route::get('/purchasing/{request_number}', [PurchasingDetailController::class, 'show'])
-    ->name('purchasing.show');
 
   Route::get('/purchasing/{request_number}', [PurchasingDetailController::class, 'show'])
     ->name('purchasing.show');
 
-  Route::post('/purchasing-detail/{departmentId}/approve-all', [PurchasingDetailController::class, 'approveAll'])->name('purchasing.approve-all');
+
+  
+Route::post('/purchasing-detail/{requestNumber}/approve-all', [PurchasingDetailController::class, 'approveAll']);
   Route::post('/purchasing-detail/item/{itemId}/update-status', [PurchasingDetailController::class, 'updateStatus'])->name('purchasing.update-status');
 
   Route::get('/request', fn() => Inertia::render('table/request'))->name('request');
@@ -98,24 +160,41 @@ Route::middleware(['auth'])->group(function () {
   // =======================
   // INPUT PRICE
   // =======================
-  Route::get('/input-price/{request_number}', [InputPriceController::class, 'index'])
-    ->name('input-price.show');
-
-  Route::post('/input-price/save-invoice', [InputPriceController::class, 'saveInvoice']);
-
-  Route::post('/input-price/confirm-preorder', [InputPriceController::class, 'confirmPreorder'])
-    ->name('input-price.confirm-preorder');
-
-  Route::post('/input-price/mark-arrived', [InputPriceController::class, 'markAsArrived'])
-    ->name('input-price.mark-arrived');
-
-  Route::post('/input-price/mark-all-arrived', [InputPriceController::class, 'markAllArrived'])
-    ->name('input-price.mark-all-arrived');
-
-  Route::post('/input-price/confirm-preorder', [InvoiceController::class, 'confirmPreorder']);
-  Route::get('/invoice/view/{request_id}', [InvoiceController::class, 'show']);
+  Route::get('/input-price/{request_number}', 
+    [InputPriceController::class, 'index']
+)->name('input-price.show');
 
 
+Route::post('/input-price/save-invoice', 
+    [InputPriceController::class, 'saveInvoice']
+);
+
+Route::post('/input-price/confirm-preorder', 
+    [InputPriceController::class, 'confirmPreorder']
+)->name('input-price.confirm-preorder');
+
+Route::post('/input-price/mark-arrived', 
+    [InputPriceController::class, 'markAsArrived']
+)->name('input-price.mark-arrived');
+
+Route::post('/input-price/mark-all-arrived', 
+    [InputPriceController::class, 'markAllArrived']
+)->name('input-price.mark-all-arrived');
+
+// =========================
+// VIEW INVOICE
+// =========================
+Route::get('/invoice/{invoice_number}', [InvoiceController::class, 'show'])
+    ->name('invoice.show');
+
+Route::get('/invoice/{id}/download', function ($id) {
+    $invoice = \App\Models\Invoice::with('purchases')->findOrFail($id);
+
+    $pdf = Pdf::loadView('pdf.struk', ['invoice' => $invoice])
+      ->setPaper([0, 0, 226.77, 600], 'portrait'); // ukuran struk 80m
+
+    return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
+});
 
   // =======================
   // TRANSFER
@@ -215,10 +294,12 @@ Route::get('/announcement', fn() => Inertia::render('announcement/page'))->name(
 
 
 
+
 Route::get('/manager', fn() => Inertia::render('manager/page'))->name('manager.page');
 Route::get('/manager-absensi', fn() => Inertia::render('manager/absensi'))->name('manager.absensi');
 Route::get('/manager-karyawan/{id}', fn($id) => Inertia::render('manager/detail-karyawan', ['id' => $id]))->name('manager.detail-karyawan');
 Route::get('/manager-karyawan', fn() => Inertia::render('manager/karyawan'))->name('manager.karyawan');
+
 
 Route::get('/report', fn() => Inertia::render('report/page'))->name('report');
 Route::get('/laporan', fn() => Inertia::render('report-user/page'))->name('report-user');
