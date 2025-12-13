@@ -10,11 +10,11 @@ import React from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Purchasing',
+    title: 'Pembelian',
     href: '/dashboard-purchasing',
   },
   {
-    title: 'Detail Purchasing',
+    title: 'Detail Pembelian',
     href: '#',
   },
 ];
@@ -66,7 +66,7 @@ function Page() {
           />
 
           <p className="mt-6 text-gray-700 text-lg">
-            Current Status:{' '}
+            Status saat ini:{' '}
             <span className="font-semibold text-blue-600">
               {status}
             </span>

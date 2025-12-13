@@ -63,7 +63,7 @@ const userNavItems: NavItem[] = [
                 icon: ClipboardList,
             },
             {
-                title: 'Pemantauan Item',
+                title: 'Pemantauan Barang',
                 href: '/monitoring-request',
                 icon: Package,
             },
