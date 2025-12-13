@@ -245,7 +245,7 @@ export default function CatatKehadiran() {
                     <Clock className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Waktu Clock In</p>
+                    <p className="text-sm text-gray-600">Waktu Masuk</p>
                     <p className="text-2xl font-bold text-gray-900 font-mono">{formatTime(currentTime)}</p>
                   </div>
                 </div>

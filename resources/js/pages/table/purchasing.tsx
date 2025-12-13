@@ -21,42 +21,62 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 function Page() {
   const page = usePage();
-  
-  const [status, setStatus] = useState("Checking");
+  const { props } = page;
+  const { requestNumber } = props as any;
 
+  // 🔥 SOURCE OF TRUTH STATUS - persist dengan localStorage PER REQUEST
+  const [status, setStatus] = useState<string>(() => {
+    // Cek localStorage dengan key per-request
+    if (typeof window !== 'undefined' && requestNumber) {
+      const saved = localStorage.getItem(`timeline-status-${requestNumber}`);
+      return saved || 'Checking';
+    }
+    return 'Checking';
+  });
+
+  // 🔥 Simpan ke localStorage setiap kali status berubah (per request)
   useEffect(() => {
-    const path = page.url;
+    if (typeof window !== 'undefined' && requestNumber) {
+      localStorage.setItem(`timeline-status-${requestNumber}`, status);
+    }
+  }, [status, requestNumber]);
 
-    if (path.includes("/purchasing-detail")) setStatus("Checking");
-    else if (path.includes("/input-price")) setStatus("Purchasing");
-    else if (path.includes("/pre-order")) setStatus("Waiting");
-    else if (path.includes("/item-arrive")) setStatus("Arrive");
-    else setStatus("Checking");
-  }, [page.url]);
-
-  const handleStatusUpdate = (newStatus: string) => {
+  // 🔥 INI YANG KAMU TANYA
+  const handleTimelineChange = (newStatus: string) => {
     setStatus(newStatus);
+
+    // 🧠 nanti kalau mau kirim ke backend:
+    // router.put(`/purchasing/${id}`, { status: newStatus })
   };
 
   return (
     <>
       <Head title="Purchasing Progress" />
+
       <main className="min-h-screen bg-white p-4 md:p-8 lg:p-12">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold mb-4">Purchasing Progress</h1>
+          <h1 className="text-2xl font-bold mb-4">
+            Progres Pembelian
+          </h1>
 
-          <OrderTimeline status={status} />
+          {/* 🔥 HUBUNGAN PARENT ↔ CHILD */}
+          <OrderTimeline
+            status={status}
+            onChange={handleTimelineChange}
+          />
 
           <p className="mt-6 text-gray-700 text-lg">
-            Current Status:{" "}
-            <span className="font-semibold text-blue-600">{status}</span>
+            Current Status:{' '}
+            <span className="font-semibold text-blue-600">
+              {status}
+            </span>
           </p>
         </div>
 
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-white via-blue-50 to-white"></div>
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-white via-blue-50 to-white" />
 
         <div className="mx-auto max-w-7xl">
-          <OrdersTable onApproveStatusChange={() => handleStatusUpdate("Approve")} />
+          <OrdersTable onStatusChange={handleTimelineChange} requestNumber={requestNumber} />
         </div>
       </main>
     </>
@@ -64,7 +84,9 @@ function Page() {
 }
 
 Page.layout = (page: React.ReactNode) => (
-  <AppLayout breadcrumbs={breadcrumbs}>{page}</AppLayout>
+  <AppLayout breadcrumbs={breadcrumbs}>
+    {page}
+  </AppLayout>
 );
 
 export default Page;

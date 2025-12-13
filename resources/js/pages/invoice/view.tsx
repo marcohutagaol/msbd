@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import AppLayout from "@/layouts/app-layout";
 import { Head } from "@inertiajs/react";
 import { Receipt, FileText, Package } from "lucide-react";
@@ -35,6 +35,20 @@ const formatRupiah = (amount: number) => {
 
 
 export default function InvoiceView({ invoice }: InvoiceProps) {
+    // Extract requestNumber untuk localStorage purposes (untuk update status dari page lain)
+    const extractRequestNumber = () => {
+        return invoice.invoice_number;
+    };
+
+    const requestNumber = extractRequestNumber();
+
+    // Set ke Pembayaran saat halaman invoice dibuka (untuk update localStorage)
+    useEffect(() => {
+        if (typeof window !== 'undefined' && requestNumber) {
+            localStorage.setItem(`timeline-status-${requestNumber}`, 'Pembayaran');
+        }
+    }, [requestNumber]);
+
     return (
         <>
             <Head title="Invoice Detail" />
@@ -134,7 +148,7 @@ export default function InvoiceView({ invoice }: InvoiceProps) {
                                                 </span>
                                             </td>
                                             <td className="p-4 text-right font-medium text-gray-700">
-                                                {formatRupiah(invoice.total_harga/item.jumlah)}
+                                                {formatRupiah(invoice.total_harga / item.jumlah)}
 
                                             </td>
                                             <td className="p-4 text-right">

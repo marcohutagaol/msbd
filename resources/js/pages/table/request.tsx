@@ -9,7 +9,7 @@ import AddOrderModal from "@/components/ui/add-order-modal";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: "Request Items",
+    title: "Permintaan Barang",
     href: "#",
   },
 ];
@@ -103,7 +103,7 @@ function OrdersPage() {
                 <div className="flex items-center gap-2">
                   {/* <div className="h-3 w-3 rounded-full bg-blue-600 shadow-md shadow-blue-400/50"></div> */}
                   <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-                    Request Item
+                    Permintaan Barang
                   </h2>
                 </div>
                 <p className="text-sm text-slate-600 ml-5 mt-1">
