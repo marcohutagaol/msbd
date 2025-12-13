@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 export function OrderTimeline({ status = "Pending" }: { status: string }) {
-  const stages = ["Pending", "Checking", "Approve", "Purchasing", "Waiting", "Arrive"];
+  const stages = ["Checking", "Response", "Input Price", "Pembayaran", "Done"];
 
   // cari posisi stage aktif berdasarkan nama status
   const currentStage = stages.indexOf(status);
@@ -23,7 +23,6 @@ export function OrderTimeline({ status = "Pending" }: { status: string }) {
     "bg-yellow-400",
     "bg-blue-400",
     "bg-purple-500",
-    "bg-orange-400",
     "bg-green-500",
   ];
 
