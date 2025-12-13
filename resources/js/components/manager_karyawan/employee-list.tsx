@@ -1,286 +1,370 @@
-import { useState } from "react"
-import { Link } from "@inertiajs/react"
-import { ChevronLeft, Search, ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import EmployeeListChart from "./employee-list-chart"
+'use client';
 
-interface Employee {
-  id: string
-  name: string
-  department: string
-  status: "Hadir" | "Sakit" | "Izin" | "Cuti"
-  initials: string
+import { useState, useEffect } from 'react';
+import { Link, usePage } from '@inertiajs/react';
+import { Search, ChevronDown, Users, UserCheck, UserX, Building } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+interface Karyawan {
+  id: string;
+  nama: string;
+  department: string;
+  jabatan: string;
+  status_aktif: 'AKTIF' | 'NONAKTIF';
+  status_kerja: string;
+  foto: string;
 }
 
-const EMPLOYEES: Employee[] = [
-  {
-    id: "1",
-    name: "Dian Utami Nur Indah",
-    department: "Housekeeping",
-    status: "Hadir",
-    initials: "DU",
-  },
-  {
-    id: "2",
-    name: "Andri Budiman",
-    department: "IT Support",
-    status: "Sakit",
-    initials: "AB",
-  },
-  {
-    id: "3",
-    name: "Siti Nurhaliza",
-    department: "HR",
-    status: "Hadir",
-    initials: "SN",
-  },
-  {
-    id: "4",
-    name: "Roni Setiawan",
-    department: "Marketing",
-    status: "Izin",
-    initials: "RS",
-  },
-  {
-    id: "5",
-    name: "Budi Santoso",
-    department: "FNB",
-    status: "Hadir",
-    initials: "BS",
-  },
-]
+interface Department {
+  kode: string;
+  nama: string;
+}
 
-const DEPARTMENTS = ["Housekeeping", "IT Support", "HR", "Marketing", "FNB"]
+interface AttendanceData {
+  name: string;
+  value: number;
+}
 
-const RANK_DATA = [
-  { rank: "1#", name: "Kirana Cinta Uliii", badge: "⭐" },
-  { rank: "2#", name: "Kirana Cinta Uliii", badge: "⭐" },
-  { rank: "3#", name: "Kirana Cinta Uliii", badge: "⭐" },
-]
+interface RankData {
+  rank: string;
+  name: string;
+  badge: string;
+}
 
-const ATTENDANCE_DATA = [
-  { name: "Aktif", value: 75 },
-  { name: "Tidak Aktif", value: 15 },
-  { name: "Tidak Hadir", value: 10 },
-]
+const ManagerKaryawan = () => {
+  const { karyawanData, totalKaryawan, totalAktif, totalNONAKTIF, attendanceData, rankData, departments } = usePage<{
+    karyawanData: Karyawan[];
+    totalKaryawan: number;
+    totalAktif: number;
+    totalNONAKTIF: number;
+    attendanceData: AttendanceData[];
+    rankData: RankData[];
+    departments: Department[];
+  }>().props;
 
-export default function EmployeeList() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [departmentFilter, setDepartmentFilter] = useState("Housekeeping")
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("Semua Department");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [filteredKaryawan, setFilteredKaryawan] = useState<Karyawan[]>(karyawanData);
 
-  const filteredEmployees = EMPLOYEES.filter(
-    (emp) => emp.name.toLowerCase().includes(searchQuery.toLowerCase()) && emp.department === departmentFilter,
-  )
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Hadir":
-        return "bg-green-100 text-green-600"
-      case "Sakit":
-        return "bg-red-100 text-red-600"
-      case "Izin":
-        return "bg-orange-100 text-orange-600"
-      case "Cuti":
-        return "bg-blue-100 text-blue-600"
-      default:
-        return "bg-muted text-muted-foreground"
+  useEffect(() => {
+    let filtered = karyawanData;
+    
+    if (searchQuery) {
+      filtered = filtered.filter(k => 
+        k.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        k.jabatan.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
-  }
+    
+    if (departmentFilter !== "Semua Department") {
+      filtered = filtered.filter(k => k.department === departmentFilter);
+    }
+    
+    setFilteredKaryawan(filtered);
+  }, [searchQuery, departmentFilter, karyawanData]);
+
+  const getStatusKerjaColor = (status: string) => {
+    switch (status) {
+      case 'Hadir':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'Sakit':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'Izin':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'Cuti':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getStatusAktifColor = (status: string) => {
+    return status === 'AKTIF' 
+      ? 'bg-green-100 text-green-800 border-green-200' 
+      : 'bg-red-100 text-red-800 border-red-200';
+  };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Manajemen Karyawan</h1>
+              <p className="text-gray-600 text-sm md:text-base">Kelola dan pantau data karyawan departemen Anda</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-        {/* Dashboard Cards */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Total Employees */}
-          <Card className="bg-white border border-border shadow-sm p-6 sm:p-8">
-            <EmployeeListChart />
-          </Card>
-
-          {/* Grafik Status */}
-          <Card className="bg-white border border-border shadow-sm p-6">
-            <h3 className="font-semibold text-foreground mb-6 text-sm uppercase tracking-wide">Grafik Kehadiran</h3>
-            <div className="flex items-center gap-6">
-              {/* Statistics - Displayed first on the left */}
-              <div className="flex flex-col gap-4 min-w-max">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Aktif</p>
-                  <p className="text-2xl font-bold text-green-600">12</p>
+                  <p className="text-sm text-gray-500 mb-1">Total Karyawan</p>
+                  <p className="text-3xl font-bold text-gray-900 mb-1">{totalKaryawan}</p>
+                  <p className="text-xs text-gray-400">Semua karyawan</p>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Tidak aktif</p>
-                  <p className="text-2xl font-bold text-gray-600">0</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Tidak Hadir</p>
-                  <p className="text-2xl font-bold text-red-600">1</p>
+                <div className="p-3 rounded-xl bg-blue-50">
+                  <Users className="w-8 h-8 text-blue-600" />
                 </div>
               </div>
-
-              {/* Chart - Flex grow to fill remaining space */}
-              <div className="flex-1">
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={ATTENDANCE_DATA} margin={{ top: 20, right: 10, left: 0, bottom: 40 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fill: "#6b7280", fontSize: 12 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis tick={{ fill: "#6b7280", fontSize: 12 }} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#ffffff",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: "0.5rem",
-                      }}
-                    />
-                    <Bar dataKey="value" fill="#2563eb" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+            </CardContent>
           </Card>
 
-          {/* Rank */}
-          <Card className="bg-white border border-border shadow-sm p-6">
-            <h3 className="font-semibold text-foreground mb-6 text-sm uppercase tracking-wide">Rank</h3>
-            <div className="space-y-3">
-              {RANK_DATA.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs font-bold text-blue-600 flex-shrink-0">{item.rank}</span>
-                    <span className="text-sm text-foreground truncate">{item.name}</span>
-                  </div>
-                  <span className="flex-shrink-0">{item.badge}</span>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Karyawan Aktif</p>
+                  <p className="text-3xl font-bold text-gray-900 mb-1">{totalAktif}</p>
+                  <p className="text-xs text-green-600 font-medium">
+                    {Math.round((totalAktif / totalKaryawan) * 100)}% aktif
+                  </p>
                 </div>
-              ))}
-            </div>
+                <div className="p-3 rounded-xl bg-green-50">
+                  <UserCheck className="w-8 h-8 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Karyawan NONAKTIF</p>
+                  <p className="text-3xl font-bold text-gray-900 mb-1">{totalNONAKTIF}</p>
+                  <p className="text-xs text-red-600 font-medium">
+                    {Math.round((totalNONAKTIF / totalKaryawan) * 100)}% turnover
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-red-50">
+                  <UserX className="w-8 h-8 text-red-600" />
+                </div>
+              </div>
+            </CardContent>
           </Card>
         </div>
 
-        {/* Department Filter and Search */}
+        {/* Chart and Ranking Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Attendance Chart */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Statistik Kehadiran Hari Ini</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {attendanceData.map((item, index) => (
+                  <div key={index} className="bg-gray-50 rounded-lg p-4 text-center">
+                    <p className="text-2xl font-bold text-blue-600 mb-2">{item.value}</p>
+                    <p className="text-sm text-gray-600">{item.name}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Ranking Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Top Performers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {rankData.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-bold text-blue-600">{item.rank}</span>
+                      <span className="text-sm text-gray-700 truncate">{item.name}</span>
+                    </div>
+                    <span className="text-yellow-500">{item.badge}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filter and Search */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
           <div className="relative">
-            <button
+            <Button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+              variant="outline"
+              className="flex items-center gap-2"
             >
+              <Building className="w-4 h-4" />
               {departmentFilter}
               <ChevronDown className="w-4 h-4" />
-            </button>
+            </Button>
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-40 bg-white border border-border rounded-md shadow-lg z-10">
-                {DEPARTMENTS.map((dept) => (
+              <div className="absolute top-full left-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
+                <button
+                  onClick={() => {
+                    setDepartmentFilter("Semua Department");
+                    setIsDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
+                >
+                  Semua Department
+                </button>
+                {departments.map((dept) => (
                   <button
-                    key={dept}
+                    key={dept.kode}
                     onClick={() => {
-                      setDepartmentFilter(dept)
-                      setIsDropdownOpen(false)
+                      setDepartmentFilter(dept.nama);
+                      setIsDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-3 text-sm hover:bg-blue-50 transition-colors ${
-                      departmentFilter === dept ? "bg-blue-100 text-blue-600 font-medium" : "text-foreground"
-                    }`}
+                    className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
                   >
-                    {dept}
+                    {dept.nama}
                   </button>
                 ))}
               </div>
             )}
           </div>
-          <div className="relative flex-1 sm:flex-none w-full sm:w-64">
-            <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+          
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Cari karyawan..."
+              placeholder="Cari karyawan berdasarkan nama atau jabatan..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-border rounded-md bg-muted focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
         </div>
 
-        {/* Employee Table - Responsive */}
-        <Card className="bg-white border border-border shadow-sm overflow-hidden">
-          {/* Desktop View */}
-          <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left px-6 py-4 font-semibold text-sm text-foreground">Nama</th>
-                  <th className="text-left px-6 py-4 font-semibold text-sm text-foreground">Departemen</th>
-                  <th className="text-left px-6 py-4 font-semibold text-sm text-foreground">Status Kerja</th>
-                  <th className="text-left px-6 py-4 font-semibold text-sm text-foreground">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEmployees.map((employee) => (
-                  <tr key={employee.id} className="border-b border-border hover:bg-muted/30 transition-colors">
-                    <td className="px-6 py-4 text-sm text-foreground">{employee.name}</td>
-                    <td className="px-6 py-4 text-sm text-foreground">{employee.department}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center justify-center w-24 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(employee.status,)}`}>
-                      {employee.status}
-                      </span>
-
-                    </td>
-                    <td className="px-6 py-4">
-                      <Link href={`/manager-karyawan/${employee.id}`}>
-                        <Button size="sm" className="bg-foreground text-white hover:bg-foreground/90">
-                          View Detail
-                        </Button>
-                      </Link>
-                    </td>
+        {/* Karyawan Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Daftar Karyawan</CardTitle>
+            <CardDescription>
+              {filteredKaryawan.length} karyawan ditemukan
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Desktop View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Karyawan</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Department</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Jabatan</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Status Aktif</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Status Hari Ini</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredKaryawan.map((karyawan) => (
+                    <tr key={karyawan.id} className="border-b hover:bg-gray-50 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={karyawan.foto}
+                            alt={karyawan.nama}
+                            className="w-10 h-10 rounded-full border"
+                          />
+                          <div>
+                            <p className="font-medium text-gray-900">{karyawan.nama}</p>
+                            <p className="text-xs text-gray-500">ID: {karyawan.id}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-gray-700">{karyawan.department}</td>
+                      <td className="py-4 px-4 text-gray-700">{karyawan.jabatan}</td>
+                      <td className="py-4 px-4">
+                        <Badge className={getStatusAktifColor(karyawan.status_aktif)}>
+                          {karyawan.status_aktif}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4">
+                        <Badge className={getStatusKerjaColor(karyawan.status_kerja)}>
+                          {karyawan.status_kerja}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4">
+                        <Link href={`/manager-karyawan/${karyawan.id}`}>
+                          <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                            Lihat Detail
+                          </Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          {/* Mobile View - Responsive Card Layout */}
-          <div className="sm:hidden">
-            <div className="divide-y divide-border">
-              {filteredEmployees.map((employee) => (
-                <div key={employee.id} className="p-4 space-y-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Nama</p>
-                    <p className="font-semibold text-sm text-foreground">{employee.name}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Departemen</p>
-                      <p className="text-sm text-foreground">{employee.department}</p>
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+              {filteredKaryawan.map((karyawan) => (
+                <Card key={karyawan.id} className="p-4">
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={karyawan.foto}
+                      alt={karyawan.nama}
+                      className="w-12 h-12 rounded-full border"
+                    />
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{karyawan.nama}</h3>
+                          <p className="text-sm text-gray-500">{karyawan.jabatan}</p>
+                        </div>
+                        <Badge className={getStatusAktifColor(karyawan.status_aktif)}>
+                          {karyawan.status_aktif}
+                        </Badge>
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <div>
+                          <p className="text-xs text-gray-500">Department</p>
+                          <p className="text-sm font-medium">{karyawan.department}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Status Hari Ini</p>
+                          <Badge className={getStatusKerjaColor(karyawan.status_kerja)}>
+                            {karyawan.status_kerja}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="mt-4">
+                        <Link href={`/manager-karyawan/${karyawan.id}`} className="block">
+                          <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
+                            Lihat Detail Karyawan
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Status Kerja</p>
-                      <span
-                        className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          employee.status,
-                        )}`}
-                      >
-                        {employee.status}
-                      </span>
-                    </div>
                   </div>
-                  <Link href={`/employee/${employee.id}`} className="block">
-                    <Button size="sm" className="w-full bg-blue-600 text-white hover:bg-blue-700">
-                      View Detail
-                    </Button>
-                  </Link>
-                </div>
+                </Card>
               ))}
             </div>
-          </div>
+
+            {filteredKaryawan.length === 0 && (
+              <div className="text-center py-8">
+                <Users className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                <p className="text-gray-500">Tidak ada karyawan yang ditemukan</p>
+              </div>
+            )}
+          </CardContent>
         </Card>
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default ManagerKaryawan;
