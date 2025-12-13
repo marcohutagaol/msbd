@@ -121,9 +121,9 @@ export default function Dashboard() {
     }, [absenMasukTime, totalMenitDefault]);
 
     const formatJam = (time?: string) => {
-    if (!time) return "-";
-    return time.substring(0, 5);
-};
+        if (!time) return "-";
+        return time.substring(0, 5);
+    };
 
 
     return (
@@ -132,70 +132,125 @@ export default function Dashboard() {
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden rounded-xl bg-gray-50 p-4 sm:p-6">
                 <main className="flex-1 overflow-auto">
                     <div className="mx-auto max-w-7xl space-y-8">
-                        {/* Profile Card */}
-                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition-all hover:shadow-lg sm:p-8">
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="flex items-center gap-4">
-                                    <Avatar className="h-16 w-16 ring-4 ring-blue-100">
-                                        <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" />
-                                        <AvatarFallback>SA</AvatarFallback>
-                                    </Avatar>
+                        {/* Profile Card - Enhanced */}
+                        <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-1 shadow-2xl shadow-blue-500/40 transition-all duration-500 hover:shadow-blue-600/50">
+                            {/* Gradient Border Effect */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-30" />
 
-                                    <div>
-                                        <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
-                                            {user.name}
-                                        </h2>
-                                        <p className="text-sm text-gray-600 sm:text-base">
-                                            {user.departemen}
-                                        </p>
+                            {/* Inner Card */}
+                            <div className="relative overflow-hidden rounded-3xl bg-white p-8">
+                                {/* Background Decorations */}
+                                <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 opacity-40 blur-3xl" />
+                                <div className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-gradient-to-tr from-indigo-100 to-blue-100 opacity-30 blur-2xl" />
 
-                                        <div className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 px-3 py-1 shadow-sm">
-                                            <svg
-                                                className="h-3.5 w-3.5 text-white"
-                                                fill="currentColor"
-                                                viewBox="0 0 20 20"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <span className="text-xs font-semibold text-white">
-                                                Kawaland
-                                            </span>
+                                <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                                    {/* Left Side - Profile Info */}
+                                    <div className="flex items-center gap-5">
+                                        {/* Avatar with Gradient Ring */}
+                                        <div className="relative">
+                                            <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-75 blur-sm" />
+                                            <Avatar className="relative h-20 w-20 ring-4 ring-white shadow-xl transition-transform duration-300 hover:scale-110">
+                                                <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" />
+                                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-xl font-bold text-white">
+                                                    SA
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            {/* Online Status Indicator */}
+                                            <div className="absolute bottom-1 right-1 h-5 w-5 rounded-full border-4 border-white bg-green-500 shadow-lg">
+                                                <div className="h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-3">
+                                                <h2 className="text-2xl font-extrabold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 bg-clip-text text-transparent sm:text-3xl">
+                                                    {user.name}
+                                                </h2>
+                                                {/* Verified Badge */}
+                                                <div className="group/badge relative">
+                                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/50 transition-transform hover:scale-110">
+                                                        <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                        </svg>
+                                                    </div>
+                                                    {/* Tooltip */}
+                                                    <div className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 scale-0 rounded-lg bg-gray-900 px-2 py-1 text-xs text-white transition-transform group-hover/badge:scale-100">
+                                                        Verified
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <p className="text-base font-medium text-gray-600">
+                                                {user.departemen}
+                                            </p>
+
+                                            {/* Location Badge with Animation */}
+                                            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 px-4 py-1.5 shadow-lg shadow-blue-500/30 transition-all hover:scale-105 hover:shadow-blue-500/50">
+                                                <svg
+                                                    className="h-4 w-4 text-white animate-bounce"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                                <span className="text-sm font-bold text-white">
+                                                    Kawaland
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="text-left sm:text-right">
-                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                        <svg
-                                            className="h-4 w-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                            />
-                                        </svg>
-                                        <span className="font-medium">
-                                            {new Date().toLocaleDateString('id-ID', {
-                                                weekday: 'long',
-                                                day: 'numeric',
-                                                month: 'short',
-                                                year: 'numeric',
-                                            })}
-                                        </span>
+                                    {/* Right Side - Date & Time */}
+                                    <div className="relative rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 p-5 shadow-inner">
+                                        <div className="space-y-3">
+                                            {/* Date */}
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
+                                                    <svg
+                                                        className="h-5 w-5 text-white"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-medium text-gray-500">Tanggal</p>
+                                                    <span className="text-sm font-bold text-gray-800">
+                                                        {new Date().toLocaleDateString('id-ID', {
+                                                            weekday: 'long',
+                                                            day: 'numeric',
+                                                            month: 'short',
+                                                            year: 'numeric',
+                                                        })}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Time with Animation */}
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg">
+                                                    <Clock className="h-5 w-5 text-white" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-medium text-gray-500">Waktu</p>
+                                                    <p className="font-mono text-xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                                        {currentTime}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-
-                                    <p className="text-lg font-semibold text-blue-600">
-                                        {currentTime} WIB
-                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -203,9 +258,9 @@ export default function Dashboard() {
                         {/* Attendance Section */}
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                             <div className="space-y-6 lg:col-span-2">
-                              <p className="text-sm ml-1 font-medium text-gray-600">
-    {formatJam(props.jam_masuk_default)} | {formatJam(props.jam_keluar_default)}
-</p>
+                                <p className="text-sm ml-1 font-medium text-gray-600">
+                                    {formatJam(props.jam_masuk_default)} | {formatJam(props.jam_keluar_default)}
+                                </p>
 
 
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
