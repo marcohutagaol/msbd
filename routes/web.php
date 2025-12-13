@@ -27,6 +27,9 @@ use App\Http\Controllers\RequestManagementController;
 use App\Http\Controllers\ManagerAnnouncementController;
 use App\Http\Controllers\ManagerKaryawanController;
 use App\Http\Controllers\DashboardPurchasingController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ChatSemanticController;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 
@@ -322,3 +325,22 @@ Route::get('/api/departemen', [DepartemenItemController::class, 'getDepartemen']
 // SETTINGS
 // =======================
 require __DIR__ . '/settings.php';
+
+// =======================
+// SEMANTIC ROUTES
+// =======================
+Route::prefix('semantic')->group(function () {
+    // API Endpoints (HARUS DIDEFINISIKAN DULUAN)
+    Route::post('/chat', [ChatSemanticController::class, 'handle'])->name('semantic.chat');
+    Route::get('/search', [SearchController::class, 'index'])->name('semantic.search');
+    Route::get('/product/{id}', [ProductController::class, 'show'])->name('semantic.product.detail');
+
+    // Halaman UI (SESUDAH API)
+    Route::get('/toko', function () {
+        return Inertia::render('table/searchtoko');
+    })->name('toko.index');
+
+    Route::get('/products/{id}', function ($id) {
+        return Inertia::render('table/productdetail', ['id' => $id]);
+    })->name('products.detail');
+});

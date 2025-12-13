@@ -21,21 +21,21 @@ export default function PermissionCards({ permissions, onCardClick }: Permission
   return (
     <div className="px-8 py-6">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Buat Perizinan Baru</h2>
-        <p className="text-gray-600">Pilih jenis perizinan yang ingin Anda ajukan</p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Buat Perizinan Baru</h2>
+        <p className="text-gray-600 dark:text-gray-400">Pilih jenis perizinan yang ingin Anda ajukan</p>
       </div>
-      
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {/* Sick Leave Card - Red Theme */}
         <button
           onClick={() => onCardClick("sick")}
           className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 to-red-600 p-[2px] transition-all hover:scale-105 hover:shadow-2xl hover:shadow-red-200"
         >
-          <div className="relative h-full rounded-2xl bg-white p-6 transition-all group-hover:bg-gradient-to-br group-hover:from-red-50 group-hover:to-white">
+          <div className="relative h-full rounded-2xl bg-white dark:bg-slate-800 p-6 transition-all group-hover:bg-gradient-to-br group-hover:from-red-50 group-hover:to-white dark:group-hover:from-red-900/20 dark:group-hover:to-slate-800">
             {/* Decorative circles */}
             <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-red-400/20 to-red-500/20 blur-2xl" />
             <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-gradient-to-br from-red-400/10 to-red-500/10 blur-xl" />
-            
+
             <div className="relative flex flex-col gap-6 min-h-[180px]">
               {/* Icon section */}
               <div className="flex items-start justify-between">
@@ -51,8 +51,8 @@ export default function PermissionCards({ permissions, onCardClick }: Permission
 
               {/* Content */}
               <div className="flex flex-col gap-2 text-left">
-                <h3 className="text-xl font-bold text-gray-900">Sakit</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Sakit</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   Ajukan izin sakit dengan surat keterangan dokter
                 </p>
               </div>
@@ -74,11 +74,11 @@ export default function PermissionCards({ permissions, onCardClick }: Permission
           onClick={() => onCardClick("permission")}
           className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-[2px] transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-200"
         >
-          <div className="relative h-full rounded-2xl bg-white p-6 transition-all group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:to-white">
+          <div className="relative h-full rounded-2xl bg-white dark:bg-slate-800 p-6 transition-all group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:to-white dark:group-hover:from-blue-900/20 dark:group-hover:to-slate-800">
             {/* Decorative circles */}
             <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-blue-400/20 to-blue-500/20 blur-2xl" />
             <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-gradient-to-br from-blue-400/10 to-blue-500/10 blur-xl" />
-            
+
             <div className="relative flex flex-col gap-6 min-h-[180px]">
               {/* Icon section */}
               <div className="flex items-start justify-between">
@@ -94,8 +94,8 @@ export default function PermissionCards({ permissions, onCardClick }: Permission
 
               {/* Content */}
               <div className="flex flex-col gap-2 text-left">
-                <h3 className="text-xl font-bold text-gray-900">Izin</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Izin</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   Ajukan izin untuk keperluan pribadi atau keluarga
                 </p>
               </div>
@@ -117,11 +117,11 @@ export default function PermissionCards({ permissions, onCardClick }: Permission
           onClick={() => onCardClick("vacation")}
           className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-500 to-green-600 p-[2px] transition-all hover:scale-105 hover:shadow-2xl hover:shadow-green-200"
         >
-          <div className="relative h-full rounded-2xl bg-white p-6 transition-all group-hover:bg-gradient-to-br group-hover:from-green-50 group-hover:to-white">
+          <div className="relative h-full rounded-2xl bg-white dark:bg-slate-800 p-6 transition-all group-hover:bg-gradient-to-br group-hover:from-green-50 group-hover:to-white dark:group-hover:from-green-900/20 dark:group-hover:to-slate-800">
             {/* Decorative circles */}
             <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-green-400/20 to-green-500/20 blur-2xl" />
             <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-gradient-to-br from-green-400/10 to-green-500/10 blur-xl" />
-            
+
             <div className="relative flex flex-col gap-6 min-h-[180px]">
               {/* Icon section */}
               <div className="flex items-start justify-between">
@@ -137,8 +137,8 @@ export default function PermissionCards({ permissions, onCardClick }: Permission
 
               {/* Content */}
               <div className="flex flex-col gap-2 text-left">
-                <h3 className="text-xl font-bold text-gray-900">Cuti</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Cuti</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   Ajukan cuti tahunan atau cuti bersama
                 </p>
               </div>

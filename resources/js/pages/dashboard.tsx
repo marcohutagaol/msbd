@@ -151,73 +151,128 @@ export default function Dashboard() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden rounded-xl bg-gray-50 p-4 sm:p-6">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden rounded-xl bg-gray-50 dark:bg-slate-900 p-4 sm:p-6">
                 <main className="flex-1 overflow-auto">
                     <div className="mx-auto max-w-7xl space-y-8">
-                        {/* Profile Card */}
-                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition-all hover:shadow-lg sm:p-8">
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="flex items-center gap-4">
-                                    <Avatar className="h-16 w-16 ring-4 ring-blue-100">
-                                        <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" />
-                                        <AvatarFallback>SA</AvatarFallback>
-                                    </Avatar>
+                        {/* Profile Card - Enhanced */}
+                        <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-1 shadow-2xl shadow-blue-500/40 transition-all duration-500 hover:shadow-blue-600/50">
+                            {/* Gradient Border Effect */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-30" />
 
-                                    <div>
-                                        <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
-                                            {user.name}
-                                        </h2>
-                                        <p className="text-sm text-gray-600 sm:text-base">
-                                            {user.departemen}
-                                        </p>
+                            {/* Inner Card */}
+                            <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-800 p-8">
+                                {/* Background Decorations */}
+                                <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 opacity-40 blur-3xl" />
+                                <div className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-gradient-to-tr from-indigo-100 to-blue-100 opacity-30 blur-2xl" />
 
-                                        <div className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 px-3 py-1 shadow-sm">
-                                            <svg
-                                                className="h-3.5 w-3.5 text-white"
-                                                fill="currentColor"
-                                                viewBox="0 0 20 20"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <span className="text-xs font-semibold text-white">
-                                                Kawaland
-                                            </span>
+                                <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                                    {/* Left Side - Profile Info */}
+                                    <div className="flex items-center gap-5">
+                                        {/* Avatar with Gradient Ring */}
+                                        <div className="relative">
+                                            <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-75 blur-sm" />
+                                            <Avatar className="relative h-20 w-20 ring-4 ring-white shadow-xl transition-transform duration-300 hover:scale-110">
+                                                <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" />
+                                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-xl font-bold text-white">
+                                                    SA
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            {/* Online Status Indicator */}
+                                            <div className="absolute bottom-1 right-1 h-5 w-5 rounded-full border-4 border-white bg-green-500 shadow-lg">
+                                                <div className="h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-3">
+                                                <h2 className="text-2xl font-extrabold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 dark:from-gray-100 dark:via-blue-100 dark:to-purple-100 bg-clip-text text-transparent sm:text-3xl">
+                                                    {user.name}
+                                                </h2>
+                                                {/* Verified Badge */}
+                                                <div className="group/badge relative">
+                                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/50 transition-transform hover:scale-110">
+                                                        <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                        </svg>
+                                                    </div>
+                                                    {/* Tooltip */}
+                                                    <div className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 scale-0 rounded-lg bg-gray-900 px-2 py-1 text-xs text-white transition-transform group-hover/badge:scale-100">
+                                                        Verified
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <p className="text-base font-medium text-gray-600 dark:text-gray-400">
+                                                {user.departemen}
+                                            </p>
+
+                                            {/* Location Badge with Animation */}
+                                            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 px-4 py-1.5 shadow-lg shadow-blue-500/30 transition-all hover:scale-105 hover:shadow-blue-500/50">
+                                                <svg
+                                                    className="h-4 w-4 text-white animate-bounce"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                                <span className="text-sm font-bold text-white">
+                                                    Kawaland
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="text-left sm:text-right">
-                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                        <svg
-                                            className="h-4 w-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                            />
-                                        </svg>
-                                        <span className="font-medium">
-                                            {new Date().toLocaleDateString('id-ID', {
-                                                weekday: 'long',
-                                                day: 'numeric',
-                                                month: 'short',
-                                                year: 'numeric',
-                                            })}
-                                        </span>
+                                    {/* Right Side - Date & Time */}
+                                    <div className="relative rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-700 dark:to-slate-800 p-5 shadow-inner">
+                                        <div className="space-y-3">
+                                            {/* Date */}
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
+                                                    <svg
+                                                        className="h-5 w-5 text-white"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</p>
+                                                    <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                                                        {new Date().toLocaleDateString('id-ID', {
+                                                            weekday: 'long',
+                                                            day: 'numeric',
+                                                            month: 'short',
+                                                            year: 'numeric',
+                                                        })}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Time with Animation */}
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg">
+                                                    <Clock className="h-5 w-5 text-white" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Waktu</p>
+                                                    <p className="font-mono text-xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                                        {currentTime}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-
-                                    <p className="text-lg font-semibold text-blue-600">
-                                        {currentTime} WIB
-                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -232,7 +287,7 @@ export default function Dashboard() {
 
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     {/* Clock In Card */}
-                                    <div className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 bg-gradient-to-br from-blue-50 via-blue-100/50 to-white p-6 shadow-lg shadow-blue-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30">
+                                    <div className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 dark:border-blue-600 bg-gradient-to-br from-blue-50 via-blue-100/50 to-white dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 shadow-lg shadow-blue-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30">
                                         <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-blue-400/20 blur-2xl" />
                                         <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-blue-500/10 blur-xl" />
 
@@ -262,7 +317,7 @@ export default function Dashboard() {
                                     </div>
 
                                     {/* Clock Out Card */}
-                                    <div className="group relative overflow-hidden rounded-2xl border-2 border-rose-500 bg-gradient-to-br from-rose-50 via-rose-100/50 to-white p-6 shadow-lg shadow-rose-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-rose-500/30">
+                                    <div className="group relative overflow-hidden rounded-2xl border-2 border-rose-500 dark:border-rose-600 bg-gradient-to-br from-rose-50 via-rose-100/50 to-white dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 shadow-lg shadow-rose-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-rose-500/30">
                                         <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-rose-400/20 blur-2xl" />
                                         <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-rose-500/10 blur-xl" />
 
@@ -339,7 +394,7 @@ export default function Dashboard() {
                             </div>
 
                             {/* RIGHT PANEL (Work Time + Status) */}
-                            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-white via-white to-blue-50/30 p-6 shadow-sm transition-all hover:shadow-lg sm:p-8">
+                            <div className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-white via-white to-blue-50/30 dark:from-slate-800 dark:to-slate-900 p-6 shadow-sm transition-all hover:shadow-lg sm:p-8">
                                 <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-blue-200/20 blur-3xl" />
                                 <div className="absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-green-200/20 blur-2xl" />
 
@@ -349,8 +404,8 @@ export default function Dashboard() {
                                         <ClipboardList className="h-5 w-5 text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-gray-900">Ringkasan Hari Ini</h3>
-                                        <p className="text-xs text-gray-500">Update real-time</p>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Ringkasan Hari Ini</h3>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Update real-time</p>
                                     </div>
                                 </div>
 
@@ -362,10 +417,10 @@ export default function Dashboard() {
                                                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100">
                                                     <Clock className="h-4 w-4 text-blue-600" />
                                                 </div>
-                                                <p className="text-sm font-medium text-gray-600">Jam Kerja</p>
+                                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Jam Kerja</p>
                                             </div>
 
-                                            <p className="text-2xl font-bold text-gray-900">
+                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">
                                                 {workTime.hours}h {workTime.minutes}m
                                             </p>
                                         </div>
@@ -408,7 +463,7 @@ export default function Dashboard() {
                                                             : 'bg-red-500 shadow-red-300/50'
                                                     }`}
                                             />
-                                            <p className="text-xs font-medium text-gray-600">Status</p>
+                                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Status</p>
                                         </div>
 
                                         <p
@@ -428,7 +483,7 @@ export default function Dashboard() {
                                     <div className="group rounded-xl bg-blue-100/50 p-4 transition-all hover:bg-blue-100">
                                         <div className="flex items-center gap-2">
                                             <User className="h-3 w-3 text-blue-600" />
-                                            <p className="text-xs font-medium text-gray-600">Kehadiran</p>
+                                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Kehadiran</p>
                                         </div>
                                         <p className="mt-2 text-lg font-bold text-blue-600">100%</p>
                                     </div>
@@ -444,10 +499,10 @@ export default function Dashboard() {
                                         <Megaphone className="h-5 w-5 text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-gray-900">
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                                             Pengumuman
                                         </h3>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
                                             Informasi terbaru untuk Anda
                                         </p>
                                     </div>
@@ -470,7 +525,7 @@ export default function Dashboard() {
                                     return (
                                         <div
                                             key={announcement.id}
-                                            className="group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                                            className="group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
                                             style={{ animationDelay: `${index * 100}ms` }}
                                         >
                                             <div
@@ -497,10 +552,10 @@ export default function Dashboard() {
                                             </div>
 
                                             <div className="p-5">
-                                                <h4 className="mb-2 line-clamp-2 text-base font-bold text-gray-900 transition-colors group-hover:text-blue-600">
+                                                <h4 className="mb-2 line-clamp-2 text-base font-bold text-gray-900 dark:text-white transition-colors group-hover:text-blue-600">
                                                     {announcement.title}
                                                 </h4>
-                                                <p className="mb-4 line-clamp-2 text-sm text-gray-500">
+                                                <p className="mb-4 line-clamp-2 text-sm text-gray-500 dark:text-gray-400">
                                                     {announcement.description}
                                                 </p>
 

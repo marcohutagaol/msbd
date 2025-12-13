@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import AppLayout from "@/layouts/app-layout";
 import { Head } from "@inertiajs/react";
 import { Receipt, FileText, Package } from "lucide-react";
@@ -35,11 +35,25 @@ const formatRupiah = (amount: number) => {
 
 
 export default function InvoiceView({ invoice }: InvoiceProps) {
+    // Extract requestNumber untuk localStorage purposes (untuk update status dari page lain)
+    const extractRequestNumber = () => {
+        return invoice.invoice_number;
+    };
+
+    const requestNumber = extractRequestNumber();
+
+    // Set ke Pembayaran saat halaman invoice dibuka (untuk update localStorage)
+    useEffect(() => {
+        if (typeof window !== 'undefined' && requestNumber) {
+            localStorage.setItem(`timeline-status-${requestNumber}`, 'Pembayaran');
+        }
+    }, [requestNumber]);
+
     return (
         <>
             <Head title="Invoice Detail" />
 
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-6">
                 <div className="max-w-5xl mx-auto">
                     {/* Header Section */}
                     <div className="mb-8">
@@ -47,13 +61,13 @@ export default function InvoiceView({ invoice }: InvoiceProps) {
                             <div className="p-2 bg-blue-600 rounded-lg">
                                 <Receipt className="w-6 h-6 text-white" />
                             </div>
-                            <h1 className="text-3xl font-bold text-gray-800">Invoice Detail</h1>
+                            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Invoice Detail</h1>
                         </div>
-                        <p className="text-gray-600 ml-14">Detail lengkap invoice dan daftar pembelian</p>
+                        <p className="text-gray-600 dark:text-gray-300 ml-14">Detail lengkap invoice dan daftar pembelian</p>
                     </div>
 
                     {/* Invoice Info Card */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-6">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden mb-6">
                         <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6">
                             <div className="flex items-center gap-2 mb-2">
                                 <FileText className="w-5 h-5 text-blue-100" />
@@ -64,11 +78,11 @@ export default function InvoiceView({ invoice }: InvoiceProps) {
                             </p>
                         </div>
 
-                        <div className="p-6 bg-gradient-to-br from-gray-50 to-white">
+                        <div className="p-6 bg-gradient-to-br from-gray-50 to-white dark:from-slate-800 dark:to-slate-900">
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <p className="text-sm text-gray-600 mb-1">Total Keseluruhan</p>
-                                    <p className="text-4xl font-bold text-gray-900">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Keseluruhan</p>
+                                    <p className="text-4xl font-bold text-gray-900 dark:text-white">
                                         {formatRupiah(invoice.total_harga)}
 
                                     </p>
@@ -84,7 +98,7 @@ export default function InvoiceView({ invoice }: InvoiceProps) {
                     </div>
 
                     {/* Items Table Card */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
                         <div className="bg-gradient-to-r from-blue-800 to-cyan-600 p-6">
 
                             <div className="flex items-center gap-2">
@@ -99,17 +113,17 @@ export default function InvoiceView({ invoice }: InvoiceProps) {
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
-                                    <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
-                                        <th className="text-left p-4 text-sm font-semibold text-gray-700 border-b-2 border-gray-200">
+                                    <tr className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-800">
+                                        <th className="text-left p-4 text-sm font-semibold text-gray-700 dark:text-gray-300 border-b-2 border-gray-200 dark:border-gray-600">
                                             Nama Item
                                         </th>
-                                        <th className="text-center p-4 text-sm font-semibold text-gray-700 border-b-2 border-gray-200">
+                                        <th className="text-center p-4 text-sm font-semibold text-gray-700 dark:text-gray-300 border-b-2 border-gray-200 dark:border-gray-600">
                                             Jumlah
                                         </th>
-                                        <th className="text-right p-4 text-sm font-semibold text-gray-700 border-b-2 border-gray-200">
+                                        <th className="text-right p-4 text-sm font-semibold text-gray-700 dark:text-gray-300 border-b-2 border-gray-200 dark:border-gray-600">
                                             Harga Satuan
                                         </th>
-                                        <th className="text-right p-4 text-sm font-semibold text-gray-700 border-b-2 border-gray-200">
+                                        <th className="text-right p-4 text-sm font-semibold text-gray-700 dark:text-gray-300 border-b-2 border-gray-200 dark:border-gray-600">
                                             Total Harga
                                         </th>
                                     </tr>
@@ -118,18 +132,18 @@ export default function InvoiceView({ invoice }: InvoiceProps) {
                                     {invoice.purchases.map((item, index) => (
                                         <tr
                                             key={item.id}
-                                            className="hover:bg-blue-50 transition-colors duration-150 border-b border-gray-100"
+                                            className="hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-150 border-b border-gray-100 dark:border-gray-700"
                                         >
                                             <td className="p-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
                                                         {index + 1}
                                                     </div>
-                                                    <span className="font-medium text-gray-800">{item.nama_barang}</span>
+                                                    <span className="font-medium text-gray-800 dark:text-gray-200">{item.nama_barang}</span>
                                                 </div>
                                             </td>
                                             <td className="p-4 text-center">
-                                                <span className="inline-flex items-center justify-center px-3 py-1 bg-slate-100 text-slate-700 rounded-full font-semibold text-sm">
+                                                <span className="inline-flex items-center justify-center px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full font-semibold text-sm">
                                                     {item.jumlah}
                                                 </span>
                                             </td>
@@ -147,8 +161,8 @@ export default function InvoiceView({ invoice }: InvoiceProps) {
                                     ))}
                                 </tbody>
                                 <tfoot>
-                                    <tr className="bg-gradient-to-r from-slate-50 to-slate-100">
-                                        <td colSpan={3} className="p-4 text-right font-bold text-gray-800 text-lg">
+                                    <tr className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800">
+                                        <td colSpan={3} className="p-4 text-right font-bold text-gray-800 dark:text-gray-200 text-lg">
                                             Grand Total
                                         </td>
                                         <td className="p-4 text-right">

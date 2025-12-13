@@ -28,14 +28,14 @@ export default function BarangDepartment({ departemen, onViewDetail, onViewStock
       try {
         setLoading(true)
         setError(null)
-        
+
         // Fetch data dari API
         const response = await fetch('/api/departemen-items' + (departemen ? `?departemen=${departemen}` : ''))
-        
+
         if (!response.ok) {
           throw new Error('Gagal mengambil data')
         }
-        
+
         const data = await response.json()
         setItems(data)
       } catch (err) {
@@ -54,11 +54,11 @@ export default function BarangDepartment({ departemen, onViewDetail, onViewStock
   )
 
   return (
-    <div className="bg-white rounded-lg border-2 border-blue-500 p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-lg border-2 border-blue-500 dark:border-blue-600 p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-800">Barang Department</h2>
-          {departemen && <p className="text-sm text-gray-500 mt-1">Departemen: {departemen}</p>}
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">Barang Department</h2>
+          {departemen && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Departemen: {departemen}</p>}
         </div>
         <button onClick={onViewStock} className="text-blue-500 hover:text-blue-700 text-sm font-semibold">
           Lihat Stock →
@@ -73,7 +73,7 @@ export default function BarangDepartment({ departemen, onViewDetail, onViewStock
           placeholder="Cari barang..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+          className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 dark:bg-slate-700 dark:text-gray-200 dark:placeholder-gray-400"
         />
       </div>
 
@@ -81,7 +81,7 @@ export default function BarangDepartment({ departemen, onViewDetail, onViewStock
       {loading && (
         <div className="flex justify-center items-center py-8">
           <Loader className="animate-spin text-blue-500" size={24} />
-          <span className="ml-2 text-gray-600">Memuat data...</span>
+          <span className="ml-2 text-gray-600 dark:text-gray-400">Memuat data...</span>
         </div>
       )}
 
@@ -98,19 +98,19 @@ export default function BarangDepartment({ departemen, onViewDetail, onViewStock
           {filteredItems.length > 0 ? (
             <>
               <div className="grid grid-cols-3 gap-4 mb-4 pb-3 border-b border-gray-300">
-                <div className="font-bold text-gray-700">Nama Barang</div>
-                <div className="font-bold text-gray-700">Stock</div>
-                <div className="font-bold text-gray-700">Satuan</div>
+                <div className="font-bold text-gray-700 dark:text-gray-300">Nama Barang</div>
+                <div className="font-bold text-gray-700 dark:text-gray-300">Stock</div>
+                <div className="font-bold text-gray-700 dark:text-gray-300">Satuan</div>
               </div>
               {filteredItems.map((item) => (
                 <div
                   key={item.id}
                   onClick={() => onViewDetail(item)}
-                  className="grid grid-cols-3 gap-4 p-3 border border-gray-200 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors"
+                  className="grid grid-cols-3 gap-4 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-700 cursor-pointer transition-colors"
                 >
-                  <div className="text-gray-700">{item.nama_barang}</div>
-                  <div className="text-gray-700">{item.stok}</div>
-                  <div className="flex items-center justify-between text-gray-700">
+                  <div className="text-gray-700 dark:text-gray-300">{item.nama_barang}</div>
+                  <div className="text-gray-700 dark:text-gray-300">{item.stok}</div>
+                  <div className="flex items-center justify-between text-gray-700 dark:text-gray-300">
                     <span>{item.satuan}</span>
                     <ChevronRight size={18} className="text-blue-500" />
                   </div>
@@ -118,7 +118,7 @@ export default function BarangDepartment({ departemen, onViewDetail, onViewStock
               ))}
             </>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               {items.length === 0 ? "Belum ada barang dari departemen ini" : "Tidak ada barang yang ditemukan"}
             </div>
           )}
