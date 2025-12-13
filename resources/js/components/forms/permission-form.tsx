@@ -24,6 +24,8 @@ interface PermissionFormProps {
 }
 
 export default function PermissionForm({ onClose, onSubmit }: PermissionFormProps) {
+  const [showSuccess, setShowSuccess] = useState(false)
+const [successMessage, setSuccessMessage] = useState("")
   const [formData, setFormData] = useState({
     date: "",
     reason: "",
@@ -34,6 +36,7 @@ export default function PermissionForm({ onClose, onSubmit }: PermissionFormProp
 
   const [fileError, setFileError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
@@ -200,9 +203,10 @@ export default function PermissionForm({ onClose, onSubmit }: PermissionFormProp
               className="w-full rounded-xl border-2 border-blue-200 bg-blue-50/30 px-4 py-3.5 text-gray-800 font-medium transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 focus:bg-white cursor-pointer"
               disabled={isSubmitting}
             >
-              <option value="Tidak hadir">🚫 Tidak hadir</option>
-              <option value="datang terlambat">⏰ Datang terlambat</option>
-              <option value="WFH">🏠 WFH (Work From Home)</option>
+              <option value="tidak hadir">Tidak hadir</option>
+              <option value="datang terlambat">Datang terlambat</option>
+              <option value="lembur">Lembur</option>
+              <option value="ambil ph">Ambil PH</option>
             </select>
           </div>
 

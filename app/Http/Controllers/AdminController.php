@@ -153,7 +153,7 @@ class AdminController extends Controller
             case 'CUTI':
               $status = 'Cuti';
               break;
-            case 'TIDAK_HADIR':
+            case 'TIDAK HADIR':
               $status = 'Tidak Hadir';
               break;
             default:

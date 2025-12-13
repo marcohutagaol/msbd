@@ -328,19 +328,44 @@ export default function Dashboard() {
 
                                     {/* Status & Kehadiran Row */}
                                     <div className="grid grid-cols-2 gap-3">
-                                        {/* Status */}
-                                        <div className="group rounded-xl bg-green-100/50 p-4 transition-all hover:bg-green-100">
+                                        {/* STATUS ABSEN */}
+                                        <div
+                                            className={`group rounded-xl p-4 transition-all 
+        ${props.absen_status === "Masuk"
+                                                    ? "bg-green-100/50 hover:bg-green-100"
+                                                    : props.absen_status === "Pulang"
+                                                        ? "bg-purple-100/50 hover:bg-purple-100"
+                                                        : "bg-red-100/50 hover:bg-red-100"
+                                                }
+    `}
+                                        >
                                             <div className="flex items-center gap-2">
-                                                <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-green-500 shadow-lg shadow-green-300/50" />
-                                                <p className="text-xs font-medium text-gray-600">
-                                                    Status
-                                                </p>
+                                                <div
+                                                    className={`h-2.5 w-2.5 rounded-full animate-pulse 
+                ${props.absen_status === "Masuk"
+                                                            ? "bg-green-500 shadow-green-300/50"
+                                                            : props.absen_status === "Pulang"
+                                                                ? "bg-purple-500 shadow-purple-300/50"
+                                                                : "bg-red-500 shadow-red-300/50"
+                                                        }
+            `}
+                                                />
+                                                <p className="text-xs font-medium text-gray-600">Status</p>
                                             </div>
-                                            <p className="mt-2 text-lg font-bold text-green-600">
-                                                Masuk
+
+                                            <p
+                                                className={`mt-2 text-lg font-bold 
+            ${props.absen_status === "Masuk"
+                                                        ? "text-green-600"
+                                                        : props.absen_status === "Pulang"
+                                                            ? "text-purple-600"
+                                                            : "text-red-600"
+                                                    }
+                                                `}
+                                            >
+                                                {props.absen_status}
                                             </p>
                                         </div>
-
                                         {/* Kehadiran */}
                                         <div className="group rounded-xl bg-blue-100/50 p-4 transition-all hover:bg-blue-100">
                                             <div className="flex items-center gap-2">
