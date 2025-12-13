@@ -302,3 +302,4 @@ Route::get('/manager-karyawan', fn() => Inertia::render('manager/karyawan'))->na
 
 
 Route::get('/report', fn() => Inertia::render('report/page'))->name('report');
+Route::get('/laporan', fn() => Inertia::render('report-user/page'))->name('report-user');
