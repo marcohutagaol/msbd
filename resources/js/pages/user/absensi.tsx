@@ -14,7 +14,7 @@ L.Icon.Default.mergeOptions({
 })
 
 const breadcrumbs = [
-  { title: "Dashboard", href: "/dashboard" },
+  { title: "Beranda", href: "/dashboard" },
   { title: "Absensi", href: "/absensi" },
 ];
 
