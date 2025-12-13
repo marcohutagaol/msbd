@@ -455,7 +455,7 @@ export default function OrdersTable({
         </div>
 
         {/* Pagination */}
-        {orderList.length > 0 && (
+        {/* {orderList.length > 0 && (
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
             <div className="flex flex-wrap gap-2">
               {Array.from({ length: totalPages }).map((_, i) => (
@@ -491,7 +491,7 @@ export default function OrdersTable({
               </Button>
             </div>
           </div>
-        )}
+        )} */}
 
         {orderList.length === 0 && (
           <div className="text-center py-8 text-gray-500">
