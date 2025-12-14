@@ -25,18 +25,13 @@ class Invoice extends Model
     return $this->belongsTo(Request::class, 'request_id');
   }
 
-  public function requestItem()
-  {
-    return $this->belongsTo(RequestItem::class, 'request_item_id');
-  }
+    /**
+     * ✅ RELASI: INVOICE MEMILIKI BANYAK PURCHASES
+     * (melalui request_id)
+     */
+   public function purchases()
+{
+    return $this->hasMany(\App\Models\Purchase::class, 'request_id', 'request_id');
+ }
 
-
-  /**
-   * ✅ RELASI: INVOICE MEMILIKI BANYAK PURCHASES
-   * (melalui request_id)
-   */
-  public function purchases()
-  {
-    return $this->hasMany(Purchase::class, 'request_id', 'request_id');
-  }
 }

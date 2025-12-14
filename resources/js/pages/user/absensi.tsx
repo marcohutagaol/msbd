@@ -14,7 +14,7 @@ L.Icon.Default.mergeOptions({
 })
 
 const breadcrumbs = [
-  { title: "Dashboard", href: "/dashboard" },
+  { title: "Beranda", href: "/dashboard" },
   { title: "Absensi", href: "/absensi" },
 ];
 
@@ -175,20 +175,20 @@ export default function CatatKehadiran() {
 
     try {
       console.log("Cek data sebelum kirim:", {
-  photoFile,
-  lokasi,
-  ipAddress,
-})
+        photoFile,
+        lokasi,
+        ipAddress,
+      })
 
-     const response = await axios.post(
-  "http://127.0.0.1:8000/absensi/store",
-  formData
-)
+      const response = await axios.post(
+        "http://127.0.0.1:8000/absensi/store",
+        formData
+      )
 
 
       console.log("Cloudinary URL:", response.data.url)
       setIsClockInSuccess(true)
-      
+
 
       setTimeout(() => {
         setPhoto(null)
@@ -200,14 +200,14 @@ export default function CatatKehadiran() {
         }
       }, 3000)
     } catch (err: any) {
-  if (err.response) {
-    console.error("Response error:", err.response.data)
-    alert("Gagal menyimpan absensi!\n" + JSON.stringify(err.response.data))
-  } else {
-    console.error("Error:", err)
-    alert("Gagal menyimpan absensi!\n" + err.message)
-  }
-}
+      if (err.response) {
+        console.error("Response error:", err.response.data)
+        alert("Gagal menyimpan absensi!\n" + JSON.stringify(err.response.data))
+      } else {
+        console.error("Error:", err)
+        alert("Gagal menyimpan absensi!\n" + err.message)
+      }
+    }
   }
 
   useEffect(() => {
@@ -222,7 +222,7 @@ export default function CatatKehadiran() {
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Catat Kehadiran" />
       <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-        <div className="flex-1 overflow-auto p-8 bg-gradient-to-br from-blue-50 via-white to-blue-50">
+        <div className="flex-1 overflow-auto p-8 bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
           <div className="max-w-7xl mx-auto space-y-6">
             {isClockInSuccess && (
               <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white shadow-lg">
@@ -238,31 +238,31 @@ export default function CatatKehadiran() {
               </div>
             )}
 
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="flex items-center gap-4">
                   <div className="bg-blue-50 p-3 rounded-lg">
                     <Clock className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Waktu Clock In</p>
-                    <p className="text-2xl font-bold text-gray-900 font-mono">{formatTime(currentTime)}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Waktu Masuk</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white font-mono">{formatTime(currentTime)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="bg-purple-50 p-3 rounded-lg">
-                    <Calendar className="w-6 h-6 text-purple-600" />
+                    <Calendar className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Tanggal</p>
-                    <p className="text-lg font-semibold text-gray-900">{formatDate(currentTime)}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Tanggal</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatDate(currentTime)}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white flex items-center gap-3">
                   <Camera className="w-5 h-5" />
                   <h3 className="font-semibold">Foto Absensi</h3>
@@ -280,11 +280,10 @@ export default function CatatKehadiran() {
                   <div className="flex gap-3">
                     <button
                       onClick={handleCameraToggle}
-                      className={`flex-1 py-3 rounded-lg font-semibold ${
-                        cameraActive
+                      className={`flex-1 py-3 rounded-lg font-semibold ${cameraActive
                           ? "bg-red-600 hover:bg-red-700 text-white"
                           : "bg-blue-600 hover:bg-blue-700 text-white"
-                      }`}
+                        }`}
                     >
                       {cameraActive ? "Matikan Kamera" : "Aktifkan Kamera"}
                     </button>
@@ -300,8 +299,8 @@ export default function CatatKehadiran() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-4 text-white flex items-center gap-3">
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white flex items-center gap-3">
                   <MapPin className="w-5 h-5" />
                   <h3 className="font-semibold">Lokasi Absensi</h3>
                 </div>

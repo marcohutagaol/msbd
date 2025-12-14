@@ -31,20 +31,29 @@ export interface Order {
   jumlahBarang: number;
   satuan: string;
   catatan: string;
-   status: "Pending" | "Approved" | "Rejected" | "Canceled" | "Arrived" | "Completed";
+  status: "Pending" | "Approved" | "Rejected" | "Canceled" | "Arrived" | "Completed";
 }
 
 const ITEMS_PER_PAGE = 8;
 
 export default function OrdersTable({
   onApproveStatusChange,
+  onStatusChange,
+  requestNumber: propRequestNumber,
 }: {
   onApproveStatusChange?: () => void;
+  onStatusChange?: (newStatus: string) => void;
+  requestNumber?: string;
 }) {
   const { props } = usePage();
-  const { orders, department, request_number, stats } = props as any;
+  const { orders, department, requestNumber, stats } = props as any;
 
-  
+  // Use prop requestNumber if available, otherwise use from props
+  const finalRequestNumber = propRequestNumber || requestNumber;
+
+
+
+
   const [currentPage, setCurrentPage] = useState(1);
   const [orderList, setOrderList] = useState<Order[]>(orders || []);
   const [isApproving, setIsApproving] = useState(false);
@@ -65,6 +74,8 @@ export default function OrdersTable({
   };
 
   // Update status individual item
+  // HAPUS fungsi mapStatusToEnglish
+
   const handleStatusChange = async (id: string, newStatus: Order["status"]) => {
     // Update UI optimistically
     setOrderList((prev) =>
@@ -73,21 +84,26 @@ export default function OrdersTable({
       )
     );
 
-    // Send to backend
+    // 🔥 Notify parent untuk update timeline ke "Response" ketika ada aksi individual
+    onStatusChange?.("Response");
+
     try {
-      await router.post(`/purchasing-detail/item/${id}/update-status`, {
-        status: mapStatusToEnglish(newStatus)
-      }, {
-        preserveScroll: true,
-        onError: (errors) => {
-          console.error('Error updating status:', errors);
-          // Revert on error
-          setOrderList(orders);
+      await router.post(
+        `/purchasing-detail/item/${id}/update-status`,
+        {
+          status: newStatus, // ⬅️ langsung kirim apa adanya
+        },
+        {
+          preserveScroll: true,
+          onError: (errors) => {
+            console.error("Error updating status:", errors);
+            // Revert on error
+            setOrderList(orders);
+          },
         }
-      });
+      );
     } catch (error) {
-      console.error('Failed to update status:', error);
-      // Revert on error
+      console.error("Failed to update status:", error);
       setOrderList(orders);
     }
   };
@@ -95,44 +111,86 @@ export default function OrdersTable({
   // Approve all items
   const handleApproveAll = async () => {
     if (isApproving) return;
-    
-    setIsApproving(true);
-    
-    try {
-    await router.post(`/purchasing-detail/${request_number}/approve-all`, {}, {
 
-        preserveScroll: true,
-        onSuccess: () => {
-          // Update local state
-          setOrderList((prev) =>
-            prev.map((order) => ({ ...order, status: "Approved" }))
-          );
-          onApproveStatusChange?.();
-          
-          // Show success message
-          alert("✅ Semua pesanan pending telah disetujui!");
-        },
-        onError: (errors) => {
-          console.error('Error approving all:', errors);
-          alert("❌ Gagal menyetujui pesanan. Silakan coba lagi.");
-        },
-        onFinish: () => {
-          setIsApproving(false);
+    setIsApproving(true);
+
+    try {
+      await router.post(
+        `/purchasing-detail/${requestNumber}/approve-all`,
+        {},
+        {
+          preserveScroll: true,
+          onSuccess: () => {
+            // Update local state
+            setOrderList((prev) =>
+              prev.map((order) => ({ ...order, status: "Approved" }))
+            );
+            onApproveStatusChange?.();
+
+            // 🔥 Notify parent untuk update timeline ke "Response"
+            onStatusChange?.("Response");
+
+            // Show success notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 z-50 bg-white border-2 border-green-500 rounded-lg shadow-2xl p-4 flex items-center gap-3 animate-slide-in-right';
+            notification.innerHTML = `
+            <div class="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-800">Berhasil!</p>
+              <p class="text-sm text-gray-600">Semua pesanan pending telah disetujui</p>
+            </div>
+          `;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+              notification.style.animation = 'slide-out-right 0.3s ease-out';
+              setTimeout(() => notification.remove(), 300);
+            }, 3000);
+          },
+          onError: (errors) => {
+            console.error('Error approving all:', errors);
+
+            // Show error notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 z-50 bg-white border-2 border-red-500 rounded-lg shadow-2xl p-4 flex items-center gap-3 animate-slide-in-right';
+            notification.innerHTML = `
+            <div class="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full">
+              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-800">Gagal!</p>
+              <p class="text-sm text-gray-600">Gagal menyetujui pesanan. Silakan coba lagi</p>
+            </div>
+          `;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+              notification.style.animation = 'slide-out-right 0.3s ease-out';
+              setTimeout(() => notification.remove(), 300);
+            }, 3000);
+          },
         }
-      });
+      );
     } catch (error) {
-      console.error('Failed to approve all:', error);
-      alert("❌ Terjadi kesalahan. Silakan coba lagi.");
+      console.error("Failed to approve all:", error);
+      alert("❌ Terjadi kesalahan.");
       setIsApproving(false);
     }
   };
 
   const handleGoToPricePage = () => {
-  if (!orderList.length) return;
+    if (!orderList.length) return;
 
-  const requestNumber = orderList[0].request_number;
-  router.visit(`/input-price/${requestNumber}`);
-};
+    // 🔥 Notify parent untuk update timeline ke "Input Price" (per request)
+    onStatusChange?.("Input Price");
+
+    const requestNum = finalRequestNumber || orderList[0].request_number;
+    router.visit(`/input-price/${requestNum}`);
+  };
 
 
   const handleBack = () => {
@@ -160,9 +218,9 @@ export default function OrdersTable({
                 </h1>
                 {stats && (
                   <p className="text-sm text-gray-600 mt-1">
-                    Total: {stats.total_items} items • 
-                    Pending: {stats.pending_count} • 
-                    Approved: {stats.approved_count} • 
+                    Total: {stats.total_items} items •
+                    Pending: {stats.pending_count} •
+                    Approved: {stats.approved_count} •
                     Rejected: {stats.rejected_count}
                   </p>
                 )}
@@ -206,9 +264,8 @@ export default function OrdersTable({
                   {paginatedOrders.map((order, index) => (
                     <tr
                       key={order.id}
-                      className={`border-b border-blue-100 ${
-                        index % 2 === 0 ? "bg-white" : "bg-slate-50"
-                      } hover:bg-blue-50 transition-colors`}
+                      className={`border-b border-blue-100 ${index % 2 === 0 ? "bg-white" : "bg-slate-50"
+                        } hover:bg-blue-50 transition-colors`}
                     >
                       <td className="py-3 px-4 text-gray-600 font-medium">
                         {order.request_number}
@@ -227,17 +284,17 @@ export default function OrdersTable({
                       </td>
 
                       <td className="py-3 px-4 text-center">
-                      <span
-  className={`px-3 py-1 text-xs font-semibold rounded-full border shadow-sm
+                        <span
+                          className={`px-3 py-1 text-xs font-semibold rounded-full border shadow-sm
     ${order.status === "Pending" ? "bg-yellow-100 text-yellow-700 border-yellow-300" : ""}
     ${order.status === "Approved" ? "bg-green-100 text-green-700 border-green-300" : ""}
     ${order.status === "Rejected" || order.status === "Canceled" ? "bg-red-100 text-red-700 border-red-300" : ""}
     ${order.status === "Arrived" ? "bg-purple-100 text-purple-700 border-purple-300" : ""}
     ${order.status === "Completed" ? "bg-green-100 text-green-700 border-green-300" : ""}
   `}
->
-  {order.status}
-</span>
+                        >
+                          {order.status}
+                        </span>
 
                       </td>
 
@@ -255,7 +312,7 @@ export default function OrdersTable({
                           <DropdownMenuContent className="min-w-[140px] rounded-lg shadow-lg border border-blue-100 bg-white">
                             <DropdownMenuItem
                               onClick={() =>
-                            handleStatusChange(order.id, "Approved")
+                                handleStatusChange(order.id, "Approved")
                               }
                               className="flex items-center gap-2 text-green-700 hover:bg-green-50 hover:text-green-800 font-medium"
                             >
@@ -264,7 +321,7 @@ export default function OrdersTable({
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
-                          handleStatusChange(order.id, "Rejected")
+                                handleStatusChange(order.id, "Rejected")
                               }
                               className="flex items-center gap-2 text-red-700 hover:bg-red-50 hover:text-red-800 font-medium"
                             >
@@ -273,7 +330,7 @@ export default function OrdersTable({
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
-                        handleStatusChange(order.id, "Pending")
+                                handleStatusChange(order.id, "Pending")
                               }
                               className="flex items-center gap-2 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-800 font-medium"
                             >
@@ -324,13 +381,12 @@ export default function OrdersTable({
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-blue-100">
                     <span
-                      className={`text-xs font-semibold px-3 py-1 rounded-full border ${
-                        order.status === "Approved"
-                          ? "bg-green-100 text-green-700 border-green-300"
-                          : order.status === "Rejected"
+                      className={`text-xs font-semibold px-3 py-1 rounded-full border ${order.status === "Approved"
+                        ? "bg-green-100 text-green-700 border-green-300"
+                        : order.status === "Rejected"
                           ? "bg-red-100 text-red-700 border-red-300"
                           : "bg-yellow-100 text-yellow-700 border-yellow-300"
-                      }`}
+                        }`}
                     >
                       {order.status}
                     </span>
@@ -347,7 +403,7 @@ export default function OrdersTable({
                       <DropdownMenuContent className="min-w-[120px] rounded-lg border border-blue-100 shadow-md bg-white">
                         <DropdownMenuItem
                           onClick={() =>
-               handleStatusChange(order.id, "Approved")
+                            handleStatusChange(order.id, "Approved")
 
                           }
                           className="text-green-700 hover:bg-green-50"
@@ -356,7 +412,7 @@ export default function OrdersTable({
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
-                        handleStatusChange(order.id, "Rejected")
+                            handleStatusChange(order.id, "Rejected")
                           }
                           className="text-red-700 hover:bg-red-50"
                         >
@@ -364,7 +420,7 @@ export default function OrdersTable({
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
-                        handleStatusChange(order.id, "Pending")
+                            handleStatusChange(order.id, "Pending")
                           }
                           className="text-yellow-700 hover:bg-yellow-50"
                         >
@@ -399,18 +455,17 @@ export default function OrdersTable({
         </div>
 
         {/* Pagination */}
-        {orderList.length > 0 && (
+        {/* {orderList.length > 0 && (
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
             <div className="flex flex-wrap gap-2">
               {Array.from({ length: totalPages }).map((_, i) => (
                 <button
                   key={i + 1}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`h-10 w-10 rounded-lg font-medium border transition-all duration-300 ${
-                    currentPage === i + 1
-                      ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/40 scale-105"
-                      : "border-blue-200 bg-white text-gray-600 hover:border-blue-400 hover:bg-blue-50"
-                  }`}
+                  className={`h-10 w-10 rounded-lg font-medium border transition-all duration-300 ${currentPage === i + 1
+                    ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/40 scale-105"
+                    : "border-blue-200 bg-white text-gray-600 hover:border-blue-400 hover:bg-blue-50"
+                    }`}
                 >
                   {i + 1}
                 </button>
@@ -436,7 +491,7 @@ export default function OrdersTable({
               </Button>
             </div>
           </div>
-        )}
+        )} */}
 
         {orderList.length === 0 && (
           <div className="text-center py-8 text-gray-500">

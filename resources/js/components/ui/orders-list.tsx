@@ -29,15 +29,16 @@ interface OrderItem {
     notes?: string
   }
 }
-
 interface OrdersListProps {
-  mode?: "default" | "monitoring" | "price"
-  disabled?: boolean
-  orders?: OrderItem[]
-  onMarkArrived?: (itemId: number) => void
-  onPriceUpdate?: (itemId: number, harga: number) => void // ✅ TAMBAHKAN INI
-  showArrivedButton?: boolean
+  mode?: "default" | "monitoring" | "price";
+  disabled?: boolean;
+  orders?: OrderItem[];
+  onMarkArrived?: (itemId: number) => void;
+  onPriceUpdate?: (itemId: number, harga: number) => void;
+  showArrivedButton?: boolean;
+  invoiceMade?: boolean; // ⬅️ TAMBAHAN BARU
 }
+
 
 
 export function OrdersList({
@@ -45,8 +46,8 @@ export function OrdersList({
   disabled = false,
   orders = [],
   onMarkArrived,
-  onPriceUpdate,   
-  showArrivedButton = false
+  onPriceUpdate,
+  invoiceMade = false, // ⬅️ default false
 }: OrdersListProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [localOrders, setLocalOrders] = useState<OrderItem[]>(orders)
@@ -242,14 +243,18 @@ export function OrdersList({
         <Button
           variant="ghost"
           size="icon"
-          className="text-purple-600 hover:scale-110 transition-all duration-300 bg-purple-50 hover:bg-purple-100 border border-purple-200"
+          className={`text-purple-600 bg-purple-50 border border-purple-200
+      hover:scale-110 transition-all duration-300 
+      ${!invoiceMade ? "opacity-50 pointer-events-none" : ""}
+    `}
           onClick={() => handleArrivedClick(order)}
-          disabled={disabled}
-          title="Tandai Barang Sampai"
+          disabled={!invoiceMade}
+          title={!invoiceMade ? "Buat invoice dulu" : "Tandai Barang Sampai"}
         >
           <Package className="w-4 h-4" />
         </Button>
       )}
+
 
       {/* Tombol Pencil untuk input harga (hanya untuk status Approved) */}
       {mode === "price" && order.status === "Approved" && (

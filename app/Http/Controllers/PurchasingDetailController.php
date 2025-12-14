@@ -3,16 +3,17 @@
 namespace App\Http\Controllers;
 
 use Inertia\Inertia;
-use App\Models\Request;
+use App\Models\Request as RequestModel;
 use App\Models\RequestItem;
 use Illuminate\Http\Request as HttpRequest;
+
 use Illuminate\Support\Facades\DB;
 class PurchasingDetailController extends Controller
 {
  public function show($requestNumber)
 {
-    $request = Request::where('request_number', $requestNumber)
-        ->with('items')
+ $request = RequestModel::where('request_number', $requestNumber)
+       ->with('items')
         ->firstOrFail();
 
     $orders = $request->items->map(function ($item) {
@@ -49,24 +50,30 @@ class PurchasingDetailController extends Controller
     /**
      * Approve semua items untuk department tertentu
      */
-    public function approveAll($departmentId)
-    {
-        try {
-            $departmentName = $this->getDepartmentName($departmentId);
-            
-            // Update semua request items yang Pending menjadi Approved
-            $updated = RequestItem::where('departemen', $departmentName)
-                ->where('status', 'Pending')
-                ->update([
-                    'status' => 'Approved',
-                    'jumlah_disetujui' => DB::raw('jumlah_diajukan') // Set jumlah disetujui = jumlah diajukan
-                ]);
+   public function approveAll($requestNumber)
+{
+    try {
+        $request = RequestModel::where('request_number', $requestNumber)->firstOrFail();
 
-            return redirect()->back()->with('success', "Berhasil menyetujui {$updated} item untuk departemen {$departmentName}");
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menyetujui item: ' . $e->getMessage());
-        }
+        $updated = RequestItem::where('request_id', $request->id)
+            ->where('status', 'Pending')
+            ->update([
+                'status' => 'Approved',
+                'jumlah_disetujui' => DB::raw('jumlah_diajukan')
+            ]);
+
+        return redirect()->back()->with(
+            'success',
+            "✅ Berhasil menyetujui {$updated} item."
+        );
+    } catch (\Exception $e) {
+        return redirect()->back()->with(
+            'error',
+            '❌ Gagal menyetujui item: ' . $e->getMessage()
+        );
     }
+}
+
 
     /**
      * Update status item individual
@@ -114,7 +121,7 @@ class PurchasingDetailController extends Controller
             $completedCount = RequestItem::where('departemen', $deptName)->where('status', 'Completed')->count();
             
             // Hitung total requests untuk department ini
-            $totalRequests = Request::where('department', $deptName)->count();
+            $totalRequests = RequestModel::where('department', $deptName)->count();
 
             $departments[] = [
                 'id' => $deptId,

@@ -59,36 +59,36 @@ export default function MonitoringItem() {
   const router = useRouter()
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 p-8">
+    <div className="w-full min-h-screen bg-gray-50 dark:bg-slate-900 p-8">
       <div className="w-full max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-3 h-3 rounded-full bg-blue-600"></div>
-            <h1 className="text-3xl font-bold text-gray-900">Monitoring Item</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Monitoring Item</h1>
           </div>
-          <p className="text-gray-600 ml-6">Departemen</p>
+          <p className="text-gray-600 dark:text-gray-400 ml-6">Departemen</p>
         </div>
 
-        <div className="bg-white border-4 border-blue-500 rounded-xl p-6 mb-8">
+        <div className="bg-white dark:bg-slate-800 border-4 border-blue-500 dark:border-blue-600 rounded-xl p-6 mb-8">
           <div className="w-full overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b-2 border-blue-300">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Nama Barang</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">Jumlah Barang</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">Satuan Barang</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">Status</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Nama Barang</th>
+                  <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Jumlah Barang</th>
+                  <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Satuan Barang</th>
+                  <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item) => (
-                  <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-gray-800">
+                  <tr key={item.id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-slate-700">
+                    <td className="py-3 px-4 text-gray-800 dark:text-gray-200">
                       <div className="font-medium">{item.namaBarang}</div>
-                      <div className="text-xs text-gray-500">({item.itemCount})</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">({item.itemCount})</div>
                     </td>
-                    <td className="py-3 px-4 text-center text-gray-800">{item.jumlahBarang}</td>
-                    <td className="py-3 px-4 text-center text-gray-800">{item.satuanBarang}</td>
+                    <td className="py-3 px-4 text-center text-gray-800 dark:text-gray-200">{item.jumlahBarang}</td>
+                    <td className="py-3 px-4 text-center text-gray-800 dark:text-gray-200">{item.satuanBarang}</td>
                     <td className="py-3 px-4 text-center">
                       <span
                         className={`inline-block px-4 py-1 rounded-full text-xs font-semibold ${getStatusColor(item.status)}`}

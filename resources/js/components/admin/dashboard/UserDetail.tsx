@@ -43,7 +43,7 @@ const user = props.auth?.user;
   return (
     <div>
       {/* Kartu Profil */}
-      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mb-6">
+      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm ">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-4">
             <Avatar className="w-16 h-16">

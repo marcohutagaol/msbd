@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+
 import { 
     BookOpen, 
     Folder, 
@@ -21,17 +22,21 @@ import {
     FileCheck,
     Package,
     ShoppingCart,
-    DollarSign,
     Store,
     Warehouse,
     Megaphone,
     BarChart3,
     Users,
-    ClipboardList
+    ClipboardList,
+    FileText
 } from 'lucide-react';
+
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
+/* -------------------------------------------------------
+   NAV UNTUK USER
+------------------------------------------------------- */
+const userNavItems: NavItem[] = [
     {
         title: 'Beranda',
         href: dashboard(),
@@ -58,7 +63,7 @@ const mainNavItems: NavItem[] = [
                 icon: ClipboardList,
             },
             {
-                title: 'Pemantauan Item',
+                title: 'Pemantauan Barang',
                 href: '/monitoring-request',
                 icon: Package,
             },
@@ -74,41 +79,48 @@ const mainNavItems: NavItem[] = [
                 href: '/dashboard-purchasing',
                 icon: ShoppingCart,
             },
-
-                {
-                title: 'Toko ',
+            {
+                title: 'Toko',
                 href: '/toko',
                 icon: Store,
             },
         ],
     },
-
     {
         title: 'Inventory',
         href: '/inventory',
         icon: Warehouse,
     },
     {
-        title: 'Announcement',
-        href: '/announcement',
-        icon: Megaphone,
+        title: 'Laporan',
+        href: '/laporan',
+        icon: FileText,
     },
+];
 
+/* -------------------------------------------------------
+   NAV UNTUK MANAGER
+------------------------------------------------------- */
+const managerNavItems: NavItem[] = [
     {
         title: 'Manager Dashboard',
         href: '/manager',
         icon: BarChart3,
     },
-    
+    {
+        title: 'Manager Karyawan',
+        href: '/manager-karyawan',
+        icon: Users,
+    },
     {
         title: 'Manager Absensi',
         href: '/manager-absensi',
         icon: Calendar,
     },
     {
-        title: 'Manager Karyawan',
-        href: '/manager-karyawan',
-        icon: Users,
+        title: 'Announcement',
+        href: '/announcement',
+        icon: Megaphone,
     },
     {
         title: 'Report',
@@ -117,20 +129,35 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
+/* -------------------------------------------------------
+   FOOTER NAV
+------------------------------------------------------- */
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
+    // {
+    //     title: 'Repository',
+    //     href: 'https://github.com/laravel/react-starter-kit',
+    //     icon: Folder,
+    // },
+    // {
+    //     title: 'Documentation',
+    //     href: 'https://laravel.com/docs/starter-kits#react',
+    //     icon: BookOpen,
+    // },
 ];
 
+/* -------------------------------------------------------
+   SIDEBAR UTAMA
+------------------------------------------------------- */
 export function AppSidebar() {
+    const { auth } = usePage().props;
+
+    const role = auth?.user?.role;
+
+    const navItems =
+        role === 'manager'
+            ? managerNavItems
+            : userNavItems;
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -146,7 +173,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={navItems} />
             </SidebarContent>
 
             <SidebarFooter>

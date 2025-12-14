@@ -17,10 +17,10 @@ interface RequestData {
 
 
 interface MonitoringListProps {
-  departments: RequestData[]; // sekarang isinya LIST REQUEST
+  requests: RequestData[];
 }
 
-export default function Monitoring({ departments }: MonitoringListProps) {
+export default function Monitoring({ requests }: MonitoringListProps) {
   const getStatusType = (status: RequestStatus | string) => {
     if (status === "Completed" || status === "Arrived") return "complete";
     if (status === "Pending" || status === "Approved" || status === "On Process") return "on-process";
@@ -63,11 +63,11 @@ export default function Monitoring({ departments }: MonitoringListProps) {
   };
   return (
     <div className="space-y-3">
-      {departments.length === 0 && (
+      {requests.length === 0 && (
         <p className="text-center text-gray-500">Belum ada request.</p>
       )}
 
-      {departments.map((req) => (
+      {requests.map((req) => (
         <div
           key={req.id}
           onClick={() => handleClick(req)}

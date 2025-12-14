@@ -22,6 +22,7 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+
 export interface NavItem {
     title: string;
     href: NonNullable<InertiaLinkProps['href']>;

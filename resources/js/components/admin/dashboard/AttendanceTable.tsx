@@ -1,3 +1,4 @@
+
 import { usePage } from '@inertiajs/react';
 
 interface Employee {
@@ -72,6 +73,7 @@ export default function EmployeeStatus() {
                     textTransform: "uppercase",
                     letterSpacing: "0.5px",
                   }}
+
                 >
                   {header}
                 </th>
@@ -80,6 +82,7 @@ export default function EmployeeStatus() {
           </thead>
           <tbody>
             {employees.map((emp) => (
+
               <tr key={emp.id} style={{ borderTop: "1px solid #e2e8f0" }}>
                 <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.id}</td>
                 <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.name}</td>
@@ -87,6 +90,7 @@ export default function EmployeeStatus() {
                 <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155" }}>{emp.time}</td>
                 <td style={{ padding: "14px 20px", fontSize: "14px", color: "#334155", fontWeight: "600" }}>
                   {emp.status}
+
                 </td>
               </tr>
             ))}
