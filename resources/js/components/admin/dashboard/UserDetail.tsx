@@ -16,8 +16,14 @@ export default function StatsToday() {
   const [currentTime, setCurrentTime] = useState("");
 
   // Ambil user login dari Laravel (Inertia)
-  const { props } = usePage<{ auth: { user: User } }>();
-  const user = props.auth.user;
+  const { props } = usePage<{
+  auth?: {
+    user?: User;
+  };
+}>();
+
+const user = props.auth?.user;
+
 
   useEffect(() => {
     const updateTime = () => {
@@ -42,19 +48,19 @@ export default function StatsToday() {
           <div className="flex items-start gap-4">
             <Avatar className="w-16 h-16">
               <AvatarImage
-                src={user.photo ?? undefined}
+                src={user?.photo ?? undefined}
               />
               <AvatarFallback>
-                {user.name.substring(0, 2).toUpperCase()}
+                {user?.name.substring(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                {user.name}
+                {user?.name}
               </h2>
               <p className="text-gray-600">
-                {user.role ?? "Jabatan belum diatur"}
+                {user?.role ?? "Jabatan belum diatur"}
               </p>
               {/* <p className="text-sm text-gray-500 mt-2">
                 {user.company ?? "Perusahaan belum diatur"}
